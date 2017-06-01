@@ -1,0 +1,257 @@
+
+
+/************************************/
+
+		    //Public//
+
+/************************************/
+
+module.exports = {
+  
+
+//////////////////////////////////////
+		 //CONTENT START//
+//////////////////////////////////////
+
+
+
+	generateMessageID: function (){
+		return Math.floor((Math.random() * 16383) + 1);
+	},
+	generateSIDPMessageID: function(){
+        return this.int2Buffer(Math.floor((Math.random() * 255) + 1),1);
+	},
+	TopicLength: function (msg){
+		var length = Buffer.byteLength(msg);
+		return this.int2Buffer(length,2);
+	},
+
+	StingtoBuffer: function (msg){
+		var message = msg,
+			buffer = new Buffer(Buffer.byteLength(message));
+		buffer.write(message, 0);
+		return buffer;
+
+	},
+
+	int2Buffer: function (msgInt,bufferLength){
+
+		var bufTrueLength =  Math.floor(Math.log2(msgInt) / 8) + 1;
+
+		if(!bufferLength){
+            bufferLength = bufTrueLength;
+		}
+
+		var buf = Buffer.allocUnsafe(Math.pow(2,bufferLength-1));
+
+		if(bufferLength == 1){
+			buf.writeUInt8(msgInt, 0);
+		}	else if(bufferLength == 2){
+			buf.writeUInt16BE(msgInt, 0);
+
+		}	else if(bufferLength == 3){
+			buf.writeUInt32BE(msgInt, 0);
+
+		}	else if(bufferLength < 7) {
+            buf = Buffer.allocUnsafe(6);
+			buf.writeUIntBE(msgInt, 0, 6);
+		}	else	{
+			this.eventError("Input Exceed Maxium", "Method Error")
+		}
+		//console.log(buf)
+		return buf.slice(buf.length - bufferLength);
+	},
+
+
+	Bin2Hex: function (bin){
+    	return new Buffer(parseInt(bin, 2).toString(16),'hex');
+	},
+
+	Hex2Dec: function (hex){
+		var dec = 0;
+		for(i=0;i<hex.length;i++){
+			if(hex[i] == 1){
+				dec = dec + Math.pow(2,hex.length-i-1);
+			}
+		}
+		return dec;
+	},
+
+	Dec2Hex: function (dec,max){
+		var hex= new Array();
+		for(i=0;i<max;i++){
+			hex[max-1-i] = dec%2;
+			dec = Math.floor(dec/2);
+		}
+		return hex;
+
+	},
+	timestamp: function (){
+
+		return Math.floor(Date.now() / 1000);
+
+
+	},
+
+	getDateTime: function() {
+
+		var date = new Date();
+
+		var hour = date.getHours();
+		hour = (hour < 10 ? "0" : "") + hour;
+
+		var min  = date.getMinutes();
+		min = (min < 10 ? "0" : "") + min;
+
+		var sec  = date.getSeconds();
+		sec = (sec < 10 ? "0" : "") + sec;
+
+		var year = date.getFullYear();
+
+		var month = date.getMonth() + 1;
+		month = (month < 10 ? "0" : "") + month;
+
+		var day  = date.getDate();
+		day = (day < 10 ? "0" : "") + day;
+
+		return month + "/" + day + "/" + year + " " + hour + ":" + min + ":" + sec;
+
+	},
+	log:function(data,type,err){
+		if(err){
+			console.warn(data);
+		}	else	{
+			console.log(data);
+		}
+	},
+
+	eventLog:  function(data,type){
+		if(type){
+			this.log('[' + this.getDateTime() + '] ' + '|---'+type+'---| ' + data,type)
+		}	else	{
+			this.log('[' + this.getDateTime() + '] ' + data,type)
+		}
+
+	},
+	eventError:  function(data,type){
+		if(type){
+			this.log('[' + this.getDateTime() + '] ' + '|---'+type+'---| ' + data,type,true)
+		}	else	{
+			this.log('[' + this.getDateTime() + '] ' + data,type,true)
+		}
+	},
+	dataLog: function(data,type){
+		var result = "\n";
+		for(key in data){
+			var temp;
+			if(Array.isArray(data[key]) || typeof data[key] === 'object'){
+				temp = JSON.stringify(data[key])
+			}	else	{
+				temp = data[key];
+			}
+			result += this.paddingHeading(key) + temp + "\n";
+		}
+
+		this.log(result,type);
+		return result
+	},
+	paddingHeading: function(str){
+		var full = 24;
+		while(str.length<24){
+			str += " ";
+		}
+		return str;
+	},
+	eventTitle: function (data,titleType,type,err){
+		var result = "";
+		var _this = this;
+		if(titleType ==1){
+			result = "\n" + _this.singleTitle("",1);
+			if(Array.isArray(data)){
+
+				data.forEach(function(singleLine){
+					result += "\n" + _this.singleTitle(singleLine,2);
+				})
+
+			}	else	{
+				result += "\n" + _this.singleTitle(data,2);
+			}
+			result += "\n" +_this.singleTitle("",1) + "\n";
+		}	else	{
+			result = "\n" + _this.singleTitle(data,titleType) + "\n";
+		}
+        this.log(result,type,err);
+
+		return result;
+
+
+	},
+	singleTitle: function (data,titleType){
+		if(data!="") data = " " + data + " ";
+		var totalLength = 80,
+			dataLength = data.length;
+			singlePadding = Math.floor( (80 - dataLength)/2);
+			filling = "*",
+			resultStr = "",
+			lastChar = "";
+
+		switch(titleType){
+			case 1: filling = "/";break;
+			case 2: filling = "*";break;
+			case 3: filling = "/";break;
+			default: break;
+		}
+		if(dataLength%2 == 1){
+			lastChar = filling;
+		}
+
+		resultStr = fillPadding(singlePadding,filling) + data + fillPadding(singlePadding,filling) + lastChar;
+
+
+		function fillPadding(total,filling){
+			var res  = "";
+			for(var i = 0; i < total; i++){
+				res += filling;
+			}
+			return res;
+		}
+
+		return resultStr;
+	},
+
+	bufferString: function (buf){
+		var bufStr = buf.toString('hex');
+		var str = "";
+		for (var i = 0, len = bufStr.length; i < len; i=i+2) {
+			str += bufStr[i] + bufStr[i+1] + " ";
+		}
+		return str.toUpperCase();
+	},
+	checksum: function(s){
+
+		var len = s.length;
+		var XOR = 0;
+		for (var i = 0; i < len; i++) {
+            XOR ^=  s[i];
+		}
+
+		return XOR;
+	},
+	mergeObject: function(obj1,obj2){
+		for (key in obj2){
+			obj1[key] = obj2[key];
+		}
+		return obj1;
+	},
+	formateHex: function(hex){
+
+		var formattedHex = hex.replace(/ /g,'').toUpperCase();
+        if(formattedHex.length == 1){
+            formattedHex = "0" + formattedHex;
+        }
+        return formattedHex
+    }
+
+
+
+};

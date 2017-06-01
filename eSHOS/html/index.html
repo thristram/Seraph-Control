@@ -1,0 +1,2095 @@
+   <!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>eSH Software Testing Environment</title>
+
+  <!--<link rel="stylesheet" href="/css/jquery.mobile-1.4.5.min.css">-->
+    <link rel='stylesheet prefetch' href='/css/OpenSans.css'>
+    <link rel='stylesheet prefetch' href='/css/grid.css'>
+    <link rel='stylesheet prefetch' href='/css/SourceSansPro.css'>
+    <link rel='stylesheet prefetch' href='/css/icomoon-uikit-feb.css'>
+  <link rel='stylesheet prefetch' href='/css/style.css'>
+  <link rel="stylesheet" href="/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+
+
+  <style>
+      .grid_12 {margin-top:40px}
+      h3 {margin-bottom: 1.5rem;}
+      .QE_CH_VAR, .QE_VAL_VAR {display:none}
+      @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+        .form-control {margin-top:10px;}
+
+      }
+      .alert .close {background: rgba(0, 0, 0, 0.1);    -webkit-appearance: inherit;}
+      .modal-content {background-color: rgba(0,0,0,0.7);color:#FFF}
+      .modal-header {border-bottom: none;  }
+      .modal-footer {border-top: none;  }
+      .offline {color:#FF0000;font-weight: bold}
+      .online {color:#00FF00;font-weight: bold}
+      .hidden {display:none}
+      .title-control{cursor: pointer;display:inline-block;margin-right:30px;color:lightgrey}
+      .active {color:#000000}
+
+
+
+    </style>
+
+  <script src="/js/jquery-2.0.0.min.js "></script>
+  <!--<script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>-->
+
+</head>
+
+<body>
+
+
+<div class="container">
+  <div class="grid_12">
+    <div class="heading">
+      <h2>
+        <p class="title-control title-network active" onclick="changeTab($(this),'window-Manage-Network')">Wi-Fi Manager</p>
+        <p class="title-control title-SSP" onclick="changeTab($(this),'window-SSP')">SSP Test</p>
+        <p class="title-control " onclick="changeTab($(this),'window-SIDP','SICP');">SICP Test</p>
+        <p class="title-control " onclick="changeTab($(this),'window-SIDP','SIDP');">SIDP Test</p>
+      </h2>
+    </div>
+
+  </div>
+
+  <!-- Device Selection -->
+  <div class="grid_12">
+
+    <div class="heading">
+      <h3>Manage Connected Device</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of1">
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Status</th>
+            <th>Device ID</th>
+            <th>Role</th>
+            <th>Model</th>
+            <th>IP Address</th>
+            <th>Action</th>
+          </tr>
+          </thead>
+          <tbody id="devicelists">
+
+
+          {{#TCPClient}}
+          <form method="get" action="/test/updateDeviceList" id="updateForm_{{id}}" class="targetURI_form">
+            <tr>
+              <th scope="row">
+                <label class="checkbox-inline">
+                  <input type="checkbox" class="SSDevice selectDevice_{{deviceID}}" onchange="ssSelected(this,'{{deviceID}}')" value="1">
+                </label>
+              </th>
+              <td>
+                <span class="{{deviceID}}_status offline"></span>
+              </td>
+              <td>
+                <div class="form-group">
+                  <input type="text" name="deviceID" class="form-control" id="deviceID_{{id}}" placeholder="Device ID" value="{{deviceID}}" org_value="{{deviceID}}" onchange="$('#updateRecode_{{id}}').show()">
+                </div>
+              </td>
+              <td>
+                <span>Server</span>
+
+              </td>
+              <td>
+                <span>Model {{model}}</span>
+
+              </td>
+
+              <td>
+                <div class="form-group">
+                  <input type="text" name="IPAddress" class="form-control" id="IPAddress_{{id}}" placeholder="IP Address" value="{{IPAddress}}" org_value="{{IPAddress}}" onchange="$('#updateRecode_{{id}}').show()">
+                </div>
+              </td>
+              <td>
+                <div class="col_1of2 hidden" id="updateRecode_{{id}}">
+                  <a href="#" class="btn btn-secondary btn-large btn-block btn-caps" onclick="$('#updateForm_{{id}}').submit();"><span class="icon-checkmark"></span></a>
+                </div>
+                <div class="col_1of2">
+                  <a href="/test/deleteFromDeviceList?id={{id}}" class="btn btn-tertiary btn-large btn-block btn-caps"><span class="icon-cross"></span></a>
+                </div>
+              </td>
+              <input type="hidden" name="id" value="{{id}}"/>
+              <input type="hidden" name="orgURI" value="" class="orgURI"/>
+            </tr>
+          </form>
+          {{/TCPClient}}
+
+          <form method="get" action="/test/updateDeviceList" id="updateForm_new" class="targetURI_form">
+            <tr>
+              <th scope="row">#</th>
+              <td>
+                <span class="">New Server</span>
+              </td>
+              <td>
+                <div class="form-group">
+                  <input type="text" name="deviceID" class="form-control" id="deviceID_new" placeholder="Device ID">
+                </div>
+              </td>
+              <td>
+                <span>Server</span>
+              </td>
+              <td>
+                <select class="form-control" name="model">
+                  <option value="1">Model 1</option>
+                  <option value="2">Model 2</option>
+                  <option value="3">Model 3</option>
+                  <option value="4">Model 4</option>
+                  <option value="5">Model 5</option>
+                  <option value="6">Model 6</option>
+                  <option value="7">Model 7</option>
+                  <option value="8">Model 8</option>
+
+
+                </select>
+              </td>
+
+              <td>
+                <div class="form-group">
+                  <input type="text" name="IPAddress" class="form-control" id="IPAddress_new" placeholder="IP Address">
+                </div>
+              </td>
+              <td>
+                <div class="col_1of1">
+                  <a href="#" class="btn btn-secondary btn-large btn-block btn-caps" onclick="$('#updateForm_new').submit();return false;">Add Server</a>
+                </div>
+              </td>
+              <input type="hidden" name="id" value="{{id}}"/>
+              <input type="hidden" name="orgURI" value="" class="orgURI"/>
+
+            </tr>
+          </form>
+          <form method="get" action="/test/updateDeviceListClient" id="updateFormClient_new" class="targetURI_form">
+            <tr>
+              <th scope="row">#</th>
+              <td>
+                <span class="">New Client</span>
+              </td>
+              <td>
+                <div class="form-group">
+                  <input type="text" name="deviceID" class="form-control" id="deviceID_new" placeholder="Device ID">
+                </div>
+              </td>
+              <td>
+                <span>Client</span>
+              </td>
+              <td>
+                <select class="form-control" name="model">
+                  <option value="1">Model 1</option>
+                  <option value="2">Model 2</option>
+                  <option value="3">Model 3</option>
+                  <option value="4">Model 4</option>
+                  <option value="5">Model 5</option>
+                  <option value="6">Model 6</option>
+                  <option value="7">Model 7</option>
+                  <option value="8">Model 8</option>
+
+
+                </select>
+              </td>
+
+              <td>
+                <div class="form-group">
+                  <input type="text" name="macWiFi" class="form-control" id="MACAddress_new" placeholder="MAC Address">
+                </div>
+              </td>
+              <td>
+                <div class="col_1of1">
+                  <a href="#" class="btn btn-secondary btn-large btn-block btn-caps" onclick="$('#updateFormClient_new').submit();">Add Client</a>
+                </div>
+              </td>
+              <input type="hidden" name="id" value="{{id}}"/>
+              <input type="hidden" name="orgURI" value="" class="orgURI"/>
+            </tr>
+          </form>
+          </tbody>
+
+        </table>
+
+
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Data -->
+  <div class="grid_12" >
+    <div class="heading">
+      <h3>Console</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of1">
+
+        <textarea class="form-control" rows="3" id="eventConsole">{{currentMessage}}</textarea>
+
+
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Seraph Smart Connect -->
+  <div class="grid_12 window-Manage-Network window-control">
+    <div class="heading">
+      <h3>Seraph Smart Connect</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of1">
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>Status</th>
+            <th>SSID</th>
+            <th>Password</th>
+            <th>Update</th>
+            <th>Broadcast</th>
+          </tr>
+          </thead>
+          <tbody>
+
+
+          <form method="get" action="/test/updateSmartConnectInfo" id="updateSC" class="targetURI_form">
+            <tr>
+              <td>
+                {{#isSmartConnecting}}
+                <span>Broadcasting.....</span>
+                {{/isSmartConnecting}}
+                {{^isSmartConnecting}}
+                <span>Idle</span>
+                {{/isSmartConnecting}}
+              </td>
+              <td>
+                <input type="text" name="wifi_ssid" class="form-control" id="wifi_ssid" placeholder="Wi-Fi SSID" value="{{sysConfig.ROUTER_SSID}}">
+              </td>
+              <td>
+                <input type="password" name="wifi_password" class="form-control" id="wifi_password" placeholder="Device ID"  value="{{sysConfig.ROUTER_PASSWORD}}">
+              </td>
+              <td>
+                <label>
+                  <div class="col_1of1">
+                    <a href="#" class="btn btn-secondary btn-large btn-block btn-caps" onclick="$('#updateSC').submit();">Update</a>
+                  </div>
+                </label>
+              </td>
+              <td>
+                <label>
+                  <div class="col_1of1">
+                    {{#isSmartConnecting}}
+                    <a href="/test/stopSmartConnect" class="btn btn-tertiary btn-large btn-block btn-caps orgURI_link">Stop Config</a>
+                    {{/isSmartConnecting}}
+                    {{^isSmartConnecting}}
+                    <a href="/test/startSmartConnect" class="btn btn-secondary btn-large btn-block btn-caps orgURI_link">Smart Config</a>
+                    {{/isSmartConnecting}}
+
+                  </div>
+                </label>
+                <input type="hidden" name="orgURI" value="" class="orgURI"/>
+              </td>
+            </tr>
+          </form>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Seraph Secured Smart Connect -->
+  <div class="grid_12 window-Manage-Network window-control">
+    <div class="heading">
+      <h3>Seraph Secured Smart Connect</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of1">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>MAC Address</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          {{#isSecuredSmartConnecting}}
+          <form method="get" action="/test/stopSecuredSmartConnect" id="securedSmartConnectForm" class="targetURI_form">
+          {{/isSecuredSmartConnecting}}
+          {{^isSecuredSmartConnecting}}
+            <form method="get" action="/test/startSecuredSmartConnect" id="securedSmartConnectForm" class="targetURI_form">
+          {{/isSecuredSmartConnecting}}
+
+          <tbody>
+            <tr>
+              <td>
+                {{#isSecuredSmartConnecting}}
+                <span>Broadcasting.....</span>
+                {{/isSecuredSmartConnecting}}
+                {{^isSecuredSmartConnecting}}
+                <span>Idle</span>
+                {{/isSecuredSmartConnecting}}
+              </td>
+              <td>
+                <input type="text" name="mac" class="form-control" placeholder="MAC Address" value="{{securedSmartConnectMac}}">
+                <input type="hidden" name="orgURI" value="" class="orgURI"/>
+              </td>
+
+              <td>
+                <div class="col_1of1">
+                  {{#isSecuredSmartConnecting}}
+                  <a href="javascript:;" onclick="$('#securedSmartConnectForm').submit()" class="btn btn-tertiary btn-large btn-block btn-caps">Stop Secure Config</a>
+                  {{/isSecuredSmartConnecting}}
+                  {{^isSecuredSmartConnecting}}
+                  <a href="javascript:;" onclick="$('#securedSmartConnectForm').submit()" class="btn btn-secondary btn-large btn-block btn-caps">Secure Config</a>
+                  {{/isSecuredSmartConnecting}}
+
+                </div>
+              </td>
+            </tr>
+          </tbody>
+
+          </form>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Server IP Broadcasting -->
+  <div class="grid_12 window-Manage-Network window-control">
+    <div class="heading">
+      <h3>Brocasting Server IP</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of1">
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>Status</th>
+            <th>Server IP</th>
+            <th>Public IP</th>
+            <th>Action</th>
+          </tr>
+          </thead>
+          <tbody>
+
+
+
+            <tr>
+              <td>
+                {{#isBroadcastingServerIP}}
+                <span>Broadcasting.....</span>
+                {{/isBroadcastingServerIP}}
+                {{^isBroadcastingServerIP}}
+                <span>Idle</span>
+                {{/isBroadcastingServerIP}}
+              </td>
+              <td>
+                <span>{{sysConfig.ESH_CONFIG_LOCAL_IP}}</span>
+              </td>
+              <td>
+                <span>{{sysConfig.ESH_CONFIG_PUBLIC_IP}}</span>
+              </td>
+              <td>
+                <label>
+                  <div class="col_1of1">
+                    {{#isBroadcastingServerIP}}
+                    <a href="/test/stopBroadcastingServerIP" class="btn btn-tertiary btn-large btn-block btn-caps orgURI_link">Stop Broadcasting</a>
+                    {{/isBroadcastingServerIP}}
+                    {{^isBroadcastingServerIP}}
+                    <a href="/test/startBroadcastingServerIP" class="btn btn-secondary btn-large btn-block btn-caps orgURI_link">Start Broadcasting</a>
+                    {{/isBroadcastingServerIP}}
+
+                  </div>
+                </label>
+
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- /Actions Method -->
+  <div class="grid_12 window-SSP window-control" style="display: none">
+    <div class="heading">
+      <h3>Refresh Sensor</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaActionsRefresh(null)">Sync All</a>
+      </div>
+    </div>
+    <br/>
+    <div class="heading">
+      <h3>Refresh Sensor w/ Channel ID</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of2">
+        <input type="text" class="form-control" placeholder="Enter Channel ID" id="sspaActionRefreshCH"/>
+      </div>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaActionsRefresh($('#sspaActionRefreshCH').val())">Sync w/ Channel</a>
+      </div>
+    </div>
+    <br/>
+    <div class="heading">
+      <h3>Initiate IR Learning</h3>
+    </div>
+    <div class="inner_container">
+
+
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaDataIR()">Learn IR</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- /Backlight Method -->
+  <div class="grid_12 window-SSP window-control" style="display: none">
+    <div class="heading">
+      <h3>Backlight LED</h3>
+    </div>
+
+
+
+    <div class="inner_container" style="margin-top:30px">
+      <div class="col_1of4">
+
+        <select class="form-control" id="BLAction" onchange="handleBLSelect()">
+          <option value="M1">Loop Strip Mode</option>
+          <option value="M2">Breating Light Mode</option>
+          <option value="M3">Color Switch Mode</option>
+          <option value="M4">Indicator Light Mode</option>
+          <option value="M5">Off Mode</option>
+
+
+        </select>
+
+      </div>
+      <div class="col_1of2" class="BL_VAR BL_COLOR" style="display:block">
+        <input type="text" class="form-control" placeholder="Enter Colors" id="BLColors" value="FF0000,FF9900,FFFF00,00FF00,00FFFF,0000FF,FF00FF"/>
+      </div>
+
+    </div>
+
+    <br/>
+    <div class="inner_container">
+      <div class="col_1of2 BL_VAR BL_M1" style="display: block">
+        <input type="text" class="form-control" placeholder="Enter Density" id="BL_DENSITY"/>
+
+      </div>
+      <div class="col_1of2 BL_VAR BL_M1" style="display: block">
+        <input type="text" class="form-control" placeholder="Enter Speed" id="BL_SPEED"/>
+
+      </div>
+
+
+
+      <div class="col_1of4 BL_VAR BL_TIME_1" style="display: none">
+        <input type="text" class="form-control" placeholder="Enter In Time" id="BL_TIME_IN"/>
+
+      </div>
+      <div class="col_1of4 BL_VAR BL_TIME_1" style="display: none">
+        <input type="text" class="form-control" placeholder="Enter Duration Time" id="BL_TIME_DURATION"/>
+
+      </div>
+      <div class="col_1of4 BL_VAR BL_TIME_2" style="display: none">
+        <input type="text" class="form-control" placeholder="Enter Out Time" id="BL_TIME_OUT"/>
+
+      </div>
+      <div class="col_1of4 BL_VAR BL_TIME_2" style="display: none">
+        <input type="text" class="form-control" placeholder="Enter Blank Time" id="BL_TIME_BLANK"/>
+
+      </div>
+
+
+    </div>
+    <br/>
+    <div class="inner_container">
+      <div class="col_1of2 BL_VAR BL_DISPLAY" style="display: block">
+        <select class="form-control" id="BL_DISPLAY" >
+          <option value="0">Full</option>
+          <option value="1">Top</option>
+          <option value="2">Bottom</option>
+          <option value="3">Left</option>
+          <option value="4">Right</option>
+
+
+        </select>
+
+      </div>
+
+
+    </div>
+    <br/>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaActionBacklight()">Adjust Backlight LED</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- /Data/sync Method -->
+  <div class="grid_12 window-SSP window-control" style="display: none">
+    <div class="heading">
+      <h3>Get Sensor Value</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaDataSync(null,null)">Sync All</a>
+      </div>
+    </div>
+    <br/>
+    <div class="heading">
+      <h3>Get Sensor Value w/ Channel ID</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Device ID" id="sspaDataSyncSEPID"/>
+      </div>
+      <div class="col_1of3">
+        <input  type="text" class="form-control" placeholder="Enter Channel ID" id="sspaDataSyncCH"/>
+      </div>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaDataSync($('#sspaDataSyncSEPID').val(),$('#sspaDataSyncCH').val())">Sync w/ Channel</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- /Data/recent Method -->
+  <div class="grid_12 window-SSP window-control" style="display: none">
+    <div class="heading">
+      <h3>Refresh & Get Reading</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaDataRecent(null,null)">Sync All</a>
+      </div>
+    </div>
+    <br/>
+    <div class="heading">
+      <h3>Refresh & Get Reading w/ Channel ID</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Device ID" id="sspaDataRecentSEPID"/>
+      </div>
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Channel ID" id="sspaDataRecentCH"/>
+      </div>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaDataRecent($('#sspaDataRecentSEPID').val(),$('#sspaDataRecentCH').val())">Sync w/ Channel</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- /Config/SS Method -->
+  <div class="grid_12 window-SSP window-control" style="display: none">
+    <div class="heading">
+      <h3>Get SS Config</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaConfigssGet()">Get Config</a>
+      </div>
+    </div>
+    <br/>
+    <div class="heading" style="margin-top:30px">
+      <h3>Post SS Config</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of4">
+
+        <select class="form-control" id="sspaConfigssHPST">
+          <option value="1">HPST ON</option>
+          <option value="0">HPST OFF</option>
+
+        </select>
+
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Refresh Rate (ms)" id="sspaConfigssREFR" value="{{sysConfig.SS_CONFIG_REFR}}"/>
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Wi-Fi SSID" id="sspaConfigssWiFiSSID" value="{{sysConfig.ROUTER_SSID}}"/>
+      </div>
+      <div class="col_1of4">
+        <input type="password" class="form-control" placeholder="Enter Wi-Fi Password" id="sspaConfigssWiFiPassword" value="{{sysConfig.ROUTER_PASSWORD}}"/>
+      </div>
+
+
+    </div>
+    <div class="inner_container" style="margin-top:15px">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaConfigssPost()">Post Config</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- /Config/Strategy Method -->
+  <div class="grid_12 window-SSP window-control" style="display: none">
+    <div class="heading">
+      <h3>GET Strategy</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaConfigStrategyGet()">Get Strategy</a>
+      </div>
+    </div>
+    <br/>
+    <div class="heading">
+      <h3>GET Strategy w/ STID</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Strategy ID" id="sspaConfigStrategySTID"/>
+      </div>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaConfigStrategyGet($('#sspaConfigStrategySTID').val())">Get Strategy w/ ID</a>
+      </div>
+    </div>
+    <br/>
+
+
+  </div>
+
+  <!-- /Device/Status Method -->
+  <div class="grid_12 window-SSP window-control" style="display: none">
+    <div class="heading">
+      <h3>Get Device Status</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaDeviceStatus(null,null)">Get All</a>
+      </div>
+    </div>
+    <br/>
+    <div class="heading">
+      <h3>Get Device Status w/ Channel ID</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Device ID" id="sspaDeviceStatusSEPID"/>
+      </div>
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Channel ID" id="sspaDeviceStatusCH"/>
+      </div>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaDeviceStatus($('#sspaDeviceStatusSEPID').val(),$('#sspaDeviceStatusCH').val())">Get w/ Channel</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- /Device/List Method -->
+  <div class="grid_12 window-SSP window-control" style="display: none">
+    <div class="heading">
+      <h3>Get Device List</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaDeviceListGet()">Get List</a>
+      </div>
+    </div>
+    <br/>
+    <div class="heading">
+      <h3>Post Device List</h3>
+    </div>
+    <div class="inner_container">
+
+
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaDeviceListPost()">Post List</a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- /qe Method -->
+  <div class="grid_12 window-SSP window-control" style="display: none">
+    <div class="heading">
+      <h3>Quick Event</h3>
+    </div>
+
+
+
+    <div class="inner_container" style="margin-top:30px">
+      <div class="col_1of4">
+
+        <select class="form-control" id="QEAction" onchange="handleQESelect()">
+          <option value="DM">SL Dimmer Value</option>
+          <option value="WP">SP ON/OFF</option>
+          <option value="HQ">HVAC Mode</option>
+          <option value="UR">Universial Remote Code</option>
+          <!--<option value="CP">Control Pad</option>-->
+          <!--<option value="hv">HVAC Line</option>-->
+
+        </select>
+
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Device ID" id="QEDevice"/>
+      </div>
+      <div class="col_1of2 QE_CH_VAR QE_CH_DM" id="QE_CH_DM" style="display: block">
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="DM_Channel_1" value="1"> Dimmer 1
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="DM_Channel_2" value="2"> Dimmer 2
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel"  id="DM_Channel_3" value="3"> Dimmer 3
+        </label>
+
+      </div>
+
+
+      <div class="col_1of2 QE_CH_VAR QE_CH_WP" id="QE_CH_WP">
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="WP_Channel" id="WP_Channel_1" value="1"> Plug 1
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="WP_Channel" id="WP_Channel_2" value="2"> Plug 2
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="WP_Channel" id="WP_Channel_3" value="3"> USB 1
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="WP_Channel" id="WP_Channel_4" value="4"> USB 2
+        </label>
+
+      </div>
+
+      <div class="col_1of2  QE_CH_VAR QE_VAL_HQ"  id="QE_VAL_HQ">
+
+        <select class="form-control" id="QEValue_HQ" >
+          <option value="1">Cool</option>
+          <option value="2">Fan</option>
+          <option value="3">Heat</option>
+          <option value="4">Emergency Heat</option>
+
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <br/>
+    <div class="inner_container">
+      <div class="col_1of1 QE_VAL_VAR ui-content QE_VAL_DM"  data-role="main" id="QE_VAL_DM" style="display: block">
+        <form method="post">
+
+          <div class="col_1of1">
+            <label for="QEValue_DM">Value: <p id="QEDMDisplayValue" style="font-weight: bold;color: red">99</p></label>
+
+            <input type="range" name="points" id="QEValue_DM" value="99" min="0" max="99" style="width:100%" onclick="$('#QEDMDisplayValue').text($(this).val())"/>
+          </div>
+
+
+
+        </form>
+
+      </div>
+
+      <div class="col_1of1 QE_VAL_VAR QE_VAL_WP" id="QE_VAL_WP">
+        <select class="form-control" id="QEValue_WP" >
+          <option value="1">ON</option>
+          <option value="0">OFF</option>
+
+
+
+        </select>
+
+      </div>
+
+      <div class="col_1of4 QE_VAL_VAR QE_VAL_UR">
+        <select class="form-control" id="QE_VAL_UR_TYPE">
+          {{#IRType}}
+          <option value="{{code}}">{{manufacture}}</option>
+
+          {{/IRType}}
+
+        </select>
+      </div>
+
+      <div class="col_1of4 QE_VAL_VAR QE_VAL_UR">
+        <input type="text" class="form-control" placeholder="Enter Code" id="QE_VAL_UR_CODE"/>
+      </div>
+
+      <div class="col_1of4 QE_VAL_VAR QE_VAL_UR">
+        <input type="text" class="form-control" placeholder="Address (Panasonic Only)" id="QE_VAL_UR_ADDRESS"/>
+      </div>
+
+      <div class="col_1of4 QE_VAL_VAR QE_VAL_UR">
+        <input type="text" class="form-control" placeholder="Other CODE (OPTIONAL)" id="QE_VAL_UR_CODE_OTHER"/>
+      </div>
+
+
+    </div>
+    <br/>
+    <div class="inner_container">
+
+
+
+
+
+      <div class="col_1of1 QE_VAL_VAR QE_VAL_UR" id="QE_VAL_UR">
+        <input type="text" class="form-control" placeholder="Enter IR RAW Code" id="QEValue_UR"/>
+      </div>
+
+
+
+
+    </div>
+    <br/>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaQE()">Execute Quick Event</a>
+      </div>
+
+    </div>
+
+
+  </div>
+
+  <!-- /alarm Method -->
+  <div class="grid_12 window-SSP window-control" style="display: none">
+    <div class="heading">
+      <h3>Alert</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "sspaAlarm()">Activate Alert</a>
+      </div>
+    </div>
+
+
+  </div>
+
+
+
+  <!-- SICP & SIDP Checksum -->
+  <div class="grid_12 window-SIDP window-control" style="display: none">
+    <div class="heading">
+      <h3>Checksum Calculation</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of1">
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>Hex</th>
+            <th>Checksum</th>
+            <th>Action</th>
+          </tr>
+          </thead>
+          <tbody>
+
+          <form method="get" action="/test/checksumCaluc" id="checksumCaluc">
+
+          <tr>
+
+            <td>
+              <div class="col_1of1">
+                <input type="text" class="form-control" placeholder="Input Hex" name="checksumHex" id="checksumHex"/>
+              </div>
+
+            </td>
+            <td>
+              <span id="checksumResult">00</span>
+            </td>
+            <td>
+              <div class="col_1of1">
+                <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "calculateChecksum($('#checksumHex').val())">Checksum</a>
+              </div>
+            </td>
+          </tr>
+          </form>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Set Mesh ID -->
+  <div class="grid_12 window-SIDP window-control" style="display: none">
+    <div class="heading">
+      <h3>Set Default Mesh ID</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of1">
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>Mesh ID</th>
+            <th>Action</th>
+          </tr>
+          </thead>
+          <tbody>
+
+          <form method="get" action="/test/updateDefaultMeshID" id="updateDefaultMeshID" class="targetURI_form">
+
+            <tr>
+
+              <td>
+                <div class="col_1of1">
+                  <input type="text" class="form-control" placeholder="Input Mesh ID" name="defaultMeshID" value="{{defaultMeshID}}"/>
+                </div>
+
+              </td>
+              <input type="hidden" name="orgURI" value="" class="orgURI"/>
+              <td>
+                <div class="col_1of1">
+                  <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "$('#updateDefaultMeshID').submit()">Set Mesh ID</a>
+                </div>
+              </td>
+            </tr>
+          </form>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- /SIDP Receipt Method -->
+  <div class="grid_12 window-SIDP window-control" style="display: none">
+    <div class="heading">
+      <h3>Receipt</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of4">
+        <a href="javascript:;" class="btn btn-quaternary btn-large btn-block btn-caps" onClick = "SIDPReceipt(1)">执行成功</a>
+      </div>
+      <div class="col_1of4">
+        <a href="javascript:;" class="btn btn-quaternary btn-large btn-block btn-caps" onClick = "SIDPReceipt(2)">接收成功</a>
+      </div>
+      <div class="col_1of4">
+        <a href="javascript:;" class="btn btn-tertiary btn-large btn-block btn-caps" onClick = "SIDPReceipt(3)">执行失败</a>
+      </div>
+      <div class="col_1of4">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "SIDPReceipt(4)">踢出网络</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- /SIDP CMD Method -->
+  <div class="grid_12 window-SIDP window-control" style="display: none">
+    <div class="heading">
+      <h3>Request Sensor Value</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of2">
+        <input type="text" class="form-control" placeholder="Enter Sensor ID" id="SIDPCMDSesorIDs" value="30,32"/>
+      </div>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "SIDPCMD(1,$('#SIDPCMDSesorIDs').val())">Request Sensor</a>
+      </div>
+    </div>
+    <br/>
+    <div class="heading">
+      <h3>Refresh Sensor</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "SIDPCMD(2)">Refresh Sensor</a>
+      </div>
+    </div>
+    <br/>
+    <div class="heading">
+      <h3>Request Module Status</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of2">
+        <input type="text" class="form-control" placeholder="Enter Module ID" id="SIDPCMDModuleID"/>
+      </div>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "SIDPCMD(3,$('#SIDPCMDModuleID').val())">Request Status</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- /SIDP Action Method -->
+  <div class="grid_12 window-SIDP window-control" style="display: none">
+    <div class="heading">
+      <h3>Execute Action</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of4">
+        <select class="form-control" id="SIDPActionsTypeSelect">
+          <option value="DM1">Dimmer (Linear)</option>
+          <option value="DM2">Dimmer (Erase In)</option>
+          <option value="DM3">Dimmer (Erase Out)</option>
+          <option value="DM4">Dimmer (Swing)</option>
+          <option value="CP">Control Pad</option>
+          <option value="WP">Seraph Plug</option>
+          <option value="DMM">Multiple Dimmer</option>
+          <!--<option value="hv">HVAC Line</option>-->
+
+        </select>
+
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Module ID" id="SIDPActionModuleID"/>
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Channel" id="SIDPActionChannel"/>
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Time" id="SIDPActionTime"/>
+      </div>
+      <div class="clearfix"></div>
+      <br/>
+      <div class="col_1of1">
+        <label for="SIDPActionValue">Value: <p id="SIDPActionDisplayValue" style="font-weight: bold;color: red">99</p></label>
+
+        <input type="range" name="points" id="SIDPActionValue" value="99" min="0" max="99" style="width:100%" onclick="$('#SIDPActionDisplayValue').text($(this).val())"/>
+      </div>
+      <div class="clearfix"></div>
+      <br/>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "SIDPAction($('#SIDPActionsTypeSelect').val(),$('#SIDPActionModuleID').val(),$('#SIDPActionChannel').val(),$('#SIDPActionValue').val(),$('#SIDPActionTime').val())">Execute</a>
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- /SIDP Alarm Method -->
+  <div class="grid_12 window-SIDP window-control" style="display: none">
+    <div class="heading">
+      <h3>Alarm</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of4">
+        <a href="javascript:;" class="btn btn-quaternary btn-large btn-block btn-caps" onClick = "SIDPAlarm(1)">Alarm 1</a>
+      </div>
+      <div class="col_1of4">
+        <a href="javascript:;" class="btn btn-quaternary btn-large btn-block btn-caps" onClick = "SIDPAlarm(2)">Alarm 2</a>
+      </div>
+      <div class="col_1of4">
+        <a href="javascript:;" class="btn btn-quaternary btn-large btn-block btn-caps" onClick = "SIDPAlarm(3)">Alarm 3</a>
+      </div>
+      <div class="col_1of4">
+        <a href="javascript:;" class="btn btn-quaternary btn-large btn-block btn-caps" onClick = "SIDPAlarm(4)">Alarm 4</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- /SIDP BLE Method -->
+  <div class="grid_12 window-SIDP window-control" style="display: none">
+    <div class="heading">
+      <h3>BLE Module Command</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of2">
+        <a href="javascript:;" class="btn btn-quaternary btn-large btn-block btn-caps" onClick = "SIDPBLE(1)">Broadcast Gateway Mesh ID</a>
+      </div>
+      <div class="col_1of2">
+        <a href="javascript:;" class="btn btn-quaternary btn-large btn-block btn-caps" onClick = "SIDPBLE(2)">Kick Out from Mesh</a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- /SIDP Config Method -->
+  <div class="grid_12 window-SIDP window-control" style="display: none">
+    <div class="heading">
+      <h3>Pad Config Command</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <select class="form-control" id="SIDPConfigPadSelect">
+          <option value="1">Pad 1</option>
+          <option value="2">Pad 2</option>
+          <option value="3">Pad 3</option>
+
+        </select>
+      </div>
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Mesh ID" id="SIDPConfigPadMeshID"/>
+      </div>
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Module ID" id="SIDPConfigPadModuleID"/>
+      </div>
+
+      <br/>
+      <div class="clearfix"></div>
+      <br/>
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Channel" id="SIDPConfigPadChannel"/>
+      </div>
+      <div class="col_1of3">
+        <select class="form-control" id="SIDPConfigPadAction">
+          <option value="DM1">Dimmer (Linear)</option>
+          <option value="DM2">Dimmer (Erase In)</option>
+          <option value="DM3">Dimmer (Erase Out)</option>
+          <option value="DM4">Dimmer (Swing)</option>
+          <option value="CP">Control Pad</option>
+          <option value="WP">Seraph Plug</option>
+        </select>
+      </div>
+
+
+      <br/>
+      <div class="clearfix"></div>
+      <br/>
+
+      <div class="col_1of4">
+        <a href="javascript:;" class="btn btn-quaternary btn-large btn-block btn-caps" onClick = "SIDPConfig(1,$('#SIDPConfigPadSelect').val(),$('#SIDPConfigPadMeshID').val(),$('#SIDPConfigPadModuleID').val(),$('#SIDPConfigPadChannel').val(),$('#SIDPConfigPadAction').val())">Send Config</a>
+      </div>
+
+    </div>
+    <br/>
+    <div class="heading">
+      <h3>Gesture Config Command</h3>
+    </div>
+    <div class="inner_container">
+      <div class="col_1of3">
+        <select class="form-control" id="SIDPConfigGestureSelect">
+          <option value="343">左右左</option>
+          <option value="121">上下上</option>
+          <option value="1212">上下上下</option>
+          <option value="3434">左右左右</option>
+
+        </select>
+      </div>
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Mesh ID" id="SIDPConfigGestureMeshID"/>
+      </div>
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Module ID" id="SIDPConfigGestureModuleID"/>
+      </div>
+
+      <br/>
+      <div class="clearfix"></div>
+      <br/>
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Channel" id="SIDPConfigGestureChannel"/>
+      </div>
+      <div class="col_1of3">
+
+        <select class="form-control" id="SIDPConfigGestureAction">
+          <option value="DM1">Dimmer (Linear)</option>
+          <option value="DM2">Dimmer (Erase In)</option>
+          <option value="DM3">Dimmer (Erase Out)</option>
+          <option value="DM4">Dimmer (Swing)</option>
+          <option value="CP">Control Pad</option>
+          <option value="WP">Seraph Plug</option>
+
+        </select>
+      </div>
+      <div class="col_1of3">
+        <input type="text" class="form-control" placeholder="Enter Value" id="SIDPConfigGestureValue"/>
+      </div>
+
+      <br/>
+      <div class="clearfix"></div>
+      <br/>
+
+      <div class="col_1of4">
+        <a href="javascript:;" class="btn btn-quaternary btn-large btn-block btn-caps" onClick = "SIDPConfig(2,$('#SIDPConfigGestureSelect').val(),$('#SIDPConfigGestureMeshID').val(),$('#SIDPConfigGestureModuleID').val(),$('#SIDPConfigGestureChannel').val(),$('#SIDPConfigGestureAction').val(),$('#SIDPConfigGestureValue').val())">Send Config</a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- /SIDP LED Method -->
+  <div class="grid_12 window-SIDP window-control" style="display: none">
+
+    <!-- /Circulation Mode -->
+    <div class="heading">
+      <h3>LED 循环模式</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of1">
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_1_Display_1" value="1" checked> 上
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_1_Display_2" value="1" checked> 下
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_1_Display_3" value="1" checked> 左
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_1_Display_4" value="1" checked> 右
+        </label>
+
+      </div>
+      <br/>
+      <div class="clearfix"></div>
+      <br/>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Speed" id="SIDPLED_1_Param_1"/>
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Density" id="SIDPLED_1_Param_2"/>
+      </div>
+      <br/>
+      <div class="clearfix"></div>
+      <br/>
+
+      <div class="col_1of1">
+        <input type="text" class="form-control" placeholder="Enter Colors" id="SIDPLED_1_Colors" value="FF0000,FF9900"/>
+      </div>
+      <div class="clearfix"></div>
+      <br/>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps"
+           onClick = "SIDPLED(1,
+               $('#SIDPLED_1_Colors').val(),
+               $('#SIDPLED_1_Display_1').val(),
+               $('#SIDPLED_1_Display_2').val(),
+               $('#SIDPLED_1_Display_3').val(),
+               $('#SIDPLED_1_Display_4').val(),
+               $('#SIDPLED_1_Param_1').val(),
+               $('#SIDPLED_1_Param_2').val(),
+               )"
+        >Execute</a>
+      </div>
+    </div>
+
+    <br/><div class="clearfix"></div><br/>
+
+    <!-- /Breath Light Mode -->
+    <div class="heading">
+      <h3>LED 呼吸灯模式</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of1">
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_2_Display_1" value="1" checked> 上
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_2_Display_2" value="1" checked> 下
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_2_Display_3" value="1" checked> 左
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_2_Display_4" value="1" checked> 右
+        </label>
+
+      </div>
+      <br/>
+      <div class="clearfix"></div>
+      <br/>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter In Time" id="SIDPLED_2_Param_1"/>
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Out Time" id="SIDPLED_2_Param_2"/>
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Duration" id="SIDPLED_2_Param_3"/>
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Blank" id="SIDPLED_2_Param_4"/>
+      </div>
+      <br/>
+      <div class="clearfix"></div>
+      <br/>
+
+      <div class="col_1of1">
+        <input type="text" class="form-control" placeholder="Enter Colors" id="SIDPLED_2_Colors" value="FF0000,FF9900"/>
+      </div>
+      <div class="clearfix"></div>
+      <br/>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps"
+           onClick = "SIDPLED(2,
+               $('#SIDPLED_2_Colors').val(),
+               $('#SIDPLED_2_Display_1').val(),
+               $('#SIDPLED_2_Display_2').val(),
+               $('#SIDPLED_2_Display_3').val(),
+               $('#SIDPLED_2_Display_4').val(),
+               $('#SIDPLED_2_Param_1').val(),
+               $('#SIDPLED_2_Param_2').val(),
+               $('#SIDPLED_2_Param_3').val(),
+               $('#SIDPLED_2_Param_4').val(),
+               )"
+        >Execute</a>
+      </div>
+    </div>
+
+    <br/><div class="clearfix"></div><br/>
+
+    <!-- /Color Switch Mode -->
+    <div class="heading">
+      <h3>LED 颜色变换模式</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of1">
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_3_Display_1" value="1" checked> 上
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_3_Display_2" value="1" checked> 下
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_3_Display_3" value="1" checked> 左
+        </label>
+        <label class="checkbox-inline" style="margin-top:5px;margin-right:20px">
+          <input type="checkbox" class="DM_Channel" id="SIDPLED_3_Display_4" value="1" checked> 右
+        </label>
+
+      </div>
+      <br/>
+      <div class="clearfix"></div>
+      <br/>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter In Time" id="SIDPLED_3_Param_1"/>
+      </div>
+      <div class="col_1of4">
+        <input type="text" class="form-control" placeholder="Enter Duration" id="SIDPLED_3_Param_2"/>
+      </div>
+      <br/>
+      <div class="clearfix"></div>
+      <br/>
+
+      <div class="col_1of1">
+        <input type="text" class="form-control" placeholder="Enter Colors" id="SIDPLED_3_Colors" value="FF0000,FF9900"/>
+      </div>
+      <div class="clearfix"></div>
+      <br/>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps"
+           onClick = "SIDPLED(3,
+               $('#SIDPLED_3_Colors').val(),
+               $('#SIDPLED_3_Display_1').val(),
+               $('#SIDPLED_3_Display_2').val(),
+               $('#SIDPLED_3_Display_3').val(),
+               $('#SIDPLED_3_Display_4').val(),
+               $('#SIDPLED_3_Param_1').val(),
+               $('#SIDPLED_3_Param_2').val(),
+               )"
+        >Execute</a>
+      </div>
+    </div>
+
+    <br/><div class="clearfix"></div><br/>
+
+    <!-- /Other Mode -->
+    <div class="heading">
+      <h3>LED 其他模式</h3>
+    </div>
+    <div class="inner_container">
+
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "SIDPLED(4,'',1,1,1,1)" >Indicator Mode</a>
+      </div>
+      <div class="col_1of3">
+        <a href="javascript:;" class="btn btn-secondary btn-large btn-block btn-caps" onClick = "SIDPLED(5,'',1,1,1,1)" >OFF</a>
+      </div>
+    </div>
+
+
+  </div>
+
+
+  <!-- Modal -->
+  <div class="grid_12">
+
+    <!-- Button trigger modal -->
+    <!--
+    <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+      Launch demo modal
+    </button>
+    -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+
+            <h4 class="modal-title" id="myModalLabel">Message Received</h4>
+          </div>
+          <div class="modal-body" id="incommingMessage">
+            +3400, -1750     + 500, - 350     + 500, -1250     + 400, - 450
+            + 500, - 350     + 450, - 400     + 450, - 450     + 450, - 400
+            + 450, - 400     + 450, - 400     + 450, - 450     + 450, - 400
+            + 450, - 400     + 450, - 400     + 450, -1300     + 450, - 400
+            + 450, - 400     + 450, - 450     + 450, - 400     + 450, - 400
+            + 450, - 450     + 450, - 400     + 450, - 400     + 450, - 400
+            + 450, -1300     + 450, - 400     + 450, - 400     + 450, - 450
+            + 450, - 400     + 450, - 400     + 450, - 400     + 450, - 450
+            + 450, - 400     + 450, -1250     + 450, - 450     + 450, - 400
+            + 450, - 400     + 450, - 400     + 450, -1300     + 450, - 400
+            + 450, - 450     + 450, -1250     + 450, - 400     + 450, - 450
+            + 450, - 400     + 450, - 400     + 450, -1300     + 450, - 400
+            + 450, -1250     + 450
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+  <footer></footer>
+
+  <script src="/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script type="text/javascript">
+      var requestedHost = window.location.hostname + ":20002"
+      var orgHost = window.location.hostname + ":20001"
+      var selectedSS = [];
+      var selectedSSString = "";
+      var checkFlag = false;
+      var listedDevices = [];
+      var protocol = 'SICP';
+      setInterval(function(){
+          checkOnline()
+          if(!checkFlag){
+            checkIncomming()
+          }
+      },500)
+
+
+      function assignRedirect(){
+          $(".orgURI").val(orgHost);
+          $(".orgURI_link").each(function(){
+              var orglink = $(this).attr("href");
+              $(this).attr("href" , "http://" + requestedHost + orglink + "?orgURI=" + orgHost);
+          })
+          $(".targetURI_form").each(function(){
+              var targetAction = $(this).attr("action");
+              $(this).attr("action" , "http://" + requestedHost + targetAction);
+          })
+
+
+      }
+
+      function ssSelected(obj,ssuid){
+          if(obj.checked) {
+              if(selectedSS.indexOf(ssuid) < 0){
+                selectedSS.push(ssuid);
+              }
+          } else  {
+              var index = selectedSS.indexOf(ssuid);
+              selectedSS.splice(index, 1);
+          }
+
+          selectedSSString = selectedSS.join()
+          console.log(selectedSSString)
+      }
+
+      function sspaActionsRefresh(CH){
+          var method = "GET";
+          var url = "/actions/refresh";
+          var data = {};
+          data.ssuid = selectedSSString
+
+
+          if(CH) data.CH = CH;
+          console.log("http://" + requestedHost + url)
+          webRequest("http://" + requestedHost + url,method,data);
+      }
+
+      function sspaActionBacklight(){
+          var method = "GET";
+          var url = "/actions/backlight";
+          var query = "";
+          var type = $('#BLAction').val();
+          var data = {};
+          switch (type) {
+              case "M1":
+                  data.mode = 1;
+                  data.colors = $('#BLColors').val();
+                  data.density = $('#BL_DENSITY').val();
+                  data.speed = $('#BL_SPEED').val();
+                  data.display = $('#BL_DISPLAY').val();
+                  break;
+              case "M2":
+                  data.mode = 2;
+                  data.colors = $('#BLColors').val();
+                  data.timeIn = $('#BL_TIME_IN').val();
+                  data.timeDuration = $('#BL_TIME_DURATION').val();
+                  data.timeOut     = $('#BL_TIME_OUT').val();
+                  data.timeBlank   = $('#BL_TIME_BLANK').val();
+                  data.display = $('#BL_DISPLAY').val();
+                  break;
+              case "M3":
+                  data.mode = 3;
+                  data.colors = $('#BLColors').val();
+                  data.timeIn = $('#BL_TIME_IN').val();
+                  data.timeDuration = $('#BL_TIME_DURATION').val();
+                  data.display = $('#BL_DISPLAY').val();
+                  break;
+              case "M4":
+                  data.mode = 4;
+                  break;
+              case "M5":
+                  data.mode = 5;
+                  break;
+              default:
+                  break;
+          }
+          data.ssuid = selectedSSString
+
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+
+      }
+      function sspaDataSync(SEPID,CH){
+          var method = "GET";
+          var url = "/data/sync";
+          var query = "";
+          var data = {};
+          data.ssuid = selectedSSString;
+
+          if(SEPID){
+              data.SEPID = SEPID;
+              if(CH) data.CH = CH;
+          }
+
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+
+      function sspaDataRecent(SEPID,CH){
+          var method = "GET";
+          var url = "/data/recent";
+          var query = "";
+          var data = {};
+          data.ssuid = selectedSSString
+
+          if(SEPID){
+              data.SEPID = SEPID;
+              if(CH) data.CH = CH;
+          }
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+
+      }
+      function sspaDataIR(){
+          var method = "GET";
+          var url = "/data/ir";
+          var data = {};
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url,method,data);
+      }
+      function sspaConfigssGet(){
+          var method = "GET";
+          var url = "/config/ss";
+          var query = "";
+          var data = {};
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+      function sspaConfigssPost(){
+          var method = "POST";
+          var url = "/config/ss";
+          var query = "";
+          var data = {
+              "HTSP"    : $("#sspaConfigssHPST").val(),
+              "REFR"    : $("#sspaConfigssREFR").val(),
+              "ssid"    : $("#sspaConfigssWiFiSSID").val(),
+              "paswd"    : $("#sspaConfigssWiFiPassword").val(),
+          };
+          data.ssuid = selectedSSString
+          console.log(data);
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+
+      function sspaConfigStrategyGet(STID){
+          var method = "GET";
+          var url = "/config/strategy";
+          var query = "";
+          var data = {};
+          data.ssuid = selectedSSString
+
+          if(STID) data.STID = STID;
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+
+      function sspaConfigStrategyPost(){
+          var method = "POST";
+          var url = "/config/strategy";
+          var query = "";
+          var data = {};
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+
+
+      function sspaDeviceStatus(SEPID,CH){
+          var method = "GET";
+          var url = "/device/status";
+          var query = "";
+          var data = {};
+          data.ssuid = selectedSSString
+
+          if(SEPID){
+              data.SEPID = SEPID;
+              if(CH) data.CH = CH;
+          }
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+
+
+      function sspaDeviceListGet(){
+          var method = "GET";
+          var url = "/device/list";
+          var query = "";
+          var data = {};
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+
+      function sspaDeviceListPost(){
+          var method = "POST";
+          var url = "/device/list";
+          var query = "";
+          var data = {};
+
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+
+      function sspaQE(){
+          var method = "GET";
+          var url = "/qe";
+          var query = "";
+          var deviceID = $('#QEDevice').val();
+          var action = $('#QEAction').val();
+          console.log(deviceID);
+          if(deviceID){
+              query +=  "/SEPID/" + deviceID;
+          }
+          switch (action){
+              case "DM":
+                  var CH = handleChannel($('#QE_CH_DM :checked'));
+                  var topos = $('#QEValue_DM').val();
+                  query += "/action/DM/CH/" + CH + '/TOPOS/' + topos;
+                  break;
+              case "WP":
+                  var CH = handleChannel($('#QE_CH_WP :checked'));
+                  var topos = $('#QEValue_WP').val();
+                  query += "/action/WP/CH/" + CH + '/TOPOS/' + topos;
+                  break;
+              case "HQ":
+                  var topos = $('#QEValue_HQ').val();
+                  query += "/action/HQ/TOPOS/" + topos;
+                  break;
+              case "UR":
+                  var type = $('#QE_VAL_UR_TYPE').val()
+                  var code = $('#QE_VAL_UR_CODE').val()
+                  var address = $('#QE_VAL_UR_ADDRESS').val()
+                  var code_other = $('#QE_VAL_UR_CODE_OTHER').val()
+                  var topos = $('#QEValue_UR').val();
+                  if(type && code){
+                      query += "/action/UR/type/" + type + "/code/" + code
+                      if(address) query += "/address/" + address
+                      if(code_other) query += "/other/" + code_other
+                  } else  {
+                      query += "/action/UR/raw/" + topos;
+                  }
+
+                  break;
+              default:
+                  break;
+          }
+          var data = {};
+          data.ssuid = selectedSSString
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+      function sspaAlarm(){
+          var method = "GET";
+          var url = "/alarm";
+          var query = "";
+          var data = {};
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+
+
+      function SIDPAlarm(type){
+          var method = "POST";
+          var url = "/sidp/alarm";
+          var query = "";
+          var data = {};
+          data.type = type;
+          data.protocolType = protocol;
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+      function SIDPBLE(type){
+          var method = "POST";
+          var url = "/sidp/ble";
+          var query = "";
+          var data = {};
+          data.type = type;
+          data.protocolType = protocol;
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+      function SIDPReceipt(type){
+          var method = "POST";
+          var url = "/sidp/receipt";
+          var query = "";
+          var data = {};
+          data.type = type;
+          data.protocolType = protocol;
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+
+      function SIDPCMD(type,value){
+          var method = "POST";
+          var url = "/sidp/cmd";
+          var query = "";
+          var data = {};
+          switch(type){
+              case 1: data.sensors = value;break;
+              case 3: data.moduleID = value;break;
+          }
+          data.type = type;
+          data.protocolType = protocol;
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+      function SIDPAction(type,moduleID,channel,value,time){
+          var method = "POST";
+          var url = "/sidp/action";
+          var query = "";
+          var data = {};
+          data.moduleID = moduleID;
+          data.channel = channel;
+          data.targetValue = value;
+          data.time = time;
+          data.type = type;
+          data.protocolType = protocol;
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+      function SIDPLED(type,colors,display_1,display_2,display_3,display_4,param_1,param_2,param_3,param_4){
+          var method = "POST";
+          var url = "/sidp/led";
+          var query = "";
+          var data = {};
+          data.colors = colors;
+          var display = [display_1,display_2,display_3,display_4];
+          for (key in display){
+              if(display[key] != "1"){
+                  display[key] = 0;
+              }
+          }
+          data.display = display.join("");
+          data.param_1 = param_1;
+          data.param_2 = param_2;
+          data.param_3 = param_3;
+          data.param_4 = param_4;
+          data.type = type;
+          data.protocolType = protocol;
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+      }
+
+      function SIDPConfig(type,trigger,meshID,moduleID,channel,action,targetValue){
+          var method = "POST";
+          var url = "/sidp/config";
+          var query = "";
+          var data = {};
+
+          data.targetValue = targetValue;
+          data.action = action;
+          data.channel = channel;
+          data.trigger = trigger
+          data.meshID = meshID;
+          data.moduleID = moduleID;
+          data.type = type;
+          data.protocolType = protocol;
+          data.ssuid = selectedSSString
+
+          webRequest("http://" + requestedHost + url + query,method,data);
+
+      }
+
+      function handleChannel(selector){
+          var CH = 0;
+          selector.each(function() {
+              CH = CH + Math.pow(2,parseInt($(this).val()) - 1);
+
+          })
+          console.log(CH);
+          return CH;
+      }
+
+
+      function webRequest(url,type,requestedData){
+          $.ajax({
+              url: url,
+              headers: {
+                  'x-seraph-version':'1.0',
+                  'x-seraph-messageID':generateMessageID(),
+                  'x-seraph-accessToken':'application/json'
+              },
+              crossDomain: true,
+              type: type,
+              dataType: 'json',
+              //contentType: 'application/json',
+              data: requestedData,
+              success: function (data) {
+                  //alert(JSON.stringify(data));
+                  var currentText = $("#eventConsole").val();
+                  $("#eventConsole").val(currentText + data.message)
+              },
+              error: function(){
+                  //alert("Cannot get data");
+              }
+          });
+      }
+      function generateMessageID(){
+          var udid = new Date().getTime().toString(16);
+          return udid;
+      }
+
+      function handleQESelect(){
+          var action = $('#QEAction').val();
+
+          $('.QE_CH_VAR').hide();
+          $('.QE_VAL_VAR').hide();
+          $('.QE_CH_' + action).show();
+          $('.QE_VAL_' + action).show();
+      }
+      function handleBLSelect(){
+          var action = $('#BLAction').val();
+          $('.BL_VAR').hide();
+          switch (action){
+              case "M1" :
+                  $(".BL_COLOR").show();
+                  $(".BL_M1").show();
+                  $(".BL_DISPLAY").show();
+                  break
+              case "M2":
+                  $(".BL_COLOR").show();
+                  $(".BL_TIME_1").show();
+                  $(".BL_TIME_2").show();
+                  $(".BL_DISPLAY").show();
+                  break
+              case "M3":
+                  $(".BL_COLOR").show();
+                  $(".BL_TIME_1").show();
+                  $(".BL_DISPLAY").show();
+                  break
+              default:
+                  break;
+
+          }
+
+      }
+      function startSmartConnect(){
+          webRequest(requestedHost + "/test/startSmartConnect","GET");
+      }
+
+      function checkIncomming(){
+          checkFlag = true;
+          var DOMMessage = "";
+          $.ajax({
+              url: "http://" + requestedHost + "/checkmessage",
+              crossDomain: true,
+              type: 'GET',
+              dataType: 'json',
+              //contentType: 'application/json',
+              success: function (data) {
+                  if(JSON.stringify(data) != '[]'){
+
+                      data.forEach(function (value) {
+                          console.log("Message Received")
+                          var mes = "";
+                          for (var key in value) {
+                              mes += key + " : " + value[key] + "<br/>"
+                          }
+                          console.log(mes);
+                          DOMMessage += mes + "<br/><br/>";
+                          $("#incommingMessage").html(DOMMessage);
+
+                          $("#myModal").modal('show')
+                      });
+
+
+
+                  } else  {
+                      checkFlag = false
+                  }
+
+
+
+              },
+              error: function(){
+                  //alert("Cannot get data");
+                  checkFlag = false
+              }
+          });
+          //
+      }
+      function calculateChecksum(hex){
+          $.ajax({
+              url: "http://" + requestedHost + "/test/checksumCaluc",
+              crossDomain: true,
+              type: 'GET',
+              dataType: 'json',
+              data: {checksumHex:hex},
+              //contentType: 'application/json',
+              success: function (data) {
+                  console.log(data.checksum);
+                  $('#checksumResult').text(data.checksum);
+              }
+          });
+      }
+
+      function checkOnline(){
+          $.ajax({
+              url: "http://" + requestedHost + "/checkonline",
+              crossDomain: true,
+              type: 'GET',
+              dataType: 'json',
+              //contentType: 'application/json',
+              success: function (data) {
+                  var tempDevices = [];
+                  if(JSON.stringify(data) != '[]'){
+
+                      data.forEach(function (value) {
+                          if(value.isServer == 1){
+                              tempDevices.push(value.deviceID);
+                              if(listedDevices.indexOf(value.deviceID)<0) {
+                                  listedDevices.push(value.deviceID);
+
+
+                                  $("#devicelists").prepend("\
+                                  <tr class='formTemp_" + value.deviceID + "'>\
+                                      <th scope='row'>\
+                                        <label class='checkbox-inline'><input type='checkbox' class='SSDevice selectDevice_" + value.deviceID + "' onchange='ssSelected(this,\"" + value.deviceID + "\")' value='1'></label>\
+                                      </th>\
+                                      <td><span class='" + value.deviceID + "_status offline'></span></td>\
+                                      <td><span class='formTempDeviceID'>" + value.deviceID + "</span></td>\
+                                      <td><span >Client</span></td>\
+                                      <td><span class='formTempModel'>Model " + value.model + "</span></td>\
+                                      <td><span class='formTempIP'>" + value.IPAddress + "</span></td>\
+                                      <td>\
+                                        <div class='col_1of1'><a href='http://" + requestedHost + "/test/deleteFromDeviceList?id=" + value.id + "&orgURI=" + orgHost + "' class='btn btn-tertiary btn-large btn-block btn-caps formTempButton'><span>Kick Out</span></a></div>\
+                                      </td>\
+                                  </tr>")
+                              }
+                          }
+                          if(parseInt(value.cStatus) == 1){
+                              $("." + value.deviceID + "_status").removeClass("offline");
+                              $("." + value.deviceID + "_status").addClass("online");
+                              $("." + value.deviceID + "_status").html("Online");
+                              $(".selectDevice_" + value.deviceID).removeAttr("disabled");
+                          } else  {
+                              $("." + value.deviceID + "_status").removeClass("online");
+                              $("." + value.deviceID + "_status").addClass("offline");
+                              $("." + value.deviceID + "_status").html("Offline");
+                              $(".selectDevice_" + value.deviceID).attr('checked', false);
+                              $(".selectDevice_" + value.deviceID).attr("disabled", true);
+                          }
+                      })
+                      var diff = listedDevices.filter(function(x) { return tempDevices.indexOf(x) < 0 })
+
+                      diff.forEach(function(value){
+                          $(".formTemp_" + value).remove();
+                          listedDevices.splice(listedDevices.indexOf(value),1);
+                      })
+
+                  } else  {
+
+                  }
+
+
+
+              },
+              error: function(){
+                  //alert("Cannot get data");
+
+              }
+          });
+          //
+      }
+      $('#myModal').on('hidden.bs.modal', function (e) {
+          checkFlag = false
+      })
+      function changeTab(selector,className,changeProtocol){
+
+          $('.title-control').removeClass('active');
+          selector.addClass('active');
+          selector.show();
+          $('.window-control').hide()
+          $("." + className).show();
+
+          if(changeProtocol){
+              protocol = changeProtocol;
+          }
+
+      }
+      $(document).ready(function(){
+          assignRedirect();
+      })
+
+
+  </script>
+
+</body>
+
+</html>

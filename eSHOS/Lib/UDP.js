@@ -1,0 +1,189 @@
+/**
+ * Created by fangchenli on 1/28/17.
+ */
+var dgram = require("dgram");
+var AES =  require ("./AES.js");
+var public = require("./public.js");
+
+
+//////////////////////////////////////
+        //CREATE UDP CLIENT//
+//////////////////////////////////////
+
+
+
+
+
+module.exports = {
+
+    smartConnect: function(ssid,password,port){
+
+        public.eventLog("Initiating Seraph Smart Config....","Smart Connect");
+        var message = this.constructSSCMessage(ssid,password);
+        var broadcastMsg = this.constructSSCPacket(message);
+
+
+        public.eventLog("Start broadcasting Seraph Smart Config....","Smart Connect");
+        this.sendSmartConnectPacket(broadcastMsg,0,message,port);
+
+
+    },
+    smartConnectSecure: function (ssid,password,mac,port){
+
+        public.eventLog("Initiating Seraph Smart Secured Config....","Secured Smart Connect");
+        var IDKey = AES.genIDKey(mac);
+        var msgKey = AES.genMsgKey(mac);
+
+
+        public.eventLog("Generating Secured SSID","Secured Smart Connect");
+        var encryptedSSID = AES.encrypt(ssid,msgKey);
+
+
+        public.eventLog("Generating Secured Password","Secured Smart Connect");
+        var encryptedPassword = AES.encrypt(password,msgKey);
+
+
+        var message = this.constructSSCMessage(encryptedSSID,encryptedPassword,IDKey);
+        var broadcastMsg = this.constructSSCPacket(message);
+
+
+        public.eventLog("Start broadcasting Secured Seraph Smart Config....","Secured Smart Connect");
+        this.sendSmartConnectPacket(broadcastMsg,0,message,port);
+    },
+    dataToArray: function(data){
+        dataArray = []
+        if(typeof data === 'string'){
+            tempArray = data.split("");
+            tempArray.forEach(function(value){
+                dataArray.push(value.charCodeAt(0));
+            })
+
+        }   else if(typeof data === 'number')    {
+
+            dataArray.push(data);
+        }   else    {
+            data.forEach(function(value){
+
+                dataArray.push(parseInt(value));
+            })
+        }
+        return dataArray;
+    },
+    arrayPadding: function(length,arr){
+        if(!arr) arr = [];
+        for(var i = arr.length; i < length; i++){
+            arr.push(0)
+        }
+        return arr;
+    },
+    constructSSCMessage: function(ssid,password,idkey){
+        var messageArray;
+        if(idkey == "undefined" || idkey == null || !idkey){
+            messageArray = this.arrayPadding(3).concat(
+                this.dataToArray(120),
+                this.arrayPadding(32,this.dataToArray(ssid)),
+                this.arrayPadding(64,this.dataToArray(password)),
+                this.arrayPadding(20,[])
+            );
+        }   else    {
+            messageArray = this.arrayPadding(3).concat(
+                this.dataToArray(120),
+                this.arrayPadding(32,this.dataToArray(ssid)),
+                this.arrayPadding(16,this.dataToArray(idkey)),
+                this.arrayPadding(48,this.dataToArray(password)),
+                this.arrayPadding(20,[])
+            );
+        }
+        return messageArray;
+
+
+    },
+    constructSSCPacket: function(SSCMessage){
+        var i=0,
+            packetData = [];
+        SSCMessage.forEach(function(value){
+            packetData.push("239." + i + "." + value + ".254")
+            i++;
+        })
+
+        return packetData;
+    },
+
+    sendSmartConnectPacket:function(data,index,message,port){
+
+        var _this = this;
+        var socket = dgram.createSocket("udp4");
+        socket.bind(port,function () {
+            socket.setBroadcast(true);
+        });
+        this.sendSmartConnectUDPBroadcastMessage(socket,message,data[index],port,function(){
+            index++;
+            if(index<data.length){
+                _this.sendSmartConnectPacket(data,index,message,port);
+            }   else    {
+                public.eventLog("Broadcasting Seraph Smart Config Done!","Smart Connect");
+
+            }
+
+        })
+
+    },
+    sendSmartConnectUDPBroadcastMessage: function(socket,message,ip,port,callback){
+
+        var msg = new Buffer(message);
+
+        socket.send(msg, 0, msg.length, port, ip, function(err, bytes) {
+            //public.eventLog("Broadcasting: " + ip,"Smart Connect");
+            socket.close();
+            setTimeout(function(){
+
+                callback();
+
+            },20)
+
+        });
+
+    },
+    sendUDPBroadcastMessage: function(socket,message,ip,port,callback) {
+
+        var msg = new Buffer(message);
+        //public.eventLog("Broadcasting: " + public.bufferString(message),"Smart Connect");
+        socket.send(msg, 0, msg.length, port, ip, function(err, bytes) {
+            public.eventLog("Broadcasting: " + ip,"Smart Connect");
+
+            setTimeout(function(){
+
+                callback();
+
+            },20)
+
+        });
+
+    },
+    broadCastingServerAddress: function(socket,ip,port){
+
+        var data = new Buffer([0xAA,0xAA,0x00,0x05,0x02]);
+        var broadcastIPArray = ip.split(".");
+        broadcastIPArray.forEach(function (value){
+            var buf = new Buffer(1);
+            buf.writeUInt8(parseInt(value), 0);
+            data = Buffer.concat([data, buf]);
+        });
+        broadcastIPArray.pop();
+        broadcastIPArray.push("255");
+        var broadcastIP = broadcastIPArray.join(".");
+
+
+        this.sendUDPBroadcastMessage(socket,data,broadcastIP,port,function(){
+            public.eventLog("Broadcasting Server IP: " + ip + " to Destination " + broadcastIP,"Smart Connect");
+        })
+
+
+    }
+
+}
+
+
+
+
+
