@@ -55,7 +55,7 @@ var AES = require("./AES.js");
 var constructSIDPMessage = require("./Construct/constructSIDPMessage.js");
 var constructSICPMessage = require("./Construct/constructSICPMessage.js");
 var ParseHardwareMessage = require("./Parse/parseHardwareMessage.js");
-
+var homeKit = require("../HomeKit/BridgedCore.js")
 
 
 //////////////////////////////////////
