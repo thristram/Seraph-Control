@@ -1997,6 +1997,11 @@ function sspbTestMessage(APIQuery){
 
 }
 
+module.exports.TCPClients = TCPClients
+module.exports.TCPSocketWrite = function (SSDevice,msg){
+    TCPSocketWrite(SSDevice,msg)
+}
+
 
 
 

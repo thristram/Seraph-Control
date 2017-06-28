@@ -5,7 +5,7 @@ var exports = module.exports = {};
 var execute = function(accessory,characteristic,value){ console.log("executed accessory: " + accessory + ", and characteristic: " + characteristic + ", with value: " +  value + "."); }
 
 exports.accessory = {
-  displayName: "Thermostat 1",
+  displayName: "Seraph HVAC Control",
   username: "CA:3E:BC:4D:5E:FF",
   pincode: "031-45-154",
   services: [{
@@ -15,7 +15,7 @@ exports.accessory = {
       onUpdate: null,
       perms: ["pr"],
       format: "string",
-      initialValue: "Thermostat 1",
+      initialValue: "Seraph HVAC Control",
       supportEvents: false,
       supportBonjour: false,
       manfDescription: "Bla",
@@ -25,7 +25,7 @@ exports.accessory = {
       onUpdate: null,
       perms: ["pr"],
       format: "string",
-      initialValue: "Oltica",
+      initialValue: "Seraph Technology, LLC",
       supportEvents: false,
       supportBonjour: false,
       manfDescription: "Bla",

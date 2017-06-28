@@ -11,11 +11,14 @@ var FAKE_FAN = {
   setPowerOn: function(on) {
     if(on){
       //put your code here to turn on the fan
+
       FAKE_FAN.powerOn = on;
+      console.log("turnning fan On");
     }
     else{
       //put your code here to turn off the fan
       FAKE_FAN.powerOn = on;
+      console.log("turnning fan Off");
     }
   },
   setSpeed: function(value) {
@@ -39,7 +42,7 @@ fan.pincode = "031-45-154";
 // set some basic properties (these values are arbitrary and setting them is optional)
 fan
   .getService(Service.AccessoryInformation)
-  .setCharacteristic(Characteristic.Manufacturer, "Sample Company")
+  .setCharacteristic(Characteristic.Manufacturer, "Seraph Technology, LLC")
 
 // listen for the "identify" event for this Accessory
 fan.on('identify', function(paired, callback) {

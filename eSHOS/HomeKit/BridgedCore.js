@@ -5,8 +5,9 @@ var uuid = require('./').uuid;
 var Bridge = require('./').Bridge;
 var Accessory = require('./').Accessory;
 var accessoryLoader = require('./lib/AccessoryLoader');
+var Characteristic = require('./').Characteristic;
 
-console.log("HAP-NodeJS starting...");
+console.log("Seraph Hub HomeKit Server Starting...");
 
 // Initialize our storage system
 storage.initSync();
@@ -16,7 +17,7 @@ var bridge = new Bridge('Seraph Hub', uuid.generate("Seraph Hub"));
 
 // Listen for bridge identification event
 bridge.on('identify', function(paired, callback) {
-  console.log("Node Bridge identify");
+  console.log("Seraph Hub HAP Bridge identify");
   callback(); // success
 });
 
@@ -28,11 +29,12 @@ var accessories = accessoryLoader.loadDirectory(dir);
 accessories.forEach(function(accessory) {
   bridge.addBridgedAccessory(accessory);
 });
-
+//bridge.setCharacteristic(Characteristic.manufacturer,"Seraph Technology, LLC")
 // Publish the Bridge on the local network.
 bridge.publish({
   username: "CC:22:3D:E3:CE:F6",
   port: 51826,
   pincode: "031-45-154",
-  category: Accessory.Categories.BRIDGE
+  category: Accessory.Categories.BRIDGE,
+    Manufacturer: "Seraph Technology, LLC"
 });

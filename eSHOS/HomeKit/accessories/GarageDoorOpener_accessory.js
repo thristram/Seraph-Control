@@ -36,7 +36,7 @@ garage.pincode = "031-45-154";
 
 garage
   .getService(Service.AccessoryInformation)
-  .setCharacteristic(Characteristic.Manufacturer, "Liftmaster")
+  .setCharacteristic(Characteristic.Manufacturer, "Seraph Technology, LLC")
   .setCharacteristic(Characteristic.Model, "Rev-1")
   .setCharacteristic(Characteristic.SerialNumber, "TW000165");
 

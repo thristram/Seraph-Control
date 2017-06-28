@@ -72,7 +72,7 @@ var commands = {
     0x57 : "Action - Dimmer (Multiple)",
 }
 
-console.log(commands);
+
 
 module.exports = {
 
@@ -259,4 +259,4 @@ module.exports = {
 
 };
 
-module.exports.parseMessage(buf);
+//module.exports.parseMessage(buf);

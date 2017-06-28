@@ -7,6 +7,7 @@ var Service = require('./Service').Service;
 var Characteristic = require('./Characteristic').Characteristic;
 var uuid = require('./util/uuid');
 var debug = require('debug')('AccessoryLoader');
+var requireUncached = require('require-uncached');
 
 module.exports = {
   loadDirectory: loadDirectory,
@@ -24,7 +25,7 @@ function loadDirectory(dir) {
 
   // exported accessory objects loaded from this dir
   var accessories = [];
-
+  /*
   fs.readdirSync(dir).forEach(function(file) {
 
     // "Accessories" are modules that export a single accessory.
@@ -41,7 +42,21 @@ function loadDirectory(dir) {
       var loadedAccessories = require(path.join(dir, file));
       accessories = accessories.concat(loadedAccessories);
     }
+
+
+
+
   });
+   */
+    var SCID = "SC55AB56";
+
+    accessories.push(loadSPC(dir, SCID, "1", "1", "SP 1-1", "1A:2B:3C:4D:5D:11", "A1S2NASF88EW11"));
+
+    accessories.push(loadSPC(dir, SCID, "1", "2", "SP 1-2", "1A:2B:3C:4D:5D:12", "A1S2NASF88EW12"));
+    accessories.push(loadSPC(dir, SCID, "2", "1", "SP 2-1", "1A:2B:3C:4D:5D:21", "A1S2NASF88EW21"));
+    accessories.push(loadSPC(dir, SCID, "2", "2", "SP 2-2", "1A:2B:3C:4D:5D:22", "A1S2NASF88EW22"));
+    accessories.push(loadSLC(dir, SCID, "3", "1", "SL 3-1", "1A:2B:3C:4D:5D:31", "A1S2NASF88EW31"));
+    accessories.push(loadSLC(dir, SCID, "3", "2", "SL 3-2", "1A:2B:3C:4D:5D:32", "A1S2NASF88EW32"));
 
   // now we need to coerce all accessory objects into instances of Accessory (some or all of them may
   // be object-literal JSON-style accessories)
@@ -55,6 +70,32 @@ function loadDirectory(dir) {
   }).filter(function(accessory) { return accessory ? true : false; });
 }
 
+function loadSPC(dir, deviceID, moduleID, channelID, name, udid, serialNumber){
+    var file = "Outlet_accessory.js"
+    debug('Parsing accessory: %s', file);
+    var loadedAccessory = requireUncached(path.join(dir, file));
+    loadedAccessory.setSeraphConfig("deviceID", deviceID);
+    loadedAccessory.setSeraphConfig("channelID", channelID);
+    loadedAccessory.setSeraphConfig("moduleID", moduleID);
+    loadedAccessory.setSeraphConfig("name", name);
+    loadedAccessory.setSeraphConfig("udid", udid);
+    loadedAccessory.setSeraphConfig("serialNumber", serialNumber);
+    loadedAccessory.startSPCService();
+    return loadedAccessory.accessory;
+}
+function loadSLC(dir, deviceID, moduleID, channelID, name, udid, serialNumber){
+    var file = "Light_accessory.js"
+    debug('Parsing accessory: %s', file);
+    var loadedAccessory = requireUncached(path.join(dir, file));
+    loadedAccessory.setSeraphConfig("deviceID", deviceID);
+    loadedAccessory.setSeraphConfig("channelID", channelID);
+    loadedAccessory.setSeraphConfig("moduleID", moduleID);
+    loadedAccessory.setSeraphConfig("name", name);
+    loadedAccessory.setSeraphConfig("udid", udid);
+    loadedAccessory.setSeraphConfig("serialNumber", serialNumber);
+    loadedAccessory.startSPCService();
+    return loadedAccessory.accessory;
+}
 /**
  * Accepts object-literal JSON structures from previous versions of HAP-NodeJS and parses them into
  * newer-style structures of Accessory/Service/Characteristic objects.
