@@ -8,6 +8,8 @@ var Characteristic = require('./Characteristic').Characteristic;
 var uuid = require('./util/uuid');
 var debug = require('debug')('AccessoryLoader');
 var requireUncached = require('require-uncached');
+var SQLAction = require("../../Lib/SQLAction.js");
+var preloadData = require("../../Lib/preloadData.js");
 
 module.exports = {
   loadDirectory: loadDirectory,
@@ -21,7 +23,7 @@ module.exports = {
  * and new-API style modules.
  */
 
-function loadDirectory(dir) {
+function loadDirectory(dir, callback) {
 
   // exported accessory objects loaded from this dir
   var accessories = [];
@@ -42,57 +44,131 @@ function loadDirectory(dir) {
       var loadedAccessories = require(path.join(dir, file));
       accessories = accessories.concat(loadedAccessories);
     }
-
-
-
-
   });
    */
-    var SCID = "SC55AB56";
+    /*
 
-    accessories.push(loadSPC(dir, SCID, "1", "1", "SP 1-1", "1A:2B:3C:4D:5D:11", "A1S2NASF88EW11"));
+     var SCID = "SCAA55AB56";
+     var SSDeviceID = "SSE11T26";
+     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "2", "SP 1-2"));
+     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "4", "SP 1-3"));
 
-    accessories.push(loadSPC(dir, SCID, "1", "2", "SP 1-2", "1A:2B:3C:4D:5D:12", "A1S2NASF88EW12"));
-    accessories.push(loadSPC(dir, SCID, "2", "1", "SP 2-1", "1A:2B:3C:4D:5D:21", "A1S2NASF88EW21"));
-    accessories.push(loadSPC(dir, SCID, "2", "2", "SP 2-2", "1A:2B:3C:4D:5D:22", "A1S2NASF88EW22"));
-    accessories.push(loadSLC(dir, SCID, "3", "1", "SL 3-1", "1A:2B:3C:4D:5D:31", "A1S2NASF88EW31"));
-    accessories.push(loadSLC(dir, SCID, "3", "2", "SL 3-2", "1A:2B:3C:4D:5D:32", "A1S2NASF88EW32"));
 
-  // now we need to coerce all accessory objects into instances of Accessory (some or all of them may
-  // be object-literal JSON-style accessories)
-  return accessories.map(function(accessory) {
-    if(accessory === null || accessory === undefined) { //check if accessory is not empty
-      console.log("Invalid accessory!");
-      return false;
-    } else {
-      return (accessory instanceof Accessory) ? accessory : parseAccessoryJSON(accessory);
+     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "3", "SP 1-1&2"));
+     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "5", "SP 1-1&3"));
+     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "6", "SP 1-2&3"));
+     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "7", "SP 1-1&2&3"));
+
+     accessories.push(loadSPC(dir, SSDeviceID, SCID, "2", "1", "SP 2-1"));
+     accessories.push(loadSPC(dir, SSDeviceID, SCID, "2", "2", "SP 2-2"));
+
+     accessories.push(loadSLC(dir, SSDeviceID, SCID, "3", "1", "SL 3-1"));
+     accessories.push(loadSLC(dir, SSDeviceID, SCID, "3", "2", "SL 3-2"));
+
+     accessories.push(loadSLC(dir, SSDeviceID, SCID, "3", "3", "SL 3-1&2"));
+
+     accessories.push(loadSLC(dir, SSDeviceID, SCID, "4", "1", "SL 4-1"));
+     accessories.push(loadSLC(dir, SSDeviceID, SCID, "4", "2", "SL 4-2"));
+
+     accessories.push(loadSLC(dir, SSDeviceID, SCID, "4", "3", "SL 4-1&2"));
+
+     accessories.push(loadHMSensor(dir, SSDeviceID, "Humidity Sensor"));
+     accessories.push(loadTPSensor(dir, SSDeviceID, "Temperature Sensor"));
+
+     */
+
+    var channelData = preloadData.channelData;
+    var sensorData = preloadData.sensorData;
+    var deviceREF = preloadData.deviceREF;
+
+
+    for (var SEPKey in channelData){
+        var defaultName = channelData[SEPKey].type + " " + deviceREF[channelData[SEPKey].deviceID].moduleID + "-" + channelData[SEPKey].channel;
+        switch (channelData[SEPKey].type) {
+            case "SP":
+                accessories.push(loadSPC(dir,channelData[SEPKey].deviceID, deviceREF[channelData[SEPKey].deviceID].managedSS, "SC" + deviceREF[channelData[SEPKey].deviceID].managedSC, deviceREF[channelData[SEPKey].deviceID].moduleID, channelData[SEPKey].channel, defaultName));
+                break;
+            case "SL":
+                accessories.push(loadSLC(dir,channelData[SEPKey].deviceID, deviceREF[channelData[SEPKey].deviceID].managedSS, "SC" + deviceREF[channelData[SEPKey].deviceID].managedSC, deviceREF[channelData[SEPKey].deviceID].moduleID, channelData[SEPKey].channel, defaultName));
+                break;
+            default:
+                break;
+        }
+
     }
-  }).filter(function(accessory) { return accessory ? true : false; });
+
+    for (var sensorKey in sensorData){
+        switch(sensorData[sensorKey].code){
+            case "TP":
+                accessories.push(loadTPSensor(dir, sensorData[sensorKey].deviceID, "Temperature Sensor"));
+                break;
+            case "HM":
+                accessories.push(loadHMSensor(dir, sensorData[sensorKey].deviceID, "Humidity Sensor"));
+                break;
+            default:
+                break;
+        }
+    }
+    // now we need to coerce all accessory objects into instances of Accessory (some or all of them may
+    // be object-literal JSON-style accessories)
+    return accessories.map(function(accessory) {
+        if(accessory === null || accessory === undefined) { //check if accessory is not empty
+            console.log("Invalid accessory!");
+            return false;
+        } else {
+            return (accessory instanceof Accessory) ? accessory : parseAccessoryJSON(accessory);
+        }
+    }).filter(function(accessory) { return accessory ? true : false; });
+
+
 }
 
-function loadSPC(dir, deviceID, moduleID, channelID, name, udid, serialNumber){
+function loadSPC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, name){
     var file = "Outlet_accessory.js"
     debug('Parsing accessory: %s', file);
     var loadedAccessory = requireUncached(path.join(dir, file));
     loadedAccessory.setSeraphConfig("deviceID", deviceID);
+    loadedAccessory.setSeraphConfig("SCdeviceID", SCdeviceID);
+    loadedAccessory.setSeraphConfig("SSDeviceID", SSDeviceID);
     loadedAccessory.setSeraphConfig("channelID", channelID);
     loadedAccessory.setSeraphConfig("moduleID", moduleID);
     loadedAccessory.setSeraphConfig("name", name);
-    loadedAccessory.setSeraphConfig("udid", udid);
-    loadedAccessory.setSeraphConfig("serialNumber", serialNumber);
     loadedAccessory.startSPCService();
     return loadedAccessory.accessory;
 }
-function loadSLC(dir, deviceID, moduleID, channelID, name, udid, serialNumber){
+
+function loadSLC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, name){
     var file = "Light_accessory.js"
     debug('Parsing accessory: %s', file);
     var loadedAccessory = requireUncached(path.join(dir, file));
     loadedAccessory.setSeraphConfig("deviceID", deviceID);
+    loadedAccessory.setSeraphConfig("SCdeviceID", SCdeviceID);
+    loadedAccessory.setSeraphConfig("SSDeviceID", SSDeviceID);
     loadedAccessory.setSeraphConfig("channelID", channelID);
     loadedAccessory.setSeraphConfig("moduleID", moduleID);
     loadedAccessory.setSeraphConfig("name", name);
-    loadedAccessory.setSeraphConfig("udid", udid);
-    loadedAccessory.setSeraphConfig("serialNumber", serialNumber);
+    loadedAccessory.startSPCService();
+    return loadedAccessory.accessory;
+}
+function loadHMSensor(dir, SSDeviceID, name){
+    var file = "HumiditySensor_accessory.js"
+    debug('Parsing accessory: %s', file);
+    var loadedAccessory = requireUncached(path.join(dir, file));
+    loadedAccessory.setSeraphConfig("deviceID", SSDeviceID);
+    loadedAccessory.setSeraphConfig("SSdeviceID", SSDeviceID);
+    loadedAccessory.setSeraphConfig("channelID", "21");
+    loadedAccessory.setSeraphConfig("name", name);
+    loadedAccessory.startSPCService();
+    return loadedAccessory.accessory;
+}
+function loadTPSensor(dir, SSDeviceID, name){
+    var file = "TemperatureSensor_accessory.js"
+    debug('Parsing accessory: %s', file);
+    var loadedAccessory = requireUncached(path.join(dir, file));
+    loadedAccessory.setSeraphConfig("deviceID", SSDeviceID);
+    loadedAccessory.setSeraphConfig("SSdeviceID", SSDeviceID);
+    loadedAccessory.setSeraphConfig("channelID", "22");
+    loadedAccessory.setSeraphConfig("name", name);
     loadedAccessory.startSPCService();
     return loadedAccessory.accessory;
 }

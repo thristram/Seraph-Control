@@ -3,9 +3,12 @@ var Service = require('../').Service;
 var Characteristic = require('../').Characteristic;
 var uuid = require('../').uuid;
 var SSPLinker = require('../../Lib/HomeKit_Link.js')
+var public = require("../../Lib/public.js")
 
 var seraphConfig = {
     "deviceID"      : "SC55AB56",
+    "SCdeviceID"    : "SC55AB56",
+    "SSDeviceID"    : "SSE11T26",
     "moduleID"      : "1",
     "channelID"     : "1",
     "manufacturer"  : "Seraph Technology, LLC",
@@ -23,6 +26,7 @@ module.exports.setSeraphConfig = function(name, value){
     }
 }
 module.exports.startSPCService = function() {
+    seraphConfig.udid = public.generateMACLikeUDID(seraphConfig.model, seraphConfig.deviceID, seraphConfig.channelID);
     var LightController = {
         name: seraphConfig.name, //name of accessory
         pincode: seraphConfig.homeKitPin,
@@ -47,7 +51,7 @@ module.exports.startSPCService = function() {
             } else  {
               targetBrightness = 0
             }
-            SSPLinker.SLCControl(seraphConfig.deviceID, seraphConfig.moduleID, seraphConfig.channelID, targetBrightness)
+            SSPLinker.SLCControl(seraphConfig.SSDeviceID, seraphConfig.deviceID, seraphConfig.moduleID, seraphConfig.channelID, targetBrightness)
         },
 
         getPower: function () { //get power of accessory
@@ -58,7 +62,7 @@ module.exports.startSPCService = function() {
         setBrightness: function (brightness) { //set brightness
             if (this.outputLogs) console.log("Setting '%s' brightness to %s", this.name, brightness);
             this.brightness = brightness;
-            SSPLinker.SLCControl(seraphConfig.deviceID, seraphConfig.moduleID, seraphConfig.channelID, brightness)
+            SSPLinker.SLCControl(seraphConfig.SSDeviceID, seraphConfig.deviceID, seraphConfig.moduleID, seraphConfig.channelID, brightness)
         },
 
         getBrightness: function () { //get brightness
@@ -94,7 +98,7 @@ module.exports.startSPCService = function() {
 // Generate a consistent UUID for our light Accessory that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic
 // UUID based on an arbitrary "namespace" and the word "light".
-    var lightUUID = uuid.generate('seraph_technology:accessories:' + seraphConfig.model + ":" + seraphConfig.version + ":" + seraphConfig.deviceID + ":" + seraphConfig.udid);
+    var lightUUID = uuid.generate('seraph_technology:accessories:' + seraphConfig.model + ":" + seraphConfig.version + ":" + seraphConfig.udid);
 
 // This is the Accessory that we'll return to HAP-NodeJS that represents our light.
     var lightAccessory = exports.accessory = new Accessory(seraphConfig.name, lightUUID);
@@ -119,7 +123,7 @@ module.exports.startSPCService = function() {
 // Add the actual Lightbulb Service and listen for change events from iOS.
 // We can see the complete list of Services and Characteristics in `lib/gen/HomeKitTypes.js`
     lightAccessory
-        .addService(Service.Lightbulb, LightController.name) // services exposed to the user should have "names" like "Light" for this case
+        .addService(Service.Lightbulb, seraphConfig.name) // services exposed to the user should have "names" like "Light" for this case
         .getCharacteristic(Characteristic.On)
         .on('set', function (value, callback) {
             LightController.setPower(value);

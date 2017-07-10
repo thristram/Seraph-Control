@@ -133,16 +133,20 @@ constructFixedHeaderRL: function (variableHeader,payload){
 	}	else if (remainingLength < 16384){
 
 		remainingLengthBuffer = new Buffer(2);
-		remainingLengthBuffer[0] = Math.floor(remainingLength / 128) + 128;
-		remainingLengthBuffer[1] = remainingLength % 128;
+		remainingLengthBuffer[1] = Math.floor(remainingLength / 128);
+		remainingLengthBuffer[0] = remainingLength % 128;
+
+		remainingLengthBuffer[0] += 128
 
 	}	else if (remainingLength < 2097152){
 
 		remainingLengthBuffer = new Buffer(3);
-		remainingLengthBuffer[0] = Math.floor(remainingLength / 16384) + 128;
-		remainingLengthBuffer[1] = Math.floor((remainingLength % 16384) / 128) + 128;
-		remainingLengthBuffer[2] = (remainingLength % 16384) % 128;
+		remainingLengthBuffer[2] = Math.floor(remainingLength / 16384);
+		remainingLengthBuffer[1] = Math.floor((remainingLength % 16384) / 128);
+		remainingLengthBuffer[0] = (remainingLength % 16384) % 128;
 
+        remainingLengthBuffer[0] += 128
+        remainingLengthBuffer[1] += 128
 
 	}	else if (remainingLength < 268435456){
 		Binarylength = 4;

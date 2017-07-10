@@ -3,14 +3,12 @@
  */
 var public = require("./public.js");
 var constructMessage = require ("./constructMessage.js")
-var TCPClient = require ("./TCPClient.js")
-
-var SSDeviceID = "SSOMXVOB"
+var TCPClient = require ("./TCPClient.js");
 
 module.exports = {
 
-    SPCControl: function(deviceID, moduleID, channelID, on){
-        //var SSDeviceID = "SSG3QXR0"
+    SPCControl: function(SSDeviceID, deviceID, moduleID, channelID, on){
+
         var SSDevice = TCPClient.TCPClients[SSDeviceID]
         var data = {
             isRequest 	: true,
@@ -38,8 +36,8 @@ module.exports = {
         var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
         TCPClient.TCPSocketWrite(SSDevice,msg);
     },
-    SLCControl: function(deviceID, moduleID, channelID, value){
-        //var SSDeviceID = "SSG3QXR0"
+    SLCControl: function(SSDeviceID, deviceID, moduleID, channelID, value){
+
         if(value == 100){
             value = "99"
         }

@@ -15,7 +15,12 @@ module.exports = {
 
 
 parseMessage: function (messageBuffer,ifSend){
-	messageBuffer.slice(0,messageBuffer.length-1);
+
+	var endToken = public.bufferString(messageBuffer.slice(messageBuffer.length - 2,messageBuffer.length));
+	if(endToken == "0A 0A "){
+        messageBuffer = messageBuffer.slice(0,messageBuffer.length-2);
+	}
+
 	var data = {
 		protocol			: "SSP-B",
 		RLLength			: 0,
@@ -111,6 +116,7 @@ parseMessage: function (messageBuffer,ifSend){
 
 	}
 
+
 	//Check Payload
 	if(messageBuffer[startPos.payload]){
 
@@ -122,7 +128,12 @@ parseMessage: function (messageBuffer,ifSend){
 
         public.eventTitle("PAYLOAD",2,"Parse Message Detail");
 
-        public.dataLog(JSON.parse(data.payload),"Parse Message Detail");
+        try{
+            public.dataLog(JSON.parse(data.payload),"Parse Message Detail");
+        }	catch(err) {
+        	public.eventError("Parse Message Error")
+		}
+
 
 	}	else	{
 
@@ -246,17 +257,17 @@ parseFixedHeaderRL: function (messageBuffer){
 
 				RMLength.byte = 4;
 
-				RMLength.message = (messageBuffer[1]-128) * Math.pow(128,3)  + (messageBuffer[2]-128) * Math.pow(128,2) + (messageBuffer[3]-128) * 128 + messageBuffer[4];
+				RMLength.message = (messageBuffer[1]-128) + (messageBuffer[2]-128) * 128 + (messageBuffer[3]-128) * Math.pow(128,2) + messageBuffer[4] * Math.pow(128,3);
 
 			}	else	{
 
-				RMLength.message = (messageBuffer[1]-128) * Math.pow(128,2)  + (messageBuffer[2]-128) * 128 + messageBuffer[3];
+				RMLength.message = (messageBuffer[1]-128) + (messageBuffer[2]-128) * 128 + messageBuffer[3] * Math.pow(128,2);
 
 			}
 
 		}	else	{
 
-			RMLength.message = (messageBuffer[1]-128) * 128 + messageBuffer[2];
+			RMLength.message = (messageBuffer[1]-128)+ messageBuffer[2] * 128 ;
 
 		}
 

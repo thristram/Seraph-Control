@@ -55,7 +55,9 @@ var AES = require("./AES.js");
 var constructSIDPMessage = require("./Construct/constructSIDPMessage.js");
 var constructSICPMessage = require("./Construct/constructSICPMessage.js");
 var ParseHardwareMessage = require("./Parse/parseHardwareMessage.js");
-var homeKit = require("../HomeKit/BridgedCore.js")
+var homeKit = require("../HomeKit/BridgedCore.js");;
+var processIncomming = require("./processReturn.js");
+var preloadData = require("./preloadData.js")
 
 
 //////////////////////////////////////
@@ -175,6 +177,10 @@ setInterval(function(){
     }
 },5000);
 
+setTimeout(function(){
+    //homeKit = require("../HomeKit/BridgedCore.js");
+},2000)
+
 
 //////////////////////////////////////
             //HomeKit//
@@ -277,18 +283,44 @@ function handleTCPReply(data){
     }   else    {
 
 
+        var correctData = data;
+        /*
+        var tempDataLength = data.length - 2
+
+        if(tempDataLength < 128){
+            tempDataLength = tempDataLength - 2
+            correctData[1] = tempDataLength
+        }   else if(tempDataLength <16384){
+            tempDataLength = tempDataLength - 3
+            var remainingLengthBuffer = new Buffer(2);
+            remainingLengthBuffer[0] = Math.floor(tempDataLength / 128);
+            remainingLengthBuffer[1] = tempDataLength % 128;
+
+
+            correctData[1] = remainingLengthBuffer[1] + 128
+            correctData[2] = remainingLengthBuffer[0]
+        }
+*/
+
         var headerRL = parseMessage.parseFixedHeaderRL(data);
         var parsedTotalLength = headerRL.byte + 3 + headerRL.message;
         var incommingMessageData;
+
+        console.log("Total Length: " + data.length);
+        console.log("Parsed Total Length: " + parsedTotalLength);
+
         if(parsedTotalLength != data.length){
             incommingMessageData = {
                 "code"      :   "0x505001",
                 "msg"       :   "Protocol NOT Supported!",
                 "raw"       :   data.toString(),
                 "raw Hex"   :   public.bufferString(data),
+                "message"   :   "Total Length: " + data.length + "\n" + "Parsed Total Length: " + parsedTotalLength,
+                "correct Data" : public.bufferString(correctData)
             }
         }   else    {
             incommingMessageData = parseMessage.parseMessage(data,false);
+            processIncomming.processSSPBIncomming(incommingMessageData);
         }
 
 
@@ -1711,10 +1743,9 @@ function sspbDeviceListPost(SSDevice,APIQuery){
         payload 	: ""
     }
 
-
     var managedSS = SSDevice.deviceID;
-    deviceListObject(managedSS,function(SQLData){
 
+    deviceListObject(managedSS,function(SQLData){
         data.payload = JSON.stringify(SQLData);
         var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
         TCPSocketWrite(SSDevice,msg);
@@ -1875,13 +1906,26 @@ function strategyConditionObject(){
 }
 var deviceListObject =  function (ssid,callback){
 
-    var queryWhere = ['SP','SL'];
-    var queryField = ['deviceID', 'model', 'macBLE', 'coord'];
+    var queryWhere = ['SP','SL','SC','ST'];
+    var queryField = ['type||deviceID as deviceID', 'model', 'coord'];
     var sql = "SELECT " + queryField.join(", ") + " FROM seraph_device WHERE managedSS = '" + ssid + "' AND (type = '" + queryWhere.join("' OR type = '") + "')";
     SQLAction.SQLConnection.all(sql, function(err, res) {
-    	public.eventLog(res);
+
         public.eventLog(sql);
-		callback(res);
+        var data = {
+            "deviceID"  : ssid,
+            "devices"   : []
+        }
+        for(var i = 0; i < res.length; i ++){
+            var subDevice = {};
+            subDevice["deviceID"] = res[i].deviceID;
+            subDevice["model"] = res[i].model;
+            subDevice["coords"] = res[i].coords;
+            data.devices.push(subDevice);
+
+        }
+        public.eventLog(JSON.stringify(data));
+		callback(data);
     })
 }
 

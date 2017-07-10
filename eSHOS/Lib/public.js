@@ -250,7 +250,38 @@ module.exports = {
             formattedHex = "0" + formattedHex;
         }
         return formattedHex
-    }
+    },
+    generateMACLikeUDID: function(type,deviceID,channel){
+        var udid = "";
+
+        if(deviceID[0] == "S"){
+            type = deviceID.substring(0,2);
+        	deviceID = deviceID.substring(2);
+
+		}
+		switch(type){
+			case "SPC": udid = "SP:"; break;
+			case "SLC": udid = "SL"; break;
+			default: udid = type + ":";break;
+		}
+		var orgLength = deviceID.length
+		if(orgLength < 8){
+			for(var j = 0; j < ( 8 - orgLength);j++){
+				deviceID = deviceID + "0";
+			}
+		}
+		for(var i in deviceID){
+            udid += deviceID[i];
+			if((i%2) == 1){
+                udid += ":"
+            }
+		}
+		if(channel.length == 1){
+			channel = "0" + channel;
+		}
+		udid += channel;
+		return udid;
+	}
 
 
 

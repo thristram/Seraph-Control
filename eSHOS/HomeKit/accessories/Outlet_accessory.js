@@ -3,11 +3,15 @@ var Service = require('../').Service;
 var Characteristic = require('../').Characteristic;
 var uuid = require('../').uuid;
 var SSPLinker = require('../../Lib/HomeKit_Link.js')
+var public = require("../../Lib/public.js")
+
 
 var err = null; // in case there were any problems
 
 var seraphConfig = {
     "deviceID"      : "SC55AB56",
+    "SCdeviceID"    : "SC55AB56",
+    "SSDeviceID"    : "SSE11T26",
     "moduleID"      : "1",
     "channelID"     : "1",
     "manufacturer"  : "Seraph Technology, LLC",
@@ -27,12 +31,12 @@ var SPowerControl = {
           SPowerControl.powerOn = true;
           if(err) { return console.log(err); }
           console.log("Seraph Power Control is now ON.");
-          SSPLinker.SPCControl(seraphConfig.deviceID, seraphConfig.moduleID, seraphConfig.channelID, true)
+          SSPLinker.SPCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, true)
     } else {
           SPowerControl.powerOn = false;
           if(err) { return console.log(err); }
           console.log("Seraph Power Control is now OFF.");
-          SSPLinker.SPCControl(seraphConfig.deviceID, seraphConfig.moduleID, seraphConfig.channelID, false)
+          SSPLinker.SPCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, false)
     }
   },
     identify: function() {
@@ -52,8 +56,9 @@ module.exports.setSeraphConfig = function(name, value){
 }
 
 module.exports.startSPCService = function(){
+    seraphConfig.udid = public.generateMACLikeUDID(seraphConfig.model, seraphConfig.deviceID, seraphConfig.channelID)
     // This is the Accessory that we'll return to HAP-NodeJS that represents our fake light.
-    var outletUUID = uuid.generate('seraph_technology:accessories:' + seraphConfig.model + ":" + seraphConfig.version + ":" + seraphConfig.deviceID + ":" + seraphConfig.udid);
+    var outletUUID = uuid.generate('seraph_technology:accessories:' + seraphConfig.model + ":" + seraphConfig.version + ":" + seraphConfig.udid);
     var outlet = exports.accessory = new Accessory('Outlet', outletUUID);
     // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
     outlet.username = seraphConfig.udid;
