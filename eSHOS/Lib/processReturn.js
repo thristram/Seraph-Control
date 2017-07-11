@@ -3,40 +3,23 @@
  */
 var public = require("./public.js");
 var SQLAction =  require ("./SQLAction.js");
-/*
-var testData = {
-    "seq": 1,
-    "success": 1,
-    "result": {
-        "seqid": 1,
-        "code": "0x0200000",
-        "msg": "Success"
-    },
-    "status": {
-        "AA55AB58": {
-            "C1": 99,
-            "C2": 0
-        }
-    }
-}
-*/
-
-console.log(public.generateMACLikeUDID("SC","AA55AB56","1"));
-
-
+var SSPB_APIs = require("./SSP-B.js");
+var TCPClient = require("./TCPClient.js");
 
 module.exports = {
     processSSPBIncomming: function (data) {
-        if(data.ifTopic){
+        if(!data.ifTopic){
             this.processSSPBReturn(data);
         }   else    {
             this.processSSPBRequest(data);
         }
     },
     processSSPBReturn: function(data){
+        public.eventLog("Processing SSP-B Return Messages....","SSP-B")
         this.processReceipt(data);
     },
     processSSPBRequest: function(data){
+        public.eventLog("Processing Request from SS....","SSP-B")
         switch (data.topuc){
             case "/device/info/sub":
                 this.processDeviceInfo(data);break;
@@ -48,7 +31,8 @@ module.exports = {
     },
     processReceipt: function (data){
         try {
-            var payload = JSON.parse(data.payload)
+            var payload = JSON.parse(data.payload);
+            console.log(payload)
         }   catch(err){
             public.eventError("Payload JSON Error");
         }
@@ -56,8 +40,9 @@ module.exports = {
             for (var key in payload.status){
                 for (var channelL in payload.status[key]){
                     var channel = parseInt(channelL.substring(1));
-
-                    SQLAction.SQLSetField("seraph_sc_device",{"value" : payload.status[key][channelL], "lastupdate": public.timestamp()},"channel = " + channel +" AND deviceID = '" + key + "'");
+                    var deviceType = key.substring(0,2);
+                    var deviceID = key.substring(2);
+                    SQLAction.SQLSetField("seraph_sc_device",{"value" : payload.status[key][channelL], "lastupdate": public.timestamp()},"channel = " + channel +" AND deviceID = '" + deviceID + "' AND type = '" + deviceType + "'");
                 }
             }
         }   catch(err) {
@@ -95,6 +80,12 @@ module.exports = {
                 }
             }
             SQLAction.SQLSetField("seraph_device",updatedData,"deviceID = '" + payload.deviceID + "'");
+            setTimeout(function(){
+                SSPB_APIs.sspbDeviceListPost(TCPClient.TCPClients["SSE11T26"]);
+            },1000);
+            setTimeout(function(){
+                SSPB_APIs.sspbConfigST(TCPClient.TCPClients["SSE11T26"]);
+            },2000)
         }   catch(err){
             public.eventError("Payload Format Error");
         }

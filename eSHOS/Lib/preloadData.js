@@ -3,6 +3,8 @@
  */
 
 var SQLAction = require("./SQLAction.js");
+var TCPClient = require("./TCPClient.js");
+
 
 var deviceREF = {};
 var channelData = {};
@@ -18,17 +20,22 @@ function loadHomeKitData(){
         }
         module.exports.deviceREF = deviceREF
 
-        SQLAction.SQLSelect("seraph_sc_device","type||deviceID as deviceID, channel, type","type = 'SL' OR type = 'SP'","",function(cData){
+        SQLAction.SQLSelect("seraph_sc_device","type||deviceID as deviceID, channel, type, value, lastupdate","type = 'SL' OR type = 'SP'","",function(cData){
 
             module.exports.channelData = cData;
 
-            SQLAction.SQLSelect("seraph_sensor","deviceID, channel, code","code = 'TP' OR code = 'HM'","",function(sData){
+            SQLAction.SQLSelect("seraph_sensor","deviceID, channel, code, value, lastupdate","code = 'TP' OR code = 'HM'","",function(sData){
 
                 module.exports.sensorData = sData;
             })
         });
     })
 }
+
+
+
+
+
 module.exports = {
     deviceREF : deviceREF,
     channelData: channelData,

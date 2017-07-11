@@ -18,16 +18,30 @@ var seraphConfig = {
     "udid"          : "1A:2B:3C:4D:5D:FF",
     "homeKitPin"    : "031-45-154",
     "name"          : "Seraph Light"
+};
+var deviceValue = {
+    power: false,
+    brightness: 100,
+    hue: 0, //current hue
+    saturation: 0,
 }
+var LightController = {}
 
-module.exports.setSeraphConfig = function(name, value){
+var setSeraphConfig = function (name, value){
     if(seraphConfig.hasOwnProperty(name)){
         seraphConfig[name] = value;
     }
 }
+var setDeviceValue = function (incommingValue){
+    deviceValue.power = incommingValue.power;
+    deviceValue.brightness = incommingValue.value;
+}
+
+module.exports.setDeviceValue = setDeviceValue;
+module.exports.setSeraphConfig = setSeraphConfig;
 module.exports.startSPCService = function() {
     seraphConfig.udid = public.generateMACLikeUDID(seraphConfig.model, seraphConfig.deviceID, seraphConfig.channelID);
-    var LightController = {
+    LightController = {
         name: seraphConfig.name, //name of accessory
         pincode: seraphConfig.homeKitPin,
         username: seraphConfig.udid, // MAC like address used by HomeKit to differentiate accessories.
@@ -35,10 +49,10 @@ module.exports.startSPCService = function() {
         model: seraphConfig.model, //model (optional)
         serialNumber: seraphConfig.moduleID, //serial number (optional)
 
-        power: false, //curent power status
-        brightness: 100, //current brightness
-        hue: 0, //current hue
-        saturation: 0, //current saturation
+        power: deviceValue.power, //curent power status
+        brightness: deviceValue.brightness, //current brightness
+        hue: deviceValue.hue, //current hue
+        saturation: deviceValue.saturation, //current saturation
 
         outputLogs: true, //output logs
 
@@ -51,7 +65,7 @@ module.exports.startSPCService = function() {
             } else  {
               targetBrightness = 0
             }
-            SSPLinker.SLCControl(seraphConfig.SSDeviceID, seraphConfig.deviceID, seraphConfig.moduleID, seraphConfig.channelID, targetBrightness)
+            SSPLinker.SLCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, targetBrightness)
         },
 
         getPower: function () { //get power of accessory
@@ -62,7 +76,7 @@ module.exports.startSPCService = function() {
         setBrightness: function (brightness) { //set brightness
             if (this.outputLogs) console.log("Setting '%s' brightness to %s", this.name, brightness);
             this.brightness = brightness;
-            SSPLinker.SLCControl(seraphConfig.SSDeviceID, seraphConfig.deviceID, seraphConfig.moduleID, seraphConfig.channelID, brightness)
+            SSPLinker.SLCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, brightness)
         },
 
         getBrightness: function () { //get brightness

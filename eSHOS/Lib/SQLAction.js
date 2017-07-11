@@ -13,7 +13,7 @@ var path = require('path');
 var SQLite = require('sqlite3').verbose();
 var SQLdb = new SQLite.Database(path.join(__dirname.replace("Lib","") + '/db/seraph.sqlite'));
 
-
+//var SQLdb = new SQLite.Database('/Users/fangchenli/Downloads/Seraph-eSH-master/eSHOS/db//db/seraph.sqlite'));
 
 
 module.exports = {

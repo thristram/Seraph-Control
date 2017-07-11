@@ -5,7 +5,7 @@
 /************************************/
 
 var config = require("../../../config.js");
-var public = require(".././public.js");
+var public = require("../public.js");
 //var parseHardwareMessage = require ("../parse/parseHardwareMessage.js")
 
 

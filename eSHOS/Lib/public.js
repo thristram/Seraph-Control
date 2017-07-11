@@ -281,6 +281,16 @@ module.exports = {
 		}
 		udid += channel;
 		return udid;
+	},
+	translateChannel: function(c){
+    	var channel = parseInt(c);
+    	switch(channel){
+			case 1: return 1;
+			case 2: return 2;
+			case 3: return 4;
+			case 4: return 8;
+			default: return false;
+		}
 	}
 
 

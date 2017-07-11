@@ -10,6 +10,8 @@ var debug = require('debug')('AccessoryLoader');
 var requireUncached = require('require-uncached');
 var SQLAction = require("../../Lib/SQLAction.js");
 var preloadData = require("../../Lib/preloadData.js");
+var publicMethod = require("../../Lib/public.js");
+
 
 module.exports = {
   loadDirectory: loadDirectory,
@@ -27,54 +29,17 @@ function loadDirectory(dir, callback) {
 
   // exported accessory objects loaded from this dir
   var accessories = [];
-  /*
-  fs.readdirSync(dir).forEach(function(file) {
-
-    // "Accessories" are modules that export a single accessory.
-    if (file.split('_').pop() === 'accessory.js') {
-      debug('Parsing accessory: %s', file);
-      var loadedAccessory = require(path.join(dir, file)).accessory;
-      accessories.push(loadedAccessory);
-    }
-    // "Accessory Factories" are modules that export an array of accessories.
-    else if (file.split('_').pop() === 'accfactory.js') {
-      debug('Parsing accessory factory: %s', file);
-
-      // should return an array of objects { accessory: accessory-json }
-      var loadedAccessories = require(path.join(dir, file));
-      accessories = accessories.concat(loadedAccessories);
-    }
-  });
-   */
     /*
 
      var SCID = "SCAA55AB56";
      var SSDeviceID = "SSE11T26";
-     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "2", "SP 1-2"));
-     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "4", "SP 1-3"));
-
-
      accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "3", "SP 1-1&2"));
      accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "5", "SP 1-1&3"));
      accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "6", "SP 1-2&3"));
      accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "7", "SP 1-1&2&3"));
 
-     accessories.push(loadSPC(dir, SSDeviceID, SCID, "2", "1", "SP 2-1"));
-     accessories.push(loadSPC(dir, SSDeviceID, SCID, "2", "2", "SP 2-2"));
-
-     accessories.push(loadSLC(dir, SSDeviceID, SCID, "3", "1", "SL 3-1"));
-     accessories.push(loadSLC(dir, SSDeviceID, SCID, "3", "2", "SL 3-2"));
-
      accessories.push(loadSLC(dir, SSDeviceID, SCID, "3", "3", "SL 3-1&2"));
-
-     accessories.push(loadSLC(dir, SSDeviceID, SCID, "4", "1", "SL 4-1"));
-     accessories.push(loadSLC(dir, SSDeviceID, SCID, "4", "2", "SL 4-2"));
-
      accessories.push(loadSLC(dir, SSDeviceID, SCID, "4", "3", "SL 4-1&2"));
-
-     accessories.push(loadHMSensor(dir, SSDeviceID, "Humidity Sensor"));
-     accessories.push(loadTPSensor(dir, SSDeviceID, "Temperature Sensor"));
-
      */
 
     var channelData = preloadData.channelData;
@@ -85,13 +50,32 @@ function loadDirectory(dir, callback) {
     for (var SEPKey in channelData){
 
         var defaultName = channelData[SEPKey].type + " " + deviceREF[channelData[SEPKey].deviceID].moduleID + "-" + channelData[SEPKey].channel;
-        console.log(defaultName)
+        var deviceID = channelData[SEPKey].deviceID;
+        var managedSS = deviceREF[channelData[SEPKey].deviceID].managedSS;
+        var managedSC = "SC" + deviceREF[channelData[SEPKey].deviceID].managedSC;
+        var moduleID = deviceREF[channelData[SEPKey].deviceID].moduleID;
+        var channel = publicMethod.translateChannel(channelData[SEPKey].channel);
+        var deviceValue = {
+            "value"         :   channelData[SEPKey].value,
+            "lastupdate"    :   channelData[SEPKey].lastupdate
+        }
+        if(deviceValue.value == 0){
+            deviceValue["power"] = false;
+        }   else    {
+            deviceValue["power"] = true;
+        }
+
         switch (channelData[SEPKey].type) {
             case "SP":
-                accessories.push(loadSPC(dir,channelData[SEPKey].deviceID, deviceREF[channelData[SEPKey].deviceID].managedSS, "SC" + deviceREF[channelData[SEPKey].deviceID].managedSC, deviceREF[channelData[SEPKey].deviceID].moduleID, channelData[SEPKey].channel, defaultName));
+                accessories.push(loadSPC(dir,deviceID, managedSS, managedSC, moduleID, channel, defaultName, deviceValue));
                 break;
             case "SL":
-                accessories.push(loadSLC(dir,channelData[SEPKey].deviceID, deviceREF[channelData[SEPKey].deviceID].managedSS, "SC" + deviceREF[channelData[SEPKey].deviceID].managedSC, deviceREF[channelData[SEPKey].deviceID].moduleID, channelData[SEPKey].channel, defaultName));
+                if(deviceValue.power){
+                    deviceValue.value += 1;
+                }   else    {
+                    deviceValue.value = 100;
+                }
+                accessories.push(loadSLC(dir,deviceID, managedSS, managedSC, moduleID, channel, defaultName, deviceValue));
                 break;
             default:
                 break;
@@ -100,12 +84,19 @@ function loadDirectory(dir, callback) {
     }
 
     for (var sensorKey in sensorData){
+
+        var deviceID = sensorData[sensorKey].deviceID;
+        var deviceValue = {
+            "value"         :   sensorData[sensorKey].value,
+            "lastupdate"    :   sensorData[sensorKey].lastupdate
+        }
+
         switch(sensorData[sensorKey].code){
             case "TP":
-                accessories.push(loadTPSensor(dir, sensorData[sensorKey].deviceID, "Temperature Sensor"));
+                accessories.push(loadTPSensor(dir, deviceID, "Temperature Sensor", deviceValue));
                 break;
             case "HM":
-                accessories.push(loadHMSensor(dir, sensorData[sensorKey].deviceID, "Humidity Sensor"));
+                accessories.push(loadHMSensor(dir, deviceID, "Humidity Sensor", deviceValue));
                 break;
             default:
                 break;
@@ -125,7 +116,7 @@ function loadDirectory(dir, callback) {
 
 }
 
-function loadSPC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, name){
+function loadSPC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, name, deviceValue){
     var file = "Outlet_accessory.js"
     debug('Parsing accessory: %s', file);
     var loadedAccessory = requireUncached(path.join(dir, file));
@@ -135,11 +126,12 @@ function loadSPC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, nam
     loadedAccessory.setSeraphConfig("channelID", channelID);
     loadedAccessory.setSeraphConfig("moduleID", moduleID);
     loadedAccessory.setSeraphConfig("name", name);
+    loadedAccessory.setDeviceValue(deviceValue);
     loadedAccessory.startSPCService();
     return loadedAccessory.accessory;
 }
 
-function loadSLC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, name){
+function loadSLC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, name, deviceValue){
     var file = "Light_accessory.js"
     debug('Parsing accessory: %s', file);
     var loadedAccessory = requireUncached(path.join(dir, file));
@@ -149,10 +141,11 @@ function loadSLC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, nam
     loadedAccessory.setSeraphConfig("channelID", channelID);
     loadedAccessory.setSeraphConfig("moduleID", moduleID);
     loadedAccessory.setSeraphConfig("name", name);
+    loadedAccessory.setDeviceValue(deviceValue);
     loadedAccessory.startSPCService();
     return loadedAccessory.accessory;
 }
-function loadHMSensor(dir, SSDeviceID, name){
+function loadHMSensor(dir, SSDeviceID, name, deviceValue){
     var file = "HumiditySensor_accessory.js"
     debug('Parsing accessory: %s', file);
     var loadedAccessory = requireUncached(path.join(dir, file));
@@ -163,7 +156,7 @@ function loadHMSensor(dir, SSDeviceID, name){
     loadedAccessory.startSPCService();
     return loadedAccessory.accessory;
 }
-function loadTPSensor(dir, SSDeviceID, name){
+function loadTPSensor(dir, SSDeviceID, name, deviceValue){
     var file = "TemperatureSensor_accessory.js"
     debug('Parsing accessory: %s', file);
     var loadedAccessory = requireUncached(path.join(dir, file));

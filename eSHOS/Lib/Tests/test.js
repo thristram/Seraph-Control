@@ -1,9 +1,9 @@
 /**
  * Created by Thristram on 2/17/17.
  */
-var AES =  require ("./AES.js");
-var UDP = require("./UDP.js");
-var SQLAction =  require ("./SQLAction.js");
+var AES =  require ("../AES.js");
+var UDP = require("../UDP.js");
+var SQLAction =  require ("../SQLAction.js");
 
 
 //var enc = AES.encrypt("ackapp123","ackapp123");

@@ -6,7 +6,8 @@
 
 var config = require("../../config.js");
 var public = require("./public.js");
-var parseMessage = require ("./parseMessage.js")
+var parseMessage = require ("./parseMessage.js");
+
 
 module.exports = {
   

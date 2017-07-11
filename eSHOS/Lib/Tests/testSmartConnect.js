@@ -2,7 +2,7 @@
  * Created by fangchenli on 5/14/17.
  */
 
-var UDP = require("./UDP.js");
+var UDP = require("../UDP.js");
 
 var ssid = "";
 var password = "";

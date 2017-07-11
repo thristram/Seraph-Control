@@ -22,25 +22,29 @@ var seraphConfig = {
     "homeKitPin"    : "031-45-154",
     "name"          : "Seraph Plug"
 }
+var deviceValue = {
+    power: false,
+}
 
 // here's a fake hardware device that we'll expose to HomeKit
 var SPowerControl = {
+    powerOn: deviceValue.power,
     setPowerOn: function(on) {
-    console.log("Turning the " + seraphConfig.name + " %s!...", on ? "on" : "off");
-    if (on) {
+        console.log("Turning the " + seraphConfig.name + " %s!...", on ? "on" : "off");
+        if (on) {
           SPowerControl.powerOn = true;
           if(err) { return console.log(err); }
           console.log("Seraph Power Control is now ON.");
           SSPLinker.SPCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, true)
-    } else {
+        } else {
           SPowerControl.powerOn = false;
           if(err) { return console.log(err); }
           console.log("Seraph Power Control is now OFF.");
           SSPLinker.SPCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, false)
-    }
-  },
+        }
+    },
     identify: function() {
-    console.log("Identify the Seraph Power Control.");
+        console.log("Identify the Seraph Power Control.");
     }
 }
 
@@ -49,11 +53,17 @@ var SPowerControl = {
 // UUID based on an arbitrary "namespace" and the accessory name.
 
 
-module.exports.setSeraphConfig = function(name, value){
+var setSeraphConfig = function (name, value){
     if(seraphConfig.hasOwnProperty(name)){
         seraphConfig[name] = value;
     }
 }
+var setDeviceValue = function (incommingValue){
+    deviceValue.power = incommingValue.power;
+}
+
+module.exports.setDeviceValue = setDeviceValue;
+module.exports.setSeraphConfig = setSeraphConfig;
 
 module.exports.startSPCService = function(){
     seraphConfig.udid = public.generateMACLikeUDID(seraphConfig.model, seraphConfig.deviceID, seraphConfig.channelID)
@@ -69,7 +79,7 @@ module.exports.startSPCService = function(){
         .getService(Service.AccessoryInformation)
         .setCharacteristic(Characteristic.Manufacturer, seraphConfig.manufacturer)
         .setCharacteristic(Characteristic.Model, seraphConfig.model + " " + seraphConfig.version)
-        .setCharacteristic(Characteristic.SerialNumber, seraphConfig.deviceID);
+        .setCharacteristic(Characteristic.SerialNumber, seraphConfig.deviceID)
 
 // listen for the "identify" event for this Accessory
     outlet.on('identify', function(paired, callback) {

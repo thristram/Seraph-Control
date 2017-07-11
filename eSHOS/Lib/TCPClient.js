@@ -57,8 +57,9 @@ var constructSICPMessage = require("./Construct/constructSICPMessage.js");
 var ParseHardwareMessage = require("./Parse/parseHardwareMessage.js");
 var homeKit;
 var processIncomming = require("./processReturn.js");
-var preloadData = require("./preloadData.js")
-
+var SSPB_APIs = require("./SSP-B.js");
+var SIDP_APIs = require("./SIDP.js");
+var SICP_APIs = require("./SICP.js");
 
 //////////////////////////////////////
             //HomeKit//
@@ -118,6 +119,7 @@ function createAllClients(){
     //constructRequestMessage(0,2,3,"/alarm/sepid/SS18098723/lv/1")
 }
 
+
 function destroyAllClients(){
 
     for(var value in TCPClients){
@@ -173,7 +175,7 @@ webAction.refreshAll(function(){});
 
 setInterval(function(){
     if(SCIPStartHeartBeats){
-        //SICPHeartBeat();
+        //SICP_APIs.SICPHeartBeat();
     }
 },5000);
 
@@ -218,6 +220,7 @@ function TCPReconnect(SSConnection){
     }, 3000)
 
 }
+
 
 
 /************************************/
@@ -284,23 +287,6 @@ function handleTCPReply(data){
 
 
         var correctData = data;
-        /*
-        var tempDataLength = data.length - 2
-
-        if(tempDataLength < 128){
-            tempDataLength = tempDataLength - 2
-            correctData[1] = tempDataLength
-        }   else if(tempDataLength <16384){
-            tempDataLength = tempDataLength - 3
-            var remainingLengthBuffer = new Buffer(2);
-            remainingLengthBuffer[0] = Math.floor(tempDataLength / 128);
-            remainingLengthBuffer[1] = tempDataLength % 128;
-
-
-            correctData[1] = remainingLengthBuffer[1] + 128
-            correctData[2] = remainingLengthBuffer[0]
-        }
-*/
 
         var headerRL = parseMessage.parseFixedHeaderRL(data);
         var parsedTotalLength = headerRL.byte + 3 + headerRL.message;
@@ -512,6 +498,22 @@ function authTCPClients(con,callback){
 
 
 }
+
+var TCPSocketWrite = function(SSDevice,msg){
+    if(SSDevice.isServer == 1){
+
+        if(SSDevice.TCPClient){
+            SSDevice.TCPClient.write(msg);
+        }   else    {
+            public.eventTitle("DEVICE NOT CONNECTED",2,"SSP-A Request",true);
+
+        }
+    }   else    {
+        SSDevice.TCPClient.write(msg);
+    }
+
+}
+
 /************************************/
 
 		   //HTTP SERVER//
@@ -597,13 +599,13 @@ function attachURI(req,res){
     if (checkFunction("/alarm",req)) {sspaGetAlarm(req, res);}
 
 
-    if (checkFunction("/sidp/action",req, "POST")) {sidpPostAction(req, res);}
-    if (checkFunction("/sidp/receipt",req, "POST")) {sidpPostReceipt(req, res);}
-    if (checkFunction("/sidp/alarm",req, "POST")) {sidpPostAlarm(req, res);}
-    if (checkFunction("/sidp/ble",req, "POST")) {sidpPostBLE (req, res);}
-    if (checkFunction("/sidp/config",req, "POST")) {sidpPostConfig (req, res);}
-    if (checkFunction("/sidp/led",req, "POST")) {sidpPostLED (req, res);}
-    if (checkFunction("/sidp/cmd",req, "POST")) {sidpPostCMD (req, res);}
+    if (checkFunction("/sidp/action",req, "POST")) {SIDP_APIs.sidpPostAction(req, res);}
+    if (checkFunction("/sidp/receipt",req, "POST")) {SIDP_APIs.sidpPostReceipt(req, res);}
+    if (checkFunction("/sidp/alarm",req, "POST")) {SIDP_APIs.sidpPostAlarm(req, res);}
+    if (checkFunction("/sidp/ble",req, "POST")) {SIDP_APIs.sidpPostBLE (req, res);}
+    if (checkFunction("/sidp/config",req, "POST")) {SIDP_APIs.sidpPostConfig (req, res);}
+    if (checkFunction("/sidp/led",req, "POST")) {SIDP_APIs.sidpPostLED (req, res);}
+    if (checkFunction("/sidp/cmd",req, "POST")) {SIDP_APIs.sidpPostCMD (req, res);}
 }
 
 // Listen on port 8000, IP defaults to 127.0.0.1
@@ -853,7 +855,7 @@ function sspaGetActionsPerform(req, res) {
     req.rootRoute = "actions/perform";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbActionPerform(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbActionPerform(TCPClients[SSDevice],APIQuery);
     })
     res.end("");
 
@@ -868,7 +870,7 @@ function sspaGetActionsRefresh (req, res) {
     req.rootRoute = "actions/refresh";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbActionRefresh(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbActionRefresh(TCPClients[SSDevice],APIQuery);
     });
     res.end('')
 }
@@ -881,7 +883,7 @@ function sspaGetActionsBacklight (req, res) {
     req.rootRoute = "actions/backlight";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbActionBacklight(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbActionBacklight(TCPClients[SSDevice],APIQuery);
     })
     res.end('')
 }
@@ -894,7 +896,7 @@ function sspaGetDataSync (req, res) {
     req.rootRoute = "data/sync";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbDataSync(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbDataSync(TCPClients[SSDevice],APIQuery);
     })
     res.end('')
 }
@@ -907,7 +909,7 @@ function sspaGetDataRecent (req, res) {
     req.rootRoute = "data/recent";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbDataRecent(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbDataRecent(TCPClients[SSDevice],APIQuery);
     })
     res.end('')
 }
@@ -921,7 +923,7 @@ function sspaGetDataIr(req, res) {
     req.rootRoute = "data/ir";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbDataIR(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbDataIR(TCPClients[SSDevice],APIQuery);
     })
     res.end('')
 }
@@ -935,7 +937,7 @@ function sspaGetConfigSS(req, res) {
     req.rootRoute = "config/ss";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbConfigssGet(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbConfigssGet(TCPClients[SSDevice],APIQuery);
     })
     res.end('')
 
@@ -946,7 +948,7 @@ function sspaPostConfigSS (req, res) {
     var APIQuery = parseExpressURI(req);
 
     APIQuery.device.forEach(function (SSDevice) {
-        sspbConfigssPost(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbConfigssPost(TCPClients[SSDevice],APIQuery);
     })
     res.end('')
 }
@@ -961,7 +963,7 @@ function sspaGetConfigStrategy(req, res) {
     req.rootRoute = "/config/strategy/htsp";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbConfigStrategyHTSPGet(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbConfigStrategyHTSPGet(TCPClients[SSDevice],APIQuery);
     })
     res.end('')
 
@@ -971,7 +973,7 @@ function sspaPostConfigStrategy (req, res) {
     req.rootRoute = "/config/strategy/htsp";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbConfigStrategyHTSPPost(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbConfigStrategyHTSPPost(TCPClients[SSDevice],APIQuery);
     })
 
     res.end('')
@@ -987,7 +989,7 @@ function sspaGetDeviceStatus (req, res) {
     req.rootRoute = "/device/status";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbDeviceStatus(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbDeviceStatus(TCPClients[SSDevice],APIQuery);
     })
 
     res.end('')
@@ -1004,7 +1006,7 @@ function sspaGetDeviceList (req, res) {
     req.rootRoute = "/device/list";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbDeviceListGet(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbDeviceListGet(TCPClients[SSDevice],APIQuery);
     })
 
     res.end('')
@@ -1015,7 +1017,7 @@ function sspaPostDeviceList (req, res) {
     req.rootRoute = "/device/list";
     var APIQuery = parseExpressURI(req);
     APIQuery.device.forEach(function (SSDevice) {
-        sspbDeviceListPost(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbDeviceListPost(TCPClients[SSDevice],APIQuery);
     })
 
     res.end('')
@@ -1032,7 +1034,7 @@ function sspaGetQE (req, res) {
     var APIQuery = parseExpressURI(req);
 
     APIQuery.device.forEach(function (SSDevice) {
-        sspbQE(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbQE(TCPClients[SSDevice],APIQuery);
     })
 
     res.end('')
@@ -1049,7 +1051,7 @@ function sspaGetAlarm (req, res) {
     var APIQuery = parseExpressURI(req);
 
     APIQuery.device.forEach(function (SSDevice) {
-        sspbAlarm(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbAlarm(TCPClients[SSDevice],APIQuery);
     })
 
 
@@ -1058,246 +1060,6 @@ function sspaGetAlarm (req, res) {
 }
 
 
-/************************************/
-
-        //SIDP API Function//
-
-/************************************/
-
-
-function sidpPostAction (req, res) {
-    var displayedMessage = "";
-    req.rootRoute = "/sidp/action";
-    if(!req.body.protocolType) req.body.protocolType = "SICP";
-    var APIQuery = parseExpressURI(req);
-    var data = {
-        moduleID    : APIQuery.query.moduleID,
-        channel     : APIQuery.query.channel,
-        value       : parseInt(APIQuery.query.targetValue),
-        time        : parseInt(APIQuery.query.time)
-    };
-    switch (APIQuery.query.type){
-        case "DMM":
-            data.moduleID = data.moduleID.split(",");
-            data.channel = data.channel.split(",");
-            break;
-        case "CP":
-        case "WP":
-            if(data.value > 0) data.value = 99;
-            break;
-        default:
-            break;
-    }
-    //console.log(data);
-    APIQuery.device.forEach(function (SSDevice) {
-
-        msg = constructSIDPMessage.consructSIDPAction(
-            APIQuery.protocolType,
-            false,
-            new Buffer(defaultMeshID,'hex'),
-            APIQuery.query.type,
-            data
-        );
-        TCPSocketWrite(TCPClients[SSDevice],msg);
-        displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-        currentData = currentData + displayedMessage;
-    });
-
-    var displayObject = {message: displayedMessage};
-    res.end(JSON.stringify(displayObject));
-
-}
-function sidpPostReceipt (req, res) {
-    var displayedMessage = "";
-    req.rootRoute = "/sidp/receipt";
-    if(!req.body.protocolType) req.body.protocolType = "SICP";
-    var APIQuery = parseExpressURI(req);
-
-    APIQuery.device.forEach(function (SSDevice) {
-
-        var msg = constructSIDPMessage.consructSIDPReceipt(
-            APIQuery.protocolType,
-            false,
-            new Buffer(defaultMeshID,'hex'),
-            APIQuery.query.type
-        );
-        TCPSocketWrite(TCPClients[SSDevice],msg);
-        displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-        currentData = currentData + displayedMessage;
-    });
-
-    var displayObject = {message: displayedMessage};
-    res.end(JSON.stringify(displayObject));
-
-}
-function sidpPostAlarm (req, res) {
-    var displayedMessage = "";
-    req.rootRoute = "/sidp/alarm";
-    if(!req.body.protocolType) req.body.protocolType = "SICP";
-    var APIQuery = parseExpressURI(req);
-
-    APIQuery.device.forEach(function (SSDevice) {
-
-        msg = constructSIDPMessage.consructSIDPAlarm(
-            APIQuery.protocolType,
-            false,
-            new Buffer(defaultMeshID,'hex'),
-            APIQuery.query.type
-        );
-        TCPSocketWrite(TCPClients[SSDevice],msg);
-        displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-        currentData = currentData + displayedMessage;
-    });
-
-    var displayObject = {message: displayedMessage};
-    res.end(JSON.stringify(displayObject));
-
-}
-function sidpPostBLE (req, res) {
-    var displayedMessage = "";
-    req.rootRoute = "/sidp/ble";
-    if(!req.body.protocolType) req.body.protocolType = "SICP";
-    var APIQuery = parseExpressURI(req);
-
-    APIQuery.device.forEach(function (SSDevice) {
-
-        msg = constructSIDPMessage.consructSIDPBLE(
-            APIQuery.protocolType,
-            false,
-            new Buffer(defaultMeshID,'hex'),
-            APIQuery.query.type
-        );
-        TCPSocketWrite(TCPClients[SSDevice],msg);
-        displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-        currentData = currentData + displayedMessage;
-    });
-
-    var displayObject = {message: displayedMessage};
-    res.end(JSON.stringify(displayObject));
-
-}
-function sidpPostConfig (req, res) {
-    var displayedMessage = "";
-    req.rootRoute = "/sidp/config";
-    if(!req.body.protocolType) req.body.protocolType = "SICP";
-    var APIQuery = parseExpressURI(req);
-    var data = {
-        meshID      : new Buffer(APIQuery.query.meshID,'hex'),
-        moduleID    : parseInt(APIQuery.query.moduleID),
-        channel     : APIQuery.query.channel,
-        action      : APIQuery.query.action,
-
-    }
-    switch (APIQuery.query.type){
-        case "1":
-            data.pad = APIQuery.query.trigger;
-            break;
-
-        case "2":
-            data.gesture = APIQuery.query.trigger;
-            data.value = parseInt(APIQuery.query.targetValue);
-            break;
-        default:
-            break;
-    }
-    //console.log(data);
-    APIQuery.device.forEach(function (SSDevice) {
-
-        msg = constructSIDPMessage.consructSIDPConfig(
-            APIQuery.protocolType,
-            false,
-            new Buffer(defaultMeshID,'hex'),
-            parseInt(APIQuery.query.type),
-            data
-        );
-        TCPSocketWrite(TCPClients[SSDevice],msg);
-        displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-        currentData = currentData + displayedMessage;
-    });
-
-    var displayObject = {message: displayedMessage};
-    res.end(JSON.stringify(displayObject));
-
-}
-function sidpPostLED (req, res, next) {
-    var displayedMessage = "";
-    req.rootRoute = "/sidp/led";
-    if(!req.body.protocolType) req.body.protocolType = "SICP";
-    var APIQuery = parseExpressURI(req);
-    var data = {
-        display     : APIQuery.query.display,
-        colors      : APIQuery.query.colors.split(",")
-
-    }
-    APIQuery.query.type = parseInt(APIQuery.query.type);
-    switch (APIQuery.query.type){
-        case 1:
-            data.speed = parseInt(APIQuery.query.param_1);
-            data.density = parseInt(APIQuery.query.param_2);
-            break;
-        case 2:
-            data.in = parseInt(APIQuery.query.param_1);
-            data.out = parseInt(APIQuery.query.param_2);
-            data.duration = parseInt(APIQuery.query.param_3);
-            data.blank = parseInt(APIQuery.query.param_4);
-            break;
-        case 3:
-            data.in = parseInt(APIQuery.query.param_1);
-            data.duration = parseInt(APIQuery.query.param_2);
-            break;
-        default:
-            delete data.colors;
-            break;
-    }
-    //console.log(data);
-    APIQuery.device.forEach(function (SSDevice) {
-
-        msg = constructSIDPMessage.consructSIDPLED(
-            APIQuery.protocolType,
-            false,
-            new Buffer(defaultMeshID,'hex'),
-            parseInt(APIQuery.query.type),
-            data
-        );
-        TCPSocketWrite(TCPClients[SSDevice],msg);
-        displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-        currentData = currentData + displayedMessage;
-    });
-
-    var displayObject = {message: displayedMessage};
-    res.end(JSON.stringify(displayObject));
-
-}
-function sidpPostCMD (req, res) {
-    var displayedMessage = "";
-    req.rootRoute = "/sidp/cmd";
-    if(!req.body.protocolType) req.body.protocolType = "SICP";
-    var APIQuery = parseExpressURI(req);
-    var data = {};
-    APIQuery.query.type = parseInt(APIQuery.query.type)
-    switch(APIQuery.query.type){
-        case 1: data.sensors = APIQuery.query.sensors.split(",");break;
-        case 3: data.moduleID = APIQuery.query.moduleID;break;
-    }
-
-    APIQuery.device.forEach(function (SSDevice) {
-
-        msg = constructSIDPMessage.consructSIDPCMD(
-            APIQuery.protocolType,
-            false,
-            new Buffer(defaultMeshID,'hex'),
-            APIQuery.query.type,
-            data
-        );
-        TCPSocketWrite(TCPClients[SSDevice],msg);
-        displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-        currentData = currentData + displayedMessage;
-    });
-
-    var displayObject = {message: displayedMessage};
-    res.end(JSON.stringify(displayObject));
-
-}
 
 
 
@@ -1342,622 +1104,6 @@ function parseExpressURI(request){
     return APIQuery;
 }
 
-function recordExpressRequestData(data,APIQuery){
-    var sqlData = {
-        messageID 		: data.MessageID,
-        action 			: APIQuery.action,
-        parameter 		: JSON.stringify(APIQuery.query),
-        requestedURI 	: data.Topic,
-        method 			: APIQuery.method,
-        timestamp 		: public.timestamp(),
-        qos 			: data.QosNeeded
-    };
-    SQLAction.SQLAdd("commands",sqlData);
-}
-
-
-
-/************************************/
-
-		  //SSP-B API//
-
-/************************************/
-
-/**
- *
- * @param SSDevice
- * @param APIQuery
- */
-
-function sspbActionPerform(SSDevice,APIQuery){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 3,
-		Topic 		: "/actions/perform",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-	var commands = strategyExecutionObject();
-	var payload = {
-		qos 		: 2 + commands.length,
-		cmd 		: commands
-	}
-	data.payload = JSON.stringify(payload);
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-	TCPSocketWrite(SSDevice,msg);
-    recordExpressRequestData(data,APIQuery);
-    return data;
-}
-
-/**
- *
- * @param SSDevice
- * @param APIQuery
- */
-
-function sspbActionRefresh(SSDevice,APIQuery){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 2,
-		Topic 		: "/actions/refresh",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-    if(APIQuery.query.CH){
-        data.Topic = data.Topic + "/CH/" + APIQuery.query.CH
-    }
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-    TCPSocketWrite(SSDevice,msg);
-    recordExpressRequestData(data,APIQuery);
-    return data;
-}
-
-/**
- *
- * @param SSDevice
- * @param APIQuery
- */
-function sspbActionBacklight(SSDevice,APIQuery){
-    var data = {
-        isRequest 	: true,
-        QoS 		: 2,
-        QosNeeded	: 1,
-        dup 		: 0,
-        MessageType : 2,
-        Topic 		: "/actions/backlight",
-        MessageID   : public.generateMessageID(),
-        MessageIDextended   : 0,
-        payload 	: ""
-    }
-    var payload = {};
-    //public.eventLog(APIQuery.query)
-
-    switch (parseInt(APIQuery.query.mode)){
-        case 1:
-            payload.type = parseInt(APIQuery.query.mode);
-            payload.colors = APIQuery.query.colors.split(",");
-            payload.density = APIQuery.query.density;
-            payload.speed = APIQuery.query.speed;
-            payload.display = parseInt(APIQuery.query.display);
-            break;
-        case 2:
-            payload.type = parseInt(APIQuery.query.mode);
-            payload.colors = APIQuery.query.colors.split(",");
-            payload.time = {
-                "in"      : parseInt(APIQuery.query.timeIn),
-                "duration": parseInt(APIQuery.query.timeDuration),
-                "out"     : parseInt(APIQuery.query.timeOut),
-                "blank"   : parseInt(APIQuery.query.timeBlank),
-            }
-            payload.display = parseInt(APIQuery.query.display);
-            break;
-        case 3:
-            payload.type = parseInt(APIQuery.query.mode);
-            payload.colors = APIQuery.query.colors.split(",");
-            payload.time = {
-                "in"      : parseInt(APIQuery.query.timeIn),
-                "duration": parseInt(APIQuery.query.timeDuration),
-            }
-            payload.display = parseInt(APIQuery.query.display);
-            break;
-        case 4:
-            payload.type = parseInt(APIQuery.query.mode);
-            break;
-        case 5:
-            payload.type = parseInt(APIQuery.query.mode);
-            break;
-        default:
-            break;
-    }
-    data.payload = JSON.stringify(payload);
-    var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-    TCPSocketWrite(SSDevice,msg);
-    recordExpressRequestData(data,APIQuery);
-    return data;
-}
-
-/**
- *
- * @param SSDevice
- * @param APIQuery
- */
-function sspbDataSync(SSDevice,APIQuery){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 2,
-		Topic 		: "/data/sync",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-    if(APIQuery.query.SEPID){
-        data.Topic = data.Topic + "/SEPID/" + APIQuery.query.SEPID;
-    }
-	if(APIQuery.query.CH){
-        data.Topic = data.Topic + "/CH/" + APIQuery.query.CH
-	}
-
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-	TCPSocketWrite(SSDevice,msg);
-    recordExpressRequestData(data,APIQuery);
-    return data;
-}
-
-
-/**
- * SSP Data Recent
- * @param APIQuery
- * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
- */
-
-
-function sspbDataRecent(SSDevice,APIQuery){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 2,
-		Topic 		: "/data/recent",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-
-    if(APIQuery.query.SEPID){
-        data.Topic = data.Topic + "/SEPID/" + APIQuery.query.SEPID;
-    }
-    if(APIQuery.query.CH){
-        data.Topic = data.Topic + "/CH/" + APIQuery.query.CH;
-    }
-
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-	TCPSocketWrite(SSDevice,msg);
-	return data;
-}
-
-/**
- *
- * @param SSDevice
- * @param APIQuery
- * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
- */
-
-function sspbDataIR(SSDevice,APIQuery){
-
-	var SEPID = {"SEPID":SSDevice.deviceID}
-    var data = {
-        isRequest 	: true,
-        QoS 		: 2,
-        QosNeeded	: 1,
-        dup 		: 0,
-        MessageType : 2,
-        Topic 		: "/data/ir",
-        MessageID   : public.generateMessageID(),
-        MessageIDextended   : 0,
-        payload 	: JSON.stringify(SEPID)
-    }
-
-    var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-    TCPSocketWrite(SSDevice,msg);
-    return data;
-}
-
-/**
- *
- * @param SSDevice
- * @param APIQuery
- * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
- */
-
-function sspbConfigssGet(SSDevice,APIQuery){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 2,
-		Topic 		: "/config/ss",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-	TCPSocketWrite(SSDevice,msg);
-	return data;
-
-}
-function sspbConfigssPost(SSDevice,APIQuery){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 3,
-		Topic 		: "/config/ss",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-	SSConfigObject(function(conf){
-		data.payload = JSON.stringify(conf);
-		var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-		TCPSocketWrite(SSDevice,msg);
-
-	});
-	return data;
-
-
-}
-
-/**
- * Config Strategy HTSP
- * @param APIQuery
- * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
- */
-
-function sspbConfigStrategyHTSPGet(SSDevice,APIQuery){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 2,
-		Topic 		: "/config/strategy/htsp",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-
-	if(APIQuery.query.STID){
-		data.Topic = data.Topic + "/STID/" + APIQuery.query.STID
-	}
-
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-	TCPSocketWrite(SSDevice,msg);
-	return data;
-
-}
-
-function sspbConfigStrategyHTSPPost(SSDevice,APIQuery){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 3,
-		Topic 		: "/config/strategy/htsp",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-
-
-	var payload = {
-		cond 		: strategyConditionObject(),
-		cmd 		: strategyExecutionObject()
-	}
-
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-	TCPSocketWrite(SSDevice,msg);
-	return data;
-}
-
-/**
- * Device Status
- * @param APIQuery
- * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
- */
-
-
-function sspbDeviceStatus(SSDevice,APIQuery){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 2,
-		Topic 		: "/device/status",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-
-	if(APIQuery.query.SEPID){
-        data.Topic = data.Topic + "/SEPID/" + APIQuery.query.SEPID
-	}
-	if(APIQuery.query.CH){
-        data.Topic = data.Topic + "/CH/" + APIQuery.query.CH
-	}
-
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-	TCPSocketWrite(SSDevice,msg);
-	return data;
-}
-
-/**
- * Device List
- * @param APIQuery
- * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
- */
-
-function sspbDeviceListGet(SSDevice,APIQuery){
-    var data = {
-        isRequest 	: true,
-        QoS 		: 2,
-        QosNeeded	: 1,
-        dup 		: 0,
-        MessageType : 2,
-        Topic 		: "/device/list",
-        MessageID   : public.generateMessageID(),
-        MessageIDextended   : 0,
-        payload 	: ""
-    }
-
-    var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-    TCPSocketWrite(SSDevice,msg);
-    return data;
-}
-function sspbDeviceListPost(SSDevice,APIQuery){
-    var data = {
-        isRequest 	: true,
-        QoS 		: 2,
-        QosNeeded	: 1,
-        dup 		: 0,
-        MessageType : 3,
-        Topic 		: "/device/list",
-        MessageID   : public.generateMessageID(),
-        MessageIDextended   : 0,
-        payload 	: ""
-    }
-
-    var managedSS = SSDevice.deviceID;
-
-    deviceListObject(managedSS,function(SQLData){
-        data.payload = JSON.stringify(SQLData);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPSocketWrite(SSDevice,msg);
-    });
-
-    return data;
-
-
-}
-
-/**
- * Quick Event
- * @param APIQuery
- * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
- */
-
-function sspbQE(SSDevice,APIQuery){
-
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 2,
-		Topic 		: APIQuery.paramURL.slice(0,APIQuery.paramURL.indexOf("?")),
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	};
-
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-	TCPSocketWrite(SSDevice,msg);
-	return data;
-}
-
-
-
-/**
- * Alarm
- * @param APIQuery
- * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: *, MessageID: *, MessageIDextended: number, payload: string}}
- */
-
-
-function sspbAlarm(SSDevice,APIQuery){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 2,
-		Topic 		: "/alarm",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-	TCPSocketWrite(SSDevice,msg);
-	return data;
-}
-
-/************************************/
-
-        //SICP Methods//
-
-/************************************/
-
-function SICPHeartBeat(){
-    var msg = constructSICPMessage.constructSICPHeartBeats();
-    for (SSDevice in TCPClients){
-        public.eventLog("Network Status Sent: " + public.bufferString(msg),"SICP Network Status")
-        TCPSocketWrite(TCPClients[SSDevice],msg);
-    }
-
-
-}
-
-
-/************************************/
-
-        //SSP-B Methods//
-
-/************************************/
-
-function TCPSocketWrite(SSDevice,msg){
-    if(SSDevice.isServer == 1){
-
-        if(SSDevice.TCPClient){
-            SSDevice.TCPClient.write(msg);
-        }   else    {
-            public.eventTitle("DEVICE NOT CONNECTED",2,"SSP-A Request",true);
-
-        }
-    }   else    {
-        SSDevice.TCPClient.write(msg);
-    }
-
-}
-
-/************************************/
-
-		  //SSP-B Object//
-
-/************************************/
-
-
-
-var SSConfigObject = function(callback){
-	var web = webAction;
-	webAction.getWeatherLocation(function(weatherLocation){
-		webAction.getSSConfig(function(config){
-			var conf = {
-				system 		: config.system,
-				wifi 		: config.wifi,
-				time 		: public.timestamp(),
-				location 	: weatherLocation.location,
-				weather 	: weatherLocation.weather
-			}
-			//public.eventLog(conf);
-			callback(conf);
-		})
-
-	});
-
-}
-
-function strategyExecutionObject(){
-	var strategy = [{
-		seqid 		: 1,
-		sepid 		: "SL03Y87D",
-		CH 			: 52,
- 		action 		: "DM",
- 		topos 		: 99,
- 		option 		: {
-			duration 	: 3,
-			erase 		: 1,
-		},
-		stseq 		: 0,
-		timeout 	: 3
-		},{
-		seqid 		: 2,
- 		sepid 		: "SP048372",
- 		CH 			: 32,
-		action 		: "WP",
-		topos 		: 1,
-		stseq 		: 0,
-		timeout 	: 3
-		}
-     ];
-     return strategy;
-}
-function strategyConditionObject(){
-
-	var condition = "this.HM = 1 || floor.TP > 10 && home.PR = true";
-	return condition;
-
-}
-var deviceListObject =  function (ssid,callback){
-
-    var queryWhere = ['SP','SL','SC','ST'];
-    var queryField = ['type||deviceID as deviceID', 'model', 'coord'];
-    var sql = "SELECT " + queryField.join(", ") + " FROM seraph_device WHERE managedSS = '" + ssid + "' AND (type = '" + queryWhere.join("' OR type = '") + "')";
-    SQLAction.SQLConnection.all(sql, function(err, res) {
-
-        public.eventLog(sql);
-        var data = {
-            "deviceID"  : ssid,
-            "devices"   : []
-        }
-        for(var i = 0; i < res.length; i ++){
-            var subDevice = {};
-            subDevice["deviceID"] = res[i].deviceID;
-            subDevice["model"] = res[i].model;
-            subDevice["coords"] = res[i].coords;
-            data.devices.push(subDevice);
-
-        }
-        public.eventLog(JSON.stringify(data));
-		callback(data);
-    })
-}
-
-
-/************************************/
-
-		//Parse Reply Test//
-
-/************************************/
-
-
-
-//testParse();
-
-function testParse(){
-	var data = {
-		isRequest 	: true,
-		QoS 		: 2,
-		QosNeeded	: 1,
-		dup 		: 0,
-		MessageType : 2,
-		Topic 		: "/action/refresh/CH/PT",
-		MessageID   : public.generateMessageID(),
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-	data.payload =  constructStatusMessage("0x2000001","Operation Complete.");
-	var messageBuffer = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,"SSM00000");
-	parseMessage.parseMessage(messageBuffer,false);
-}
-
-
 
 
 /************************************/
@@ -1983,31 +1129,7 @@ function constructReturnMessage(messgeType,messageID,code,msg,other){
 
 	return msg;
 }
-function constructRequestMessage(source,QoS,messageType,topic){
-    var isRequest = false;
-    if(source === 0){
-        isRequest = true;
-    }   else if (source == 1){
-        isRequest = false;
-        topic = "";
-    }
 
-    var data = {
-        isRequest 	: isRequest,
-        QoS 		: QoS,
-        QosNeeded	: 0,
-        dup 		: 0,
-        MessageType : messageType,
-        Topic 		: topic,
-        MessageID   : 1876,
-        MessageIDextended   : 0,
-        payload 	: "{}"
-    }
-    data.payload = constructStatusMessage("0x0000","abc");
-    var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,"SSM00000")
-
-    return msg;
-}
 function constructStatusMessage(code,msg){
 	var message = {
 		code 	: code,
@@ -2018,34 +1140,7 @@ function constructStatusMessage(code,msg){
 
 
 
-function sspbTestMessage(APIQuery){
-    var data = {
-        isRequest 	: true,
-        QoS 		: 2,
-        QosNeeded	: 1,
-        dup 		: 0,
-        MessageType : 2,
-        Topic 		: "/config/strategy/htsp",
-        MessageID   : public.generateMessageID(),
-        MessageIDextended   : 0,
-        payload 	: ""
-    }
-
-    if(APIQuery.query.STID){
-        data.Topic = data.Topic + "/STID/" + APIQuery.query.STID
-    }
-
-    var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-    TCPSocketWrite(SSDevice,msg);
-    return data;
-
-}
-
 module.exports.TCPClients = TCPClients
-module.exports.TCPSocketWrite = function (SSDevice,msg){
-    TCPSocketWrite(SSDevice,msg)
-}
+module.exports.TCPSocketWrite = TCPSocketWrite;
 
-
-
-
+var preloadData = require("./preloadData.js")
