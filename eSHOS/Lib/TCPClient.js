@@ -55,7 +55,7 @@ var AES = require("./AES.js");
 var constructSIDPMessage = require("./Construct/constructSIDPMessage.js");
 var constructSICPMessage = require("./Construct/constructSICPMessage.js");
 var ParseHardwareMessage = require("./Parse/parseHardwareMessage.js");
-var homeKit = require("../HomeKit/BridgedCore.js");;
+var homeKit;
 var processIncomming = require("./processReturn.js");
 var preloadData = require("./preloadData.js")
 
@@ -178,7 +178,7 @@ setInterval(function(){
 },5000);
 
 setTimeout(function(){
-    //homeKit = require("../HomeKit/BridgedCore.js");
+    homeKit = require("../HomeKit/BridgedCore.js");
 },2000)
 
 

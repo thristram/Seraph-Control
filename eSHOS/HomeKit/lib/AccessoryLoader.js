@@ -83,7 +83,9 @@ function loadDirectory(dir, callback) {
 
 
     for (var SEPKey in channelData){
+
         var defaultName = channelData[SEPKey].type + " " + deviceREF[channelData[SEPKey].deviceID].moduleID + "-" + channelData[SEPKey].channel;
+        console.log(defaultName)
         switch (channelData[SEPKey].type) {
             case "SP":
                 accessories.push(loadSPC(dir,channelData[SEPKey].deviceID, deviceREF[channelData[SEPKey].deviceID].managedSS, "SC" + deviceREF[channelData[SEPKey].deviceID].managedSC, deviceREF[channelData[SEPKey].deviceID].moduleID, channelData[SEPKey].channel, defaultName));
