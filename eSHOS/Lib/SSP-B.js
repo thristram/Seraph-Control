@@ -5,7 +5,8 @@
 var public = require("./public.js");
 var constructMessage = require ("./constructMessage.js")
 var TCPClient = require ("./TCPClient.js");
-var SSPBObjects = require("./SSP-B_Object.js")
+var SSPBObjects = require("./SSP-B_Object.js");
+var AES = require("./AES.js")
 
 /************************************/
 
@@ -437,7 +438,7 @@ module.exports = {
      * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
      */
 
-    sspbQE: function(SSDevice,APIQuery){
+    sspbQE: function(SSDevice, action, sepid, options){
 
         var data = {
             isRequest 	: true,
@@ -445,14 +446,28 @@ module.exports = {
             QosNeeded	: 1,
             dup 		: 0,
             MessageType : 2,
-            Topic 		: APIQuery.paramURL.slice(0,APIQuery.paramURL.indexOf("?")),
-            MessageID   : public.generateMessageID(),
+            Topic 		: "/qe/sepid/" + sepid + "/action/" + action,
             MessageIDextended   : 0,
             payload 	: ""
         };
+        var command = options;
 
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice,msg);
+        /*
+        for (var key in options){
+            data.Topic += "/" + key + "/" + options[key];
+        }
+        */
+        data.Topic = "/qe/sepid/" + sepid + "/MD/" + options.MD + "/CH/" + options.CH + "/action/" + action + "/topos/" + options.topos,
+
+
+        command["action"] = action;
+        command["sepid"] = sepid;
+
+
+        command["data"] = data;
+        command["hash"] = AES.md5(JSON.stringify(data));
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,public.generateMessageID(),data.MessageIDextended,data.payload,SSDevice);
+        TCPClient.TCPSocketWrite(SSDevice,msg,"QE",command);
         return data;
     },
 

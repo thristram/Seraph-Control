@@ -20,7 +20,7 @@ module.exports = {
     },
     processSSPBRequest: function(data){
         public.eventLog("Processing Request from SS....","SSP-B")
-        switch (data.topuc){
+        switch (data.topic){
             case "/device/info/sub":
                 this.processDeviceInfo(data);break;
             case "/device/info/ss":
@@ -51,6 +51,7 @@ module.exports = {
     },
 
     processDeviceInfo: function(data){
+        public.eventLog("Processing Device Info....","SSP-B")
         try {
             var payload = JSON.parse(data.payload)
         }   catch(err){
@@ -62,13 +63,13 @@ module.exports = {
             var updatedData = {
                 "model": payload.model,
                 "firmware": payload.firmware,
-                "HWTtest": payload.HWTtest,
+                "HWtest": payload.HWtest,
                 "meshID": payload.meshID,
             }
             if(data.topic == "/device/info/sub"){
                 switch(payload.type){
                     case "SC":
-                        updatedData.managedSEP = payload.NBDEVICE;
+                        updatedData.managedSEP = payload.NDevice;
                         break;
                     case "SP":
                     case "SL":
@@ -78,14 +79,18 @@ module.exports = {
                     default:
                         break;
                 }
+            }   else if(data.topic == "/device/info/ss"){
+                setTimeout(function(){
+                    public.eventLog("Sending Device List Configuration to SS....","SSP-B")
+                    SSPB_APIs.sspbDeviceListPost(TCPClient.TCPClients["SSE11T26"]);
+                },1000);
+                setTimeout(function(){
+                    public.eventLog("Sending ST Configuration to SS....","SSP-B")
+                    SSPB_APIs.sspbConfigST(TCPClient.TCPClients["SSE11T26"]);
+                },2000)
             }
             SQLAction.SQLSetField("seraph_device",updatedData,"deviceID = '" + payload.deviceID + "'");
-            setTimeout(function(){
-                SSPB_APIs.sspbDeviceListPost(TCPClient.TCPClients["SSE11T26"]);
-            },1000);
-            setTimeout(function(){
-                SSPB_APIs.sspbConfigST(TCPClient.TCPClients["SSE11T26"]);
-            },2000)
+
         }   catch(err){
             public.eventError("Payload Format Error");
         }

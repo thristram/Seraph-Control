@@ -291,6 +291,20 @@ module.exports = {
 			case 4: return 8;
 			default: return false;
 		}
+	},
+    arrayUnique: function (arr){
+    	var tmp = new Array();
+
+    	for(var m in arr){
+        	tmp[arr[m]]=1;
+    	}
+
+    	var tmparr = new Array();
+
+    	for(var n in tmp){
+        	tmparr.push(n);
+    	}
+    	return tmparr;
 	}
 
 

@@ -66,6 +66,10 @@ var SICP_APIs = require("./SICP.js");
 //////////////////////////////////////
 
 //var homeKit = require("hap-nodejs");
+var queueing = false;
+var commandQueue = {};
+var commandQueueResult = {}
+var queueingTime = 1000;
 
 //////////////////////////////////////
          //TEMPERATELY//
@@ -499,7 +503,43 @@ function authTCPClients(con,callback){
 
 }
 
-var TCPSocketWrite = function(SSDevice,msg){
+var TCPSocketWrite = function(SSDevice, msg, command, options){
+    TCPWrite(SSDevice, msg);
+    /*
+    var queueItem = {
+        "SSDevice"  :   SSDevice,
+        "msg"       :   msg,
+        "command"   :   command,
+        "options"   :   options
+    }
+
+
+    commandQueue[options.hash] = queueItem;
+
+    if(!queueing){
+
+        queueing = true;
+        setTimeout(function(){
+            queueing =  false;
+            processQueue();
+            for(var i in commandQueueResult){
+                TCPWrite(commandQueueResult[i].SSDevice, commandQueueResult[i].msg)
+            }
+
+        }, queueingTime)
+    }
+    */
+
+}
+var TCPWrite = function(SSDeviceID,msg){
+
+    var SSDevice = {}
+
+    if(typeof(SSDeviceID) == "string"){
+        SSDevice = TCPClients[SSDeviceID]
+    }   else    {
+        SSDevice = SSDeviceID;
+    }
     if(SSDevice.isServer == 1){
 
         if(SSDevice.TCPClient){
@@ -511,9 +551,36 @@ var TCPSocketWrite = function(SSDevice,msg){
     }   else    {
         SSDevice.TCPClient.write(msg);
     }
-
 }
 
+function processQueue(){
+
+    var QETemp = {};
+
+    //Keep the last command
+
+    for(var key in commandQueue){
+        if(commandQueue[key].command = "QE"){
+            switch(commandQueue[key].options.action){
+                case "WP":
+                case "DM":
+                    var tempPropName = commandQueue[key].options.sepid + "_" +  commandQueue[key].options.MD + "_" + commandQueue[key].options.CH + "_" + commandQueue[key].options.action + "_" + commandQueue[key].options.topos
+                    QETemp[tempPropName] = commandQueue[key];
+                    break;
+                default:
+                    commandQueueResult[key] = commandQueue[key]
+                    break;
+            }
+        }   else    {
+            commandQueueResult[key] = commandQueue[key]
+        }
+
+    }
+    for(var key in QETemp){
+        commandQueueResult[QETemp.options.hash] = QETemp[key]
+    }
+
+}
 /************************************/
 
 		   //HTTP SERVER//
@@ -1032,9 +1099,37 @@ function sspaGetQE (req, res) {
 
     req.rootRoute = "/qe";
     var APIQuery = parseExpressURI(req);
+    var data = {}
+    switch(APIQuery.action){
+        case "DM":
+        case "WP":
+            data["CH"] = APIQuery.query.CH;
+            data["topos"] = APIQuery.query.TOPOS;
+            break;
+        case "UR":
+            if(APIQuery.query.hasOwnProperty("type")){
+                data["type"] = APIQuery.query.type;
+            }
+            if(APIQuery.query.hasOwnProperty("code")){
+                data["code"] = APIQuery.query.code;
+            }
+            if(APIQuery.query.hasOwnProperty("raw")){
+                data["raw"] = APIQuery.query.raw;
+            }
+            if(APIQuery.query.hasOwnProperty("address")){
+                data["address"] = APIQuery.query.address;
+            }
+            if(APIQuery.query.hasOwnProperty("other")){
+                data["other"] = APIQuery.query.other;
+            }
+            break;
+        default:
+            break;
+
+    }
 
     APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbQE(TCPClients[SSDevice],APIQuery);
+        SSPB_APIs.sspbQE(TCPClients[SSDevice], APIQuery.query.action, APIQuery.query.SEPID, data);
     })
 
     res.end('')
