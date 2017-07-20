@@ -9,9 +9,11 @@ var TCPClient = require("./TCPClient.js");
 var deviceREF = {};
 var channelData = {};
 var sensorData = {};
-loadHomeKitData()
+var deviceStatus = {};
+var sensorStatus = {};
 
-function loadHomeKitData(){
+
+var loadHomeKitData = function(callback){
 
     SQLAction.SQLSelect("seraph_device","type||deviceID as deviceID, type, model, managedSS, managedSC, moduleID","","",function(deviceData){
 
@@ -21,23 +23,39 @@ function loadHomeKitData(){
         module.exports.deviceREF = deviceREF
 
         SQLAction.SQLSelect("seraph_sc_device","type||deviceID as deviceID, channel, type, value, lastupdate","type = 'SL' OR type = 'SP'","",function(cData){
+            //console.log(cData);
 
+            for(var dKey in cData){
+                if(!deviceStatus.hasOwnProperty(cData[dKey].deviceID)){
+                    deviceStatus[cData[dKey].deviceID] = {};
+                }
+                deviceStatus[cData[dKey].deviceID][cData[dKey].channel] = cData[dKey];
+            }
             module.exports.channelData = cData;
+            module.exports.deviceStatus = deviceStatus;
+            //console.log(deviceStatus)
 
             SQLAction.SQLSelect("seraph_sensor","deviceID, channel, code, value, lastupdate","code = 'TP' OR code = 'HM'","",function(sData){
 
+
+                for(var sKey in sData){
+                    if(!sData.hasOwnProperty(sData[sKey].deviceID)) {sensorStatus[sData[sKey].deviceID] = {}}
+                    sensorStatus[sData[sKey].deviceID][sData[sKey].channel] = sData[sKey];
+                }
                 module.exports.sensorData = sData;
+                module.exports.sensorStatus = sensorStatus;
+
+                callback();
             })
         });
     })
-}
+};
 
 
 
-
-
-module.exports = {
-    deviceREF : deviceREF,
-    channelData: channelData,
-    sensorData: sensorData
-}
+module.exports.deviceREF = deviceREF;
+module.exports.channelData = channelData;
+module.exports.sensorData = sensorData;
+module.exports.deviceStatus = deviceStatus;
+module.exports.sensorStatus = sensorStatus;
+module.exports.loadHomeKitData = loadHomeKitData;

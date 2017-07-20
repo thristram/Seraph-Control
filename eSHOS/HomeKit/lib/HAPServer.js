@@ -223,7 +223,7 @@ HAPServer.prototype._onRemoteRequest = function(request, remoteSession, session,
   if (request.messageType === 'pair-verify')
     this._handleRemotePairVerify(request, remoteSession, session);
   else if (request.messageType === 'discovery')
-    this._handleRemoteAccessories(request, remoteSession, session);
+    this._(request, remoteSession, session);
   else if (request.messageType === 'write-characteristics')
     this._handleRemoteCharacteristicsWrite(request, remoteSession, session, events);
   else if (request.messageType === 'read-characteristics')

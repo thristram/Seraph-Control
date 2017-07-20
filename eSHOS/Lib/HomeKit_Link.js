@@ -5,13 +5,15 @@ var public = require("./public.js");
 var constructMessage = require ("./constructMessage.js")
 var TCPClient = require ("./TCPClient.js");
 var SSPB_APIs = require ("./SSP-B.js");
-
+var EventEmitter = require('events');
 
 
 var queueing = false;
 var commandQueue = {};
-var commandQueueCH = {}
-var queueingTime = 1000;
+var commandQueueCH = {};
+var queueingTime = 300;
+var HAPEvent = new EventEmitter.EventEmitter();
+
 
 module.exports = {
 
@@ -20,7 +22,7 @@ module.exports = {
 
         var options = {
             "MD"    : moduleID,
-            "CH"    : channelID,
+            "CH"    : public.translateChannel(channelID),
         };
 
         on?options["topos"] = "99":options["topos"] = "00";
@@ -31,7 +33,7 @@ module.exports = {
 
     SLCControl: function(SSDeviceID, deviceID, moduleID, channelID, value){
 
-
+        public.eventLog("Calling SLC Control from HomeKit")
         if(value == 100){
             value = "99"
         }
@@ -41,34 +43,46 @@ module.exports = {
 
         var options = {
             "MD"    : moduleID,
-            "CH"    : channelID,
+            "CH"    : public.translateChannel(channelID),
             "topos" : value
         };
 
         addToQueue("SL", SSDeviceID, deviceID, options)
 
-    }
+    },
+    SSPReceipt: function(){
+        public.eventLog("Receipt Received.....Communicating with HAP Server....")
+        this.HAPEvent.emit('recepit');
+    },
+    HAPEvent: HAPEvent,
+
 }
+
+
 function addToQueue(type, SSDeviceID, deviceID, options){
     var queueItem = {};
     for(var key in options){
         queueItem[key] = options[key]
     }
-    queueItem ["options"] = options;
     queueItem ["type"] = type;
     queueItem ["SSDeviceID"] = SSDeviceID;
     queueItem ["deviceID"] = deviceID;
 
 
-    var commandQueueName = queueItem.type + "_" + queueItem.deviceID + "_" + queueItem.MD + "_" + queueItem.topos;
+    var commandQueueName = queueItem.type + "_" + queueItem.deviceID + "_" + queueItem.topos;
 
     if(!commandQueueCH.hasOwnProperty(commandQueueName)){
-        commandQueueCH[commandQueueName] = [];
-        commandQueue[commandQueueName] = [];
+        commandQueueCH[commandQueueName] = {};
+        commandQueue[commandQueueName] = {};
     }
-    commandQueue[commandQueueName].push(queueItem);
-    commandQueueCH[commandQueueName].push(parseInt(queueItem.CH));
-
+    if(!commandQueueCH[commandQueueName].hasOwnProperty(queueItem.MD)){
+        commandQueueCH[commandQueueName][queueItem.MD] = [];
+        commandQueue[commandQueueName][queueItem.MD] = [];
+    }
+    console.log(commandQueue);
+    commandQueue[commandQueueName][queueItem.MD].push(queueItem);
+    commandQueueCH[commandQueueName][queueItem.MD].push(parseInt(queueItem.CH));
+    
     if(!queueing){
         queueing = true;
         setTimeout(function(){
@@ -78,19 +92,46 @@ function addToQueue(type, SSDeviceID, deviceID, options){
     }
 }
 function processQueue(){
+
     for(var key in commandQueueCH){
-        var resultCH = 0;
-        for (var sKey in commandQueueCH[key]){
-            resultCH = resultCH | commandQueueCH[key][sKey];
+
+        var i = 0;
+        var resultCHs = [];
+        var resultMDs = [];
+        var results = {};
+        var commandType = "";
+
+        for(var mdKey in commandQueueCH[key]){
+            var resultCH = 0;
+            
+            for (var chKey in commandQueueCH[key][mdKey]){
+                resultCH = resultCH | commandQueueCH[key][mdKey][chKey];
+            }
+
+            commandQueue[key][mdKey][0].CH = resultCH;
+            results = commandQueue[key][mdKey][0];
+            resultCHs.push(resultCH);
+            resultMDs.push(mdKey);
+            console.log(resultMDs);
+            i++;
         }
-        commandQueue[key][0].CH = resultCH;
-        commandQueue[key][0].options.CH = resultCH;
-        console.log(commandQueue[key][0]);
-        if(commandQueue[key][0].type == "SL"){
-            SSPB_APIs.sspbQE(TCPClient.TCPClients[commandQueue[key][0].SSDeviceID], "DM", commandQueue[key][0].deviceID, commandQueue[key][0].options);
-        }   else if (commandQueue[key][0].type == "SP"){
-            SSPB_APIs.sspbQE(TCPClient.TCPClients[commandQueue[key][0].SSDeviceID], "WP", commandQueue[key][0].deviceID, commandQueue[key][0].options);
+
+        if(results.type == "SL"){
+            commandType = "DM";
+        }   else if (results.type == "SP"){
+            commandType = "WP";
         }
+        if(i > 1){
+            commandType += "M";
+        }
+        results.CH = resultCHs.join();
+        results.MD = resultMDs.join();
+        console.log(results);
+        console.log(commandType);
+        SSPB_APIs.sspbQE(TCPClient.TCPClients[results.SSDeviceID], commandType, results.deviceID, results);
+
+
+        
     }
     commandQueue = {};
     commandQueueCH = {}

@@ -6,7 +6,8 @@ var public = require("./public.js");
 var constructMessage = require ("./constructMessage.js")
 var TCPClient = require ("./TCPClient.js");
 var SSPBObjects = require("./SSP-B_Object.js");
-var AES = require("./AES.js")
+var AES = require("./AES.js");
+var SQLAction =  require ("./SQLAction.js");
 
 /************************************/
 
@@ -446,24 +447,63 @@ module.exports = {
             QosNeeded	: 1,
             dup 		: 0,
             MessageType : 2,
-            Topic 		: "/qe/sepid/" + sepid + "/action/" + action,
+            Topic 		: "/qe",
             MessageIDextended   : 0,
             payload 	: ""
         };
         var command = options;
+        var commandData = {
+            "sepid"     : sepid,
+            "action"    : action,
+        };
+
+
+
+        switch(action){
+            case "DM":
+            case "WP":
+            case "DMM":
+            case "WPM":
+                commandData["MD"] = options.MD;
+                commandData["CH"] = options.CH;
+                commandData["topos"] = options.topos;
+                if(options.hasOwnProperty("duration")){
+                    commandData["duration"] = options.duration
+                }
+                if(options.hasOwnProperty("ease")){
+                    commandData["ease"] = options.ease
+                }
+                break;
+            case "UR":
+                if(options.hasOwnProperty("type")){
+                    commandData["type"] = options.type;
+                    commandData["code"] = options.code;
+                    if(options.hasOwnProperty("address")){
+                        commandData["address"] = options.address;
+                    }
+                    if(options.hasOwnProperty("other")){
+                        commandData["other"] = options.other
+                    }
+                }   else if(options.hasOwnProperty("raw")){
+                    commandData["raw"] = options.raw;
+                }
+                break;
+            default:
+                break;
+
+        }
+
+        data.Topic = "/qe/sepid/" + commandData.sepid + "/MD/" + commandData.MD + "/CH/" + commandData.CH + "/action/" + commandData.action + "/topos/" + commandData.topos;
 
         /*
-        for (var key in options){
-            data.Topic += "/" + key + "/" + options[key];
+        for (var key in commandData){
+            data.Topic += "/" + key + "/" + commandData[key];
         }
         */
-        data.Topic = "/qe/sepid/" + sepid + "/MD/" + options.MD + "/CH/" + options.CH + "/action/" + action + "/topos/" + options.topos,
-
+        console.log(data.Topic);
 
         command["action"] = action;
         command["sepid"] = sepid;
-
-
         command["data"] = data;
         command["hash"] = AES.md5(JSON.stringify(data));
         var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,public.generateMessageID(),data.MessageIDextended,data.payload,SSDevice);

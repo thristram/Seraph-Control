@@ -30,6 +30,7 @@ accessories.forEach(function(accessory) {
     bridge.addBridgedAccessory(accessory);
 });
 
+
 // Publish the Bridge on the local network.
 bridge.publish({
     username: "CC:22:3D:E3:CE:F6",

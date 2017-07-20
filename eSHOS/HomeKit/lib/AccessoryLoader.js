@@ -46,6 +46,8 @@ function loadDirectory(dir, callback) {
     var sensorData = preloadData.sensorData;
     var deviceREF = preloadData.deviceREF;
 
+    console.log(channelData)
+    console.log(sensorData)
 
     for (var SEPKey in channelData){
 
@@ -54,7 +56,7 @@ function loadDirectory(dir, callback) {
         var managedSS = deviceREF[channelData[SEPKey].deviceID].managedSS;
         var managedSC = "SC" + deviceREF[channelData[SEPKey].deviceID].managedSC;
         var moduleID = deviceREF[channelData[SEPKey].deviceID].moduleID;
-        var channel = publicMethod.translateChannel(channelData[SEPKey].channel);
+        var channel = channelData[SEPKey].channel;
         var deviceValue = {
             "value"         :   channelData[SEPKey].value,
             "lastupdate"    :   channelData[SEPKey].lastupdate
@@ -142,7 +144,7 @@ function loadSLC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, nam
     loadedAccessory.setSeraphConfig("moduleID", moduleID);
     loadedAccessory.setSeraphConfig("name", name);
     loadedAccessory.setDeviceValue(deviceValue);
-    loadedAccessory.startSPCService();
+    loadedAccessory.startSLCService();
     return loadedAccessory.accessory;
 }
 function loadHMSensor(dir, SSDeviceID, name, deviceValue){

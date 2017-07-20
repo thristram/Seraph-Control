@@ -60,6 +60,7 @@ var processIncomming = require("./processReturn.js");
 var SSPB_APIs = require("./SSP-B.js");
 var SIDP_APIs = require("./SIDP.js");
 var SICP_APIs = require("./SICP.js");
+var preloadData = require("./preloadData.js")
 
 //////////////////////////////////////
             //HomeKit//
@@ -183,9 +184,9 @@ setInterval(function(){
     }
 },5000);
 
-setTimeout(function(){
+preloadData.loadHomeKitData(function(){
     homeKit = require("../HomeKit/BridgedCore.js");
-},2000)
+})
 
 
 //////////////////////////////////////
@@ -1238,4 +1239,3 @@ function constructStatusMessage(code,msg){
 module.exports.TCPClients = TCPClients
 module.exports.TCPSocketWrite = TCPSocketWrite;
 
-var preloadData = require("./preloadData.js")

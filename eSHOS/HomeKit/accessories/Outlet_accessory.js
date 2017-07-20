@@ -2,8 +2,9 @@ var Accessory = require('../').Accessory;
 var Service = require('../').Service;
 var Characteristic = require('../').Characteristic;
 var uuid = require('../').uuid;
-var SSPLinker = require('../../Lib/HomeKit_Link.js')
-var public = require("../../Lib/public.js")
+var SSPLinker = require('../../Lib/HomeKit_Link.js');
+var public = require("../../Lib/public.js");
+var loadData = require("../../Lib/preloadData.js");
 
 
 var err = null; // in case there were any problems
@@ -25,26 +26,26 @@ var seraphConfig = {
 var deviceValue = {
     power: false,
 }
+var reverseFlag = false;
 
 // here's a fake hardware device that we'll expose to HomeKit
 var SPowerControl = {
-    powerOn: deviceValue.power,
     setPowerOn: function(on) {
-        console.log("Turning the " + seraphConfig.name + " %s!...", on ? "on" : "off");
+        public.eventLog("Turning the " + seraphConfig.name + " %s!...", on ? "on" : "off");
         if (on) {
-          SPowerControl.powerOn = true;
+          deviceValue.power = true;
           if(err) { return console.log(err); }
-          console.log("Seraph Power Control is now ON.");
+          public.eventLog("Seraph Power Control is now ON.");
           SSPLinker.SPCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, true)
         } else {
-          SPowerControl.powerOn = false;
+          deviceValue.power = false;
           if(err) { return console.log(err); }
-          console.log("Seraph Power Control is now OFF.");
+          public.eventLog("Seraph Power Control is now OFF.");
           SSPLinker.SPCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, false)
         }
     },
     identify: function() {
-        console.log("Identify the Seraph Power Control.");
+        public.eventLog("Identify the Seraph Power Control.");
     }
 }
 
@@ -62,10 +63,33 @@ var setDeviceValue = function (incommingValue){
     deviceValue.power = incommingValue.power;
 }
 
-module.exports.setDeviceValue = setDeviceValue;
-module.exports.setSeraphConfig = setSeraphConfig;
+var updateDeviceStatus = function(time, device){
+    if(!time) time = 1;
+    setTimeout(function() {
+        reverseFlag = true;
+        checkDeviceStatus(function(){
+            device
+                .getService(Service.Outlet)
+                .setCharacteristic(Characteristic.On, deviceValue.power);
+            reverseFlag = false;
+        })
+    }, time);
+};
+var checkDeviceStatus = function(callback){
+    loadData.loadHomeKitData(function(){
 
-module.exports.startSPCService = function(){
+        if(parseInt(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value) > 0){
+            public.eventLog("Checking Status of " + seraphConfig.deviceID + " Channel " + seraphConfig.channelID + " : ON")
+            deviceValue.power = true;
+        }   else    {
+            public.eventLog("Checking Status of " + seraphConfig.deviceID + " Channel " + seraphConfig.channelID + " : OFF")
+            deviceValue.power = false;
+        }
+        callback()
+    })
+}
+
+var SPCService = function(){
     seraphConfig.udid = public.generateMACLikeUDID(seraphConfig.model, seraphConfig.deviceID, seraphConfig.channelID)
     // This is the Accessory that we'll return to HAP-NodeJS that represents our fake light.
     var outletUUID = uuid.generate('seraph_technology:accessories:' + seraphConfig.model + ":" + seraphConfig.version + ":" + seraphConfig.udid);
@@ -74,31 +98,34 @@ module.exports.startSPCService = function(){
     outlet.username = seraphConfig.udid;
     outlet.pincode = seraphConfig.homeKitPin;
 
-// set some basic properties (these values are arbitrary and setting them is optional)
+    // set some basic properties (these values are arbitrary and setting them is optional)
     outlet
         .getService(Service.AccessoryInformation)
         .setCharacteristic(Characteristic.Manufacturer, seraphConfig.manufacturer)
         .setCharacteristic(Characteristic.Model, seraphConfig.model + " " + seraphConfig.version)
         .setCharacteristic(Characteristic.SerialNumber, seraphConfig.deviceID)
 
-// listen for the "identify" event for this Accessory
+    // listen for the "identify" event for this Accessory
     outlet.on('identify', function(paired, callback) {
         SPowerControl.identify();
         callback(); // success
     });
 
-// Add the actual outlet Service and listen for change events from iOS.
-// We can see the complete list of Services and Characteristics in `lib/gen/HomeKitTypes.js`
+    // Add the actual outlet Service and listen for change events from iOS.
+    // We can see the complete list of Services and Characteristics in `lib/gen/HomeKitTypes.js`
     outlet
         .addService(Service.Outlet, seraphConfig.name) // services exposed to the user should have "names" like "Fake Light" for us
         .getCharacteristic(Characteristic.On)
         .on('set', function(value, callback) {
-            SPowerControl.setPowerOn(value);
+            if(!reverseFlag){
+                SPowerControl.setPowerOn(value);
+                updateDeviceStatus(5000, outlet);
+            }
             callback(); // Our fake Outlet is synchronous - this value has been successfully set
         });
 
-// We want to intercept requests for our current power state so we can query the hardware itself instead of
-// allowing HAP-NodeJS to return the cached Characteristic.value.
+    // We want to intercept requests for our current power state so we can query the hardware itself instead of
+    // allowing HAP-NodeJS to return the cached Characteristic.value.
     outlet
         .getService(Service.Outlet)
         .getCharacteristic(Characteristic.On)
@@ -110,17 +137,32 @@ module.exports.startSPCService = function(){
 
             var err = null; // in case there were any problems
 
-            if (SPowerControl.powerOn) {
-                console.log("Is " + seraphConfig.name + " on? Yes.");
-                callback(err, true);
-            }
-            else {
-                console.log("Is " + seraphConfig.name + " on? No.");
-                callback(err, false);
-            }
-        });
+            checkDeviceStatus(function(){
 
-}
+                if (deviceValue.power) {
+                    callback(err, true);
+                }
+                else {
+                    callback(err, false);
+                }
+            })
+
+
+        });
+    SSPLinker.HAPEvent.on('receipt', function(){
+        updateDeviceStatus(1,lightAccessory);
+    })
+    updateDeviceStatus(3000,outlet)
+
+
+};
+
+
+
+module.exports.setDeviceValue = setDeviceValue;
+module.exports.setSeraphConfig = setSeraphConfig;
+module.exports.updateDeviceStatus = updateDeviceStatus;
+module.exports.startSPCService = SPCService;
 
 
 

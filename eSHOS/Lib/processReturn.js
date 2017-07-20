@@ -5,6 +5,7 @@ var public = require("./public.js");
 var SQLAction =  require ("./SQLAction.js");
 var SSPB_APIs = require("./SSP-B.js");
 var TCPClient = require("./TCPClient.js");
+var HAPLinker = require("./HomeKit_Link.js")
 
 module.exports = {
     processSSPBIncomming: function (data) {
@@ -45,6 +46,7 @@ module.exports = {
                     SQLAction.SQLSetField("seraph_sc_device",{"value" : payload.status[key][channelL], "lastupdate": public.timestamp()},"channel = " + channel +" AND deviceID = '" + deviceID + "' AND type = '" + deviceType + "'");
                 }
             }
+            HAPLinker.SSPReceipt()
         }   catch(err) {
             public.eventError("Payload Format Error");
         }
