@@ -6,7 +6,7 @@ var constructMessage = require ("./constructMessage.js")
 var TCPClient = require ("./TCPClient.js");
 var SSPB_APIs = require ("./SSP-B.js");
 var EventEmitter = require('events');
-
+var debug = require('debug')('HomeKit_Link');
 
 var queueing = false;
 var commandQueue = {};
@@ -19,7 +19,7 @@ module.exports = {
 
     SPCControl: function(SSDeviceID, deviceID, moduleID, channelID, on){
 
-
+        debug("[%s] Calling SPC Control from HomeKit", public.getDateTime());
         var options = {
             "MD"    : moduleID,
             "CH"    : public.translateChannel(channelID),
@@ -33,7 +33,7 @@ module.exports = {
 
     SLCControl: function(SSDeviceID, deviceID, moduleID, channelID, value){
 
-        public.eventLog("Calling SLC Control from HomeKit")
+        debug("[%s] Calling SLC Control from HomeKit", public.getDateTime());
         if(value == 100){
             value = "99"
         }
@@ -51,7 +51,7 @@ module.exports = {
 
     },
     SSPReceipt: function(){
-        public.eventLog("Receipt Received.....Communicating with HAP Server....")
+        debug("[%s] Receipt Received.....Communicating with HAP Server....", public.getDateTime());
         this.HAPEvent.emit('recepit');
     },
     HAPEvent: HAPEvent,
@@ -79,7 +79,7 @@ function addToQueue(type, SSDeviceID, deviceID, options){
         commandQueueCH[commandQueueName][queueItem.MD] = [];
         commandQueue[commandQueueName][queueItem.MD] = [];
     }
-    console.log(commandQueue);
+    //console.log(commandQueue);
     commandQueue[commandQueueName][queueItem.MD].push(queueItem);
     commandQueueCH[commandQueueName][queueItem.MD].push(parseInt(queueItem.CH));
     
@@ -126,8 +126,8 @@ function processQueue(){
         }
         results.CH = resultCHs.join();
         results.MD = resultMDs.join();
-        console.log(results);
-        console.log(commandType);
+        //console.log(results);
+        //console.log(commandType);
         SSPB_APIs.sspbQE(TCPClient.TCPClients[results.SSDeviceID], commandType, results.deviceID, results);
 
 

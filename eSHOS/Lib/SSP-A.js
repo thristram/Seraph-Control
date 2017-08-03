@@ -1,26 +1,14 @@
 /**
- * Use Pure Node.js
- * @param request
- * @param response
+ * Created by Thristram on 12/10/16.
  */
-/*
- function handleRequest(request, response) {
- response.setHeader("Access-Control-Allow-Origin", "*");
- response.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
- response.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, x-seraph-version, x-seraph-messageID, x-seraph-accessToken' );
- //next();
- response.end('It Works!! Path Hit: ' + request.url);
 
- parseURL(request);
-
- }
+var url = require('url');
 
 
- var server = http.createServer(handleRequest);
- server.listen(HTTPort, function() {
- console.log("Server listening on: http://localhost:%s", HTTPort);
- });
-
+var SSPB_APIs = require("./SSP-B.js");
+var config = require("../../config.js");
+var public = require("./public.js");
+var TCPClient = require ("./TCPClient.js");
 
 /************************************/
 
@@ -28,131 +16,329 @@
 
 /************************************/
 
-function parseURL(request){
-    var APIQuery = {
-        action 			: "",
-        query 			: {},
-        paramURL 		: "",
-        method 			: request.method
-    };
-    if(request.method != "OPTIONS"){
-        console.log("Method: " + request.method);
-        var pathname = url.parse(request.url,true).pathname;
-        var query = pathname.split("/");
-        APIQuery.paramURL = request.url;
+module.exports = {
+    /**
+     * Action Perform
+     */
+    sspaGetActionsPerform: function (req, res) {
+
+        req.rootRoute = "actions/perform";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            SSPB_APIs.sspbActionPerform(TCPClient.TCPClients[SSDevice]);
+        })
+        res.end("");
 
 
-        if(query[1] == "qe" || query[1] == "alarm"){
-            APIQuery.action = query[1];
-            query.splice(0, 2);
+    },
 
-        }	else if(query[1] == "config" && query[2] == "strategy" && query[3] == "htsp" ){
-            APIQuery.action = query[1] + "/" + query[2] + "/" + query[3];
-            query.splice(0, 4);
+    /**
+     * Action Refresh
+     */
+    sspaGetActionsRefresh: function (req, res) {
 
-        }	else	{
-            APIQuery.action = query[1] + "/" + query[2];
-            query.splice(0, 3);
+        req.rootRoute = "actions/refresh";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            var channel = APIQuery.query.CH;
+            SSPB_APIs.sspbActionRefresh(TCPClient.TCPClients[SSDevice],channel);
+        });
+        res.end('')
+    },
+
+    /**
+     * Action Backlight
+     */
+    sspaGetActionsBacklight: function (req, res) {
+
+        req.rootRoute = "actions/backlight";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            var mode = APIQuery.query.mode;
+            var options = {};
+            if(APIQuery.query.colors){
+                options["colors"] = APIQuery.query.colors.split(",");
+            }
+            if(APIQuery.query.density){
+                options["density"] = APIQuery.query.density;
+            }
+            if(APIQuery.query.speed){
+                options["speed"] = APIQuery.query.speed;
+            }
+            if(APIQuery.query.display){
+                options["display"] = parseInt(APIQuery.query.display)
+            }
+            if(APIQuery.query.timeIn){
+                options["timeIn"] = parseInt(APIQuery.query.timeIn)
+            }
+            if(APIQuery.query.timeOut){
+                options["timeOut"] = parseInt(APIQuery.query.timeOut)
+            }
+            if(APIQuery.query.timeDuration){
+                options["timeDuration"] = parseInt(APIQuery.query.timeDuration)
+            }
+            if(APIQuery.query.timeBlank){
+                options["timeBlank"] = parseInt(APIQuery.query.timeBlank)
+            }
+            SSPB_APIs.sspbActionBacklight(TCPClient.TCPClients[SSDevice], mode, options);
+        })
+        res.end('')
+    },
+
+    /**
+     * Data Sync
+     */
+    sspaGetDataSync: function (req, res) {
+
+        req.rootRoute = "data/sync";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            var sepid = APIQuery.query.SEPID;
+            var channel = APIQuery.query.CH;
+            SSPB_APIs.sspbDataSync(TCPClient.TCPClients[SSDevice], sepid, channel);
+        })
+        res.end('')
+    },
+
+    /**
+     * Data Recent
+     */
+    sspaGetDataRecent: function (req, res) {
+
+        req.rootRoute = "data/recent";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            var sepid = APIQuery.query.SEPID;
+            var channel = APIQuery.query.CH;
+            SSPB_APIs.sspbDataRecent(TCPClient.TCPClients[SSDevice], sepid, channel);
+        })
+        res.end('')
+    },
+
+
+    /**
+     * Data IR
+     */
+    sspaGetDataIr: function(req, res) {
+
+        req.rootRoute = "data/ir";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+
+            SSPB_APIs.sspbDataIR(TCPClient.TCPClients[SSDevice]);
+        })
+        res.end('')
+    },
+
+
+    /**
+     * Config SS
+     */
+    sspaGetConfigSS: function(req, res) {
+
+        req.rootRoute = "config/ss";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            SSPB_APIs.sspbConfigssGet(TCPClient.TCPClients[SSDevice]);
+        })
+        res.end('')
+
+    },
+
+    sspaPostConfigSS: function (req, res) {
+        req.rootRoute = "config/ss";
+        var APIQuery = parseExpressURI(req);
+
+        APIQuery.device.forEach(function (SSDevice) {
+            SSPB_APIs.sspbConfigssPost(TCPClient.TCPClients[SSDevice]);
+        })
+        res.end('')
+    },
+
+
+    /**
+     * Config SS
+     */
+
+    sspaGetConfigStrategy: function(req, res) {
+
+        req.rootRoute = "/config/strategy/htsp";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            var stid = APIQuery.query.STID;
+            SSPB_APIs.sspbConfigStrategyHTSPGet(TCPClient.TCPClients[SSDevice], stid);
+        })
+        res.end('')
+
+    },
+
+    sspaPostConfigStrategy: function(req, res) {
+        req.rootRoute = "/config/strategy/htsp";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            SSPB_APIs.sspbConfigStrategyHTSPPost(TCPClient.TCPClients[SSDevice]);
+        })
+
+        res.end('')
+    },
+
+
+    /**
+     * Device Status
+     */
+
+    sspaGetDeviceStatus: function(req, res) {
+
+        req.rootRoute = "/device/status";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            var sepid = APIQuery.query.SEPID;
+            var channel = APIQuery.query.CH;
+            SSPB_APIs.sspbDeviceStatus(TCPClient.TCPClients[SSDevice], sepid, channel);
+        })
+
+        res.end('')
+
+    },
+
+
+    /**
+     * Device List
+     */
+
+    sspaGetDeviceList: function(req, res) {
+
+        req.rootRoute = "/device/list";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            SSPB_APIs.sspbDeviceListGet(TCPClient.TCPClients[SSDevice]);
+        })
+
+        res.end('')
+
+    },
+
+    sspaPostDeviceList: function(req, res) {
+        req.rootRoute = "/device/list";
+        var APIQuery = parseExpressURI(req);
+        APIQuery.device.forEach(function (SSDevice) {
+            SSPB_APIs.sspbDeviceListPost(TCPClient.TCPClients[SSDevice]);
+        })
+
+        res.end('')
+    },
+
+
+    /**
+     * Quick Event
+     */
+
+    sspaGetQE: function (req, res) {
+
+        req.rootRoute = "/qe";
+        var APIQuery = parseExpressURI(req);
+        var data = {}
+        switch(APIQuery.action){
+            case "DM":
+            case "WP":
+                data["CH"] = APIQuery.query.CH;
+                data["topos"] = APIQuery.query.TOPOS;
+                break;
+            case "UR":
+                if(APIQuery.query.hasOwnProperty("type")){
+                    data["type"] = APIQuery.query.type;
+                }
+                if(APIQuery.query.hasOwnProperty("code")){
+                    data["code"] = APIQuery.query.code;
+                }
+                if(APIQuery.query.hasOwnProperty("raw")){
+                    data["raw"] = APIQuery.query.raw;
+                }
+                if(APIQuery.query.hasOwnProperty("address")){
+                    data["address"] = APIQuery.query.address;
+                }
+                if(APIQuery.query.hasOwnProperty("other")){
+                    data["other"] = APIQuery.query.other;
+                }
+                break;
+            default:
+                break;
+
         }
 
+        APIQuery.device.forEach(function (SSDevice) {
+            SSPB_APIs.sspbQE(TCPClient.TCPClients[SSDevice], APIQuery.query.action, APIQuery.query.SEPID, data);
+        })
 
-        APIQuery.query = getQuery(query);
-        parseAPI(APIQuery);
-    }	else {
-        console.log("\nMethod: " + request.method);
+        res.end('')
+
+    },
+
+    /**
+     * Alarm
+     */
+
+    sspaGetAlarm: function (req, res) {
+
+        req.rootRoute = "/alarm";
+        var APIQuery = parseExpressURI(req);
+
+        APIQuery.device.forEach(function (SSDevice) {
+            SSPB_APIs.sspbAlarm(TCPClient.TCPClients[SSDevice]);
+        })
+
+
+        res.end('')
+
     }
-
 
 }
 
-function parseAPI(APIQuery){
-    console.log("************************ COMMAND TYPE ************************");
-    console.log("Action: " + APIQuery.action);
-    console.log("Requested URI: " + APIQuery.paramURL);
-    console.log(APIQuery.query);
-
-    var data;
-    var ifRecord = true;
-
-    switch (APIQuery.action){
-        case "actions/perform":
-            data = sspbActionPerform(APIQuery);break;
-        case "actions/refresh":
-            data = sspbActionRefresh(APIQuery);break;
-        case "data/sync":
-            data = sspbDataSync(APIQuery);break;
-        case "data/recent":
-            data = sspbDataRecent(APIQuery);break;
-        case "device/status":
-            data = sspbDeviceStatus(APIQuery);break;
-        case "qe":
-            data = sspbQE(APIQuery);break;
-        case "alarm":
-            data = sspbQE(APIQuery);break;
 
 
 
-        case "config/ss":
 
-            switch (APIQuery.method){
-                case "GET"	: data = sspbConfigssGet(APIQuery);break;
-                case "POST"	: data = sspbConfigssPost(APIQuery);break;
-                default		: break;
-            }
-            break;
+/************************************/
 
-        case "config/strateg":
-            switch (APIQuery.method){
-                case "GET"	: data = sspbConfigStrategyHTSPGet(APIQuery);break;
-                case "POST"	: data = sspbConfigStrategyHTSPPost(APIQuery);break;
-                default		: break;
-            }
-            break;
+        //SSP-A API Function//
 
-        case "device/list":
-            switch (APIQuery.method){
-                case "GET" 	: data = sspbDeviceListGet(APIQuery);break;
-                case "POST" : data = sspbDeviceListPost(APIQuery);break;
-            }
-            break;
+/************************************/
 
-        default:
-            console.log("UNKOWN API");
-            console.log("************************ MESSAGE ENDS ************************\n\n");
-            ifRecord = false;
-            break;
+
+var parseExpressURI = function(request){
+    var query;
+    if(request.method == "GET") {
+        query = url.parse(request.url, true).query;
+    }	else if(request.method == "POST") {
+
+        query = request.body;
     }
 
+    if(!query.protocolType) query.protocolType = "SSP-A";
+    if(!query.ssuid) query.ssuid = "";
+    var APIQuery = {
+        action 			: request.rootRoute,
+        query 			: query,
+        paramURL 		: request.url,
+        method 			: request.method,
+        device			: query.ssuid.split(","),
+        protocolType    : query.protocolType
+    };
+    public.eventTitle("REQUEST RECEIVED",1,APIQuery.protocolType + " Request");
 
-    if(ifRecord){
-        //Record Data
-        var sqlData = {
-            messageID 		: data.MessageID,
-            action 			: APIQuery.action,
-            parameter 		: JSON.stringify(APIQuery.query),
-            requestedURI 	: data.Topic,
-            method 			: APIQuery.method,
-            timestamp 		: public.timestamp(),
-            qos 			: data.QosNeeded
-        };
-        SQLAction.SQLAdd("commands",sqlData);
+
+
+    public.dataLog(APIQuery,"SSP-A Request")
+
+    if(APIQuery.device[0] == ''){
+        APIQuery.device = [];
+        public.eventTitle("NO DEVICE SELECTED",2,APIQuery.protocolType + " Request",true);
+
     }
 
-
+    return APIQuery;
 }
 
-function getQuery(query){
-    var parsedQuery = {};
-    var i = 0;
-    while (i < query.length){
-        parsedQuery[query[i]] = query[i+1];
-        i = i + 2;
-    }
-    //console.log(parsedQuery);
-    return parsedQuery;
-}
+module.exports.parseExpressURI = parseExpressURI;
 
 
-/**
- * Created by Thristram on 12/10/16.
- */

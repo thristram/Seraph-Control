@@ -4,25 +4,24 @@ var Characteristic = require('../').Characteristic;
 var uuid = require('../').uuid;
 var SSPLinker = require('../../Lib/HomeKit_Link.js')
 var public = require("../../Lib/public.js");
-var debug = require('debug')('CDSensor_HAPAccessory');
+var debug = require('debug')('SMSensor_HAPAccessory');
 
 var seraphConfig = {
     "deviceID"      : "SS55AB56",
     "SSDeviceID"    : "SSE11T26",
     "moduleID"      : "1",
-    "channelID"     : "CD",
+    "channelID"     : "SM",
     "manufacturer"  : "Seraph Technology, LLC",
     "model"         : "SS Model-1",
     "version"       : "Rev-1",
     "serialNumber"  : "A1S2NASF88EW",
     "udid"          : "1A:2B:3C:4D:5D:FF",
     "homeKitPin"    : "031-45-154",
-    "name"          : "Seraph CO2 Sensor"
+    "name"          : "Seraph Smoke Sensor"
 }
 
 var deviceValue = {
-    CarbonMonoxideDetected: false,
-    CarbonMonoxideLevel: 0,
+    SmokeDetected: false,
 };
 
 var setSeraphConfig = function (name, value){
@@ -36,9 +35,8 @@ var updateDeviceStatus = function(time, device){
     setTimeout(function() {
         checkDeviceStatus(function(){
             device
-                .getService(Service.CarbonMonoxideSensor)
-                .setCharacteristic(Characteristic.CarbonMonoxideLevel, Seraph_Sensor.getCarbonMonoxideLevel())
-                .setCharacteristic(Characteristic.CarbonMonoxideDetected, Seraph_Sensor.getCarbonMonoxideDetected());
+                .getService(Service.SmokeSensor)
+                .setCharacteristic(Characteristic.SmokeDetected, Seraph_Sensor.getSmokeDetected());
         })
     }, time);
 };
@@ -49,31 +47,24 @@ var checkDeviceStatus = function(callback){
     })
 };
 var updateSeraphConfigStatus = function(value){
-    deviceValue.CarbonMonoxideLevel = parseInt(value) / 10;
-    if(deviceValue.CarbonMonoxideDetected > 10){
-        deviceValue.CarbonMonoxideDetected = true;
+    if(parseInt(value) == 1){
+        deviceValue.SmokeDetected = true;
     }   else    {
-        deviceValue.CarbonMonoxideDetected = false;
+        deviceValue.SmokeDetected = false;
     }
 }
 
 
 var Seraph_Sensor = {
-    getCarbonMonoxideLevel: function() {
-        debug("Getting the current Carbon Monoxide Level: " + deviceValue.CarbonMonoxideLevel);
-        return deviceValue.CarbonMonoxideLevel;
-    },
-    getCarbonMonoxideDetected: function() {
-        debug("Getting if current Carbon Monoxide is Detected: " + deviceValue.CarbonMonoxideDetected);
-        return deviceValue.CarbonMonoxideDetected;
+
+    getSmokeDetected: function() {
+        debug("Getting if Smoke is Detected: " + deviceValue.SmokeDetected ? "Yes" : "No" );
+        return deviceValue.SmokeDetected;
     },
     identify: function() { //identify the accessory
         debug("Identify the '%s'", seraphConfig.name);
     }
 }
-var SensorController = {
-
-};
 
 
 var SensorService = function() {
@@ -110,20 +101,13 @@ var SensorService = function() {
     // Add the actual TemperatureSensor Service.
     // We can see the complete list of Services and Characteristics in `lib/gen/HomeKitTypes.js`
     sensor
-        .addService(Service.CarbonMonoxideSensor, seraphConfig.name)
-        .getCharacteristic(Characteristic.CarbonMonoxideDetected)
+        .addService(Service.SmokeSensor, seraphConfig.name)
+        .getCharacteristic(Characteristic.SmokeDetected)
         .on('get', function(callback) {
             // return our current value
-            callback(null, Seraph_Sensor.getCarbonMonoxideDetected());
+            callback(null, Seraph_Sensor.getSmokeDetected());
         });
 
-    sensor
-        .getService(Service.CarbonMonoxideSensor)
-        .addCharacteristic(Characteristic.CarbonMonoxideLevel)
-        .on('get', function(callback) {
-            // return our current value
-            callback(null, Seraph_Sensor.getCarbonMonoxideLevel());
-        });
 
     SSPLinker.HAPEvent.on('sensorUpdate', function(deviceID, channel, value){
 
@@ -131,9 +115,8 @@ var SensorService = function() {
             debug("Receive Sensor Value Message of " + deviceID + " Channel " + channel + " : " + value);
             updateSeraphConfigStatus(value);
             sensor
-                .getService(Service.CarbonMonoxideSensor)
-                .setCharacteristic(Characteristic.CarbonMonoxideLevel, Seraph_Sensor.getCarbonMonoxideLevel())
-                .setCharacteristic(Characteristic.CarbonMonoxideDetected, Seraph_Sensor.getCarbonMonoxideDetected());
+                .getService(Service.SmokeSensor)
+                .setCharacteristic(Characteristic.SmokeDetected, Seraph_Sensor.getSmokeDetected());
         }
     });
 

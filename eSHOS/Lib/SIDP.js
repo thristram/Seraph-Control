@@ -5,6 +5,8 @@
 var public = require("./public.js");
 var TCPClient = require ("./TCPClient.js");
 var constructSIDPMessage = require("./Construct/constructSIDPMessage.js");
+var TEST_APIs = require("./TEST_API.js");
+var SSPA_APIs = require("./SSP-A.js");
 
 /************************************/
 
@@ -18,7 +20,7 @@ module.exports = {
         var displayedMessage = "";
         req.rootRoute = "/sidp/action";
         if(!req.body.protocolType) req.body.protocolType = "SICP";
-        var APIQuery = TCPClient.parseExpressURI(req);
+        var APIQuery = SSPA_APIs.parseExpressURI(req);
         var data = {
             moduleID    : APIQuery.query.moduleID,
             channel     : APIQuery.query.channel,
@@ -43,13 +45,13 @@ module.exports = {
             var msg = constructSIDPMessage.consructSIDPAction(
                 APIQuery.protocolType,
                 false,
-                new Buffer(defaultMeshID,'hex'),
+                new Buffer(TEST_APIs.defaultMeshID,'hex'),
                 APIQuery.query.type,
                 data
             );
-            TCPClient.TCPSocketWrite(TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(TCPClient.TCPClients[SSDevice],msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-            currentData = currentData + displayedMessage;
+            TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
 
         var displayObject = {message: displayedMessage};
@@ -60,19 +62,19 @@ module.exports = {
         var displayedMessage = "";
         req.rootRoute = "/sidp/receipt";
         if(!req.body.protocolType) req.body.protocolType = "SICP";
-        var APIQuery = TCPClient.parseExpressURI(req);
+        var APIQuery = SSPA_APIs.parseExpressURI(req);
 
         APIQuery.device.forEach(function (SSDevice) {
 
             var msg = constructSIDPMessage.consructSIDPReceipt(
                 APIQuery.protocolType,
                 false,
-                new Buffer(defaultMeshID,'hex'),
+                new Buffer(TEST_APIs.defaultMeshID,'hex'),
                 APIQuery.query.type
             );
-            TCPClient.TCPSocketWrite(TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(TCPClient.TCPClients[SSDevice],msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-            currentData = currentData + displayedMessage;
+            TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
 
         var displayObject = {message: displayedMessage};
@@ -83,19 +85,19 @@ module.exports = {
         var displayedMessage = "";
         req.rootRoute = "/sidp/alarm";
         if(!req.body.protocolType) req.body.protocolType = "SICP";
-        var APIQuery = TCPClient.parseExpressURI(req);
+        var APIQuery = SSPA_APIs.parseExpressURI(req);
 
         APIQuery.device.forEach(function (SSDevice) {
 
             msg = constructSIDPMessage.consructSIDPAlarm(
                 APIQuery.protocolType,
                 false,
-                new Buffer(defaultMeshID,'hex'),
+                new Buffer(TEST_APIs.defaultMeshID,'hex'),
                 APIQuery.query.type
             );
-            TCPClient.TCPSocketWrite(TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(TCPClient.TCPClients[SSDevice],msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-            currentData = currentData + displayedMessage;
+            TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
 
         var displayObject = {message: displayedMessage};
@@ -106,19 +108,19 @@ module.exports = {
         var displayedMessage = "";
         req.rootRoute = "/sidp/ble";
         if(!req.body.protocolType) req.body.protocolType = "SICP";
-        var APIQuery = TCPClient.parseExpressURI(req);
+        var APIQuery = SSPA_APIs.parseExpressURI(req);
 
         APIQuery.device.forEach(function (SSDevice) {
 
             msg = constructSIDPMessage.consructSIDPBLE(
                 APIQuery.protocolType,
                 false,
-                new Buffer(defaultMeshID,'hex'),
+                new Buffer(TEST_APIs.defaultMeshID,'hex'),
                 APIQuery.query.type
             );
-            TCPClient.TCPSocketWrite(TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(TCPClient.TCPClients[SSDevice],msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-            currentData = currentData + displayedMessage;
+            TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
 
         var displayObject = {message: displayedMessage};
@@ -129,7 +131,7 @@ module.exports = {
         var displayedMessage = "";
         req.rootRoute = "/sidp/config";
         if(!req.body.protocolType) req.body.protocolType = "SICP";
-        var APIQuery = TCPClient.parseExpressURI(req);
+        var APIQuery = SSPA_APIs.parseExpressURI(req);
         var data = {
             meshID      : new Buffer(APIQuery.query.meshID,'hex'),
             moduleID    : parseInt(APIQuery.query.moduleID),
@@ -155,13 +157,13 @@ module.exports = {
             msg = constructSIDPMessage.consructSIDPConfig(
                 APIQuery.protocolType,
                 false,
-                new Buffer(defaultMeshID,'hex'),
+                new Buffer(TEST_APIs.defaultMeshID,'hex'),
                 parseInt(APIQuery.query.type),
                 data
             );
-            TCPClient.TCPSocketWrite(TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(TCPClient.TCPClients[SSDevice],msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-            currentData = currentData + displayedMessage;
+            TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
 
         var displayObject = {message: displayedMessage};
@@ -172,7 +174,7 @@ module.exports = {
         var displayedMessage = "";
         req.rootRoute = "/sidp/led";
         if(!req.body.protocolType) req.body.protocolType = "SICP";
-        var APIQuery = TCPClient.parseExpressURI(req);
+        var APIQuery = SSPA_APIs.parseExpressURI(req);
         var data = {
             display     : APIQuery.query.display,
             colors      : APIQuery.query.colors.split(",")
@@ -204,13 +206,13 @@ module.exports = {
             msg = constructSIDPMessage.consructSIDPLED(
                 APIQuery.protocolType,
                 false,
-                new Buffer(defaultMeshID,'hex'),
+                new Buffer(TEST_APIs.defaultMeshID,'hex'),
                 parseInt(APIQuery.query.type),
                 data
             );
-            TCPClient.TCPSocketWrite(TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(TCPClient.TCPClients[SSDevice],msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-            currentData = currentData + displayedMessage;
+            TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
 
         var displayObject = {message: displayedMessage};
@@ -221,7 +223,7 @@ module.exports = {
         var displayedMessage = "";
         req.rootRoute = "/sidp/cmd";
         if(!req.body.protocolType) req.body.protocolType = "SICP";
-        var APIQuery = TCPClient.parseExpressURI(req);
+        var APIQuery = SSPA_APIs.parseExpressURI(req);
         var data = {};
         APIQuery.query.type = parseInt(APIQuery.query.type)
         switch(APIQuery.query.type){
@@ -234,13 +236,13 @@ module.exports = {
             msg = constructSIDPMessage.consructSIDPCMD(
                 APIQuery.protocolType,
                 false,
-                new Buffer(defaultMeshID,'hex'),
+                new Buffer(TEST_APIs.defaultMeshID,'hex'),
                 APIQuery.query.type,
                 data
             );
-            TCPClient.TCPSocketWrite(TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(TCPClient.TCPClients[SSDevice],msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
-            currentData = currentData + displayedMessage;
+            TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
 
         var displayObject = {message: displayedMessage};

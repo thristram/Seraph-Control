@@ -19,12 +19,24 @@ module.exports = {
 
 constructMessage: function (isRequest,Qos,dup,MessageType,Topic,MessageID,MessageIDextended,payload,SSDevice){
 
+	var msgType = 0;
+	if(typeof(MessageType) != "number"){
+		switch(MessageType){
+			case "GET": msgType = 2; break;
+			case "POST": msgType = 3; break;
+			default: msgType = 2; break;
+
+		}
+	}	else	{
+        msgType = MessageType;
+	}
+
 	public.eventTitle(["MESSAGE SENT: "+SSDevice.deviceID,"IP ADDRESS: "+SSDevice.IPAddress],1,"Construct Message Status");
     public.eventTitle("ENCORDING...",2,"Construct Message Detail");
 
 
 
-	var header = this.constructHeader(isRequest,Qos,dup,MessageType,Topic,MessageID,MessageIDextended,payload);
+	var header = this.constructHeader(isRequest,Qos,dup,msgType,Topic,MessageID,MessageIDextended,payload);
 	var message = public.StingtoBuffer(payload);
 
 	var rawMessageBuffer = Buffer.concat([header, message]);
@@ -44,7 +56,7 @@ constructHeader: function (isRequest,Qos,dup,MessageType,Topic,MessageID,Message
 	var variableHeader = this.constructVariableHeader(Topic,MessageID);
 	var fixedHeader = this.constructFixedHeader(isRequest,Qos,dup,MessageType,variableHeader,payload);
 	var HeaderBuffer = Buffer.concat([fixedHeader, variableHeader]);
-    public.log("Header:					" + public.bufferString(HeaderBuffer) + "\n","Construct Message Detail");
+    public.log("Header:				" + public.bufferString(HeaderBuffer) + "\n","Construct Message Detail");
 	return HeaderBuffer;
 },
 
@@ -102,7 +114,7 @@ constructFixedHeaderStatus: function (isRequest,Qos,dup,MessageType){
 
 	var fixedHeaderStatusBuffer = public.int2Buffer(fhDec,1);
 
-    public.log("Fixed Header Line 1: 	" + public.bufferString(fixedHeaderStatusBuffer) + "\n","Construct Message Detail");
+    public.log("Fixed Header Line 1: 		" + public.bufferString(fixedHeaderStatusBuffer) + "\n","Construct Message Detail");
 
 	return fixedHeaderStatusBuffer;
 
@@ -114,7 +126,7 @@ constructFixedHeaderRL: function (variableHeader,payload){
 	var variableHeaderLength = variableHeader.length,
 		payloadLength = Buffer.byteLength(payload);
 
-    public.log("Variable Header Length:	" + variableHeaderLength + " Bit","Construct Message Detail");
+    public.log("Variable Header Length:		" + variableHeaderLength + " Bit","Construct Message Detail");
     public.log("Payload Length:			" + payloadLength + " Bit","Construct Message Detail");
 	var remainingLength = variableHeaderLength + payloadLength;
     public.log("Remaining Length:		" + remainingLength + " Bit","Construct Message Detail");
@@ -154,7 +166,7 @@ constructFixedHeaderRL: function (variableHeader,payload){
 
 	}
 
-    public.log("Remaining Length Hex:	" + public.bufferString(remainingLengthBuffer) + "\n","Construct Message Detail");
+    public.log("Remaining Length Hex:		" + public.bufferString(remainingLengthBuffer) + "\n","Construct Message Detail");
 
 	return remainingLengthBuffer;
 
@@ -174,7 +186,7 @@ constructTopic: function (topic){
 
 	//Topic Name
 	var topicNameBuffer = public.StingtoBuffer(topic);
-	public.log("Topic:					" + public.bufferString(topicNameBuffer),"Construct Message Detail");
+	public.log("Topic:				" + public.bufferString(topicNameBuffer),"Construct Message Detail");
 
 
 	//Topic Length
@@ -192,7 +204,7 @@ constructTopic: function (topic){
 
 constructMessageID: function (MessageID){
 	var MessageIDBuffer = public.int2Buffer(MessageID,2);
-    public.log("MessageID: 				" + "No." +MessageID,"Construct Message Detail");
+    public.log("MessageID: 			" + "No." + MessageID,"Construct Message Detail");
     public.log("MessageID Bufffer: 		" + public.bufferString(MessageIDBuffer) + "\n","Construct Message Detail");
 	return MessageIDBuffer;
 }

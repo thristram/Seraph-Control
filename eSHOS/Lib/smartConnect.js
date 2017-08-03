@@ -18,7 +18,7 @@ var serverIP;
 var ifSmartConnecting = false;
 var ifSecuredSmartConnecting = false;
 var ifBroadcastingServerIP = false;
-
+var UDPServer = UDP.createUDPServer();
 
 
 function getWiFiInfo(){
@@ -61,7 +61,7 @@ function startSecuredBroadcasting() {
         }
     }, 5000)
 }
-function startBroadcastingServerIP(server){
+var startBroadcastingServerIP = function(server){
     var port = config.UDPPort;
     setInterval(function () {
         if (ifBroadcastingServerIP) {
@@ -69,11 +69,6 @@ function startBroadcastingServerIP(server){
         }
     }, 2000)
 }
-
-getWiFiInfo();
-startBroadcasting();
-startSecuredBroadcasting();
-
 
 module.exports = {
     start: function(){
@@ -98,8 +93,14 @@ module.exports = {
     stopServerIP: function(){
         ifBroadcastingServerIP = false;
     },
+    startBroadcastingServerIP: startBroadcastingServerIP
 
-    startBroadcastingServerIP: function(server){
-        startBroadcastingServerIP(server);
-    }
 }
+
+
+getWiFiInfo();
+startBroadcasting();
+startSecuredBroadcasting();
+startBroadcastingServerIP(UDPServer);
+
+

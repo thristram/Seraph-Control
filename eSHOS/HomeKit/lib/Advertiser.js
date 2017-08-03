@@ -39,12 +39,13 @@ Advertiser.prototype.startAdvertising = function(port) {
     "sf": this.accessoryInfo.paired() ? "0" : "1" // "sf == 1" means "discoverable by HomeKit iOS clients"
   };
 
+
   // create/recreate our advertisement
   this._advertisement = mdns.createAdvertisement(mdns.tcp('hap'), port, {
     name: this.accessoryInfo.displayName,
     txtRecord: txtRecord
   });
-  this._advertisement.start();
+  //this._advertisement.start();
 }
 
 Advertiser.prototype.isAdvertising = function() {
@@ -65,7 +66,8 @@ Advertiser.prototype.updateAdvertisement = function() {
       "sf": this.accessoryInfo.paired() ? "0" : "1" // "sf == 1" means "discoverable by HomeKit iOS clients"
     };
 
-    this._advertisement.updateTXTRecord(txtRecord);
+
+    //this._advertisement.updateTXTRecord(txtRecord);
   }
 }
 

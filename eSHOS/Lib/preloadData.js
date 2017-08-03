@@ -11,7 +11,7 @@ var channelData = {};
 var sensorData = {};
 var deviceStatus = {};
 var sensorStatus = {};
-
+var sysConfigs = {};
 
 var loadHomeKitData = function(callback){
 
@@ -35,7 +35,7 @@ var loadHomeKitData = function(callback){
             module.exports.deviceStatus = deviceStatus;
             //console.log(deviceStatus)
 
-            SQLAction.SQLSelect("seraph_sensor","deviceID, channel, code, value, lastupdate","code = 'TP' OR code = 'HM'","",function(sData){
+            SQLAction.SQLSelect("seraph_sensor","deviceID, channel, code, value, lastupdate","","",function(sData){
 
 
                 for(var sKey in sData){
@@ -51,6 +51,25 @@ var loadHomeKitData = function(callback){
     })
 };
 
+var loadSysConfig = function(callback){
+    if(sysConfigs == {}){
+        var sql = "SELECT * FROM config";
+        SQLAction.SQLConnection.all(sql, function(err, res) {
+            res.forEach(function (value) {
+                module.exports.sysConfigs[value.name] = value.value;
+            })
+            callback()
+        });
+    }   else    {
+        callback();
+    }
+
+
+};
+
+
+loadSysConfig(function(){});
+
 
 
 module.exports.deviceREF = deviceREF;
@@ -59,3 +78,5 @@ module.exports.sensorData = sensorData;
 module.exports.deviceStatus = deviceStatus;
 module.exports.sensorStatus = sensorStatus;
 module.exports.loadHomeKitData = loadHomeKitData;
+module.exports.sysConfigs = sysConfigs;
+module.exports.loadSysConfig = loadSysConfig;

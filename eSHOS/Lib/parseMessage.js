@@ -16,11 +16,6 @@ module.exports = {
 
 parseMessage: function (messageBuffer,ifSend){
 
-	var endToken = public.bufferString(messageBuffer.slice(messageBuffer.length - 2,messageBuffer.length));
-	if(endToken == "0A 0A "){
-        messageBuffer = messageBuffer.slice(0,messageBuffer.length-2);
-	}
-
 	var data = {
 		protocol			: "SSP-B",
 		RLLength			: 0,

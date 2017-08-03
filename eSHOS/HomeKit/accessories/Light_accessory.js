@@ -2,6 +2,7 @@ var Accessory = require('../').Accessory;
 var Service = require('../').Service;
 var Characteristic = require('../').Characteristic;
 var uuid = require('../').uuid;
+var debug = require('debug')('SLC_HAPAccessory');
 var SSPLinker = require('../../Lib/HomeKit_Link.js')
 var public = require("../../Lib/public.js")
 var loadData = require("../../Lib/preloadData.js");
@@ -40,9 +41,9 @@ var setDeviceValue = function (incommingValue){
 }
 
 var LightController = {
-
+    name: seraphConfig.model + " " + seraphConfig.version,
     setPower: function (status) { //set power of accessory
-        public.eventLog("Turning the '%s' %s", this.name, status ? "on" : "off");
+        debug("Turning the '%s' %s", this.name, status ? "on" : "off");
 
         deviceValue.power = status;
         var targetBrightness = deviceValue.brightness
@@ -61,7 +62,7 @@ var LightController = {
     },
 
     setBrightness: function (brightness) { //set brightness
-        public.eventLog("Setting '%s' brightness to %s", this.name, brightness);
+        debug("Setting '%s' brightness to %s", this.name, brightness);
         deviceValue.brightness = brightness;
         SSPLinker.SLCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, brightness)
     },
@@ -75,27 +76,27 @@ var LightController = {
     },
 
     setSaturation: function (saturation) { //set brightness
-        public.eventLog("Setting '%s' saturation to %s", this.name, saturation);
+        debug("Setting '%s' saturation to %s", this.name, saturation);
         deviceValue.saturation = saturation;
     },
 
     getSaturation: function () { //get brightness
-        public.eventLog("'%s' saturation is %s", this.name, deviceValue.saturation);
+        debug("'%s' saturation is %s", this.name, deviceValue.saturation);
         return deviceValue.saturation;
     },
 
     setHue: function (hue) { //set brightness
-        public.eventLog("Setting '%s' hue to %s", this.name, hue);
+        debug("Setting '%s' hue to %s", this.name, hue);
         deviceValue.hue = hue;
     },
 
     getHue: function () { //get hue
-        public.eventLog("'%s' hue is %s", this.name, deviceValue.hue);
+        debug("'%s' hue is %s", this.name, deviceValue.hue);
         return deviceValue.hue;
     },
 
     identify: function () { //identify the accessory
-        public.eventLog("Identify the '%s'", this.name);
+        debug("Identify the '%s'", this.name);
     }
 }
 
@@ -117,20 +118,23 @@ var updateDeviceStatus = function(time, device){
 };
 var checkDeviceStatus = function(callback){
     loadData.loadHomeKitData(function(){
-        var brightness = parseInt(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value);
-        if(brightness == 100){
-            deviceValue.brightness = 100;
-            deviceValue.power = true;
-        }   else if(brightness == 0) {
-
-            deviceValue.power = false;
-        }   else    {
-            deviceValue.brightness = brightness + 1;
-            deviceValue.power = true;
-        }
+        updateSeraphConfigStatus(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value)
         callback()
     })
 };
+var updateSeraphConfigStatus = function(value){
+    var brightness = parseInt(value);
+    if (brightness == 100) {
+        deviceValue.brightness = 100;
+        deviceValue.power = true;
+    } else if (brightness == 0) {
+
+        deviceValue.power = false;
+    } else {
+        deviceValue.brightness = brightness + 1;
+        deviceValue.power = true;
+    }
+}
 
 
 var SLCService = function() {
@@ -201,7 +205,9 @@ var SLCService = function() {
         .getService(Service.Lightbulb)
         .addCharacteristic(Characteristic.Brightness)
         .on('set', function (value, callback) {
+
             if(!reverseFlag) {
+                LightController.setBrightness(value)
                 updateDeviceStatus(10000, lightAccessory);
             }
             callback();
@@ -237,9 +243,20 @@ var SLCService = function() {
             callback(null, LightController.getHue());
         });
 
-    SSPLinker.HAPEvent.on('receipt', function(){
-        updateDeviceStatus(1,lightAccessory);
-    })
+    SSPLinker.HAPEvent.on('statusUpdate', function(deviceID, channel, value){
+        if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)) {
+            debug("Receive Status Message of " + deviceID + " Channel " + channel + " : " + value);
+            reverseFlag = true;
+            updateSeraphConfigStatus(value);
+            lightAccessory
+                .getService(Service.Lightbulb)
+                .setCharacteristic(Characteristic.On, deviceValue.power)
+                .setCharacteristic(Characteristic.Brightness, deviceValue.brightness);
+            setTimeout(function () {
+                reverseFlag = false;
+            }, 1000)
+        }
+    });
     updateDeviceStatus(3000,lightAccessory);
 };
 

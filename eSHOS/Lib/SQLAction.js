@@ -7,12 +7,15 @@
 
 var config = require("../../config.js");
 var public = require("./public.js");
+var debug = require('debug')('SQL');
 
 
 var path = require('path');
 var SQLite = require('sqlite3').verbose();
 var SQLdb = new SQLite.Database(path.join(__dirname.replace("Lib","") + '/db/seraph.sqlite'));
-
+SQLdb.on("error", function(error) {
+    debug("[%s] SQL Error:" + error, public.getDateTime());
+});
 //var SQLdb = new SQLite.Database('/Users/fangchenli/Downloads/Seraph-eSH-master/eSHOS/db//db/seraph.sqlite'));
 
 
@@ -32,18 +35,21 @@ SQLAdd: function (db,sqlData){
 	}
 	sql = 'INSERT INTO ' + db + "(" + keys.join(",") + ")" + " VALUES ('" + values.join("' , '") + "');";
     SQLdb.run(sql);
-    public.eventLog(sql , "SQL");
+    debug("[%s] " + sql, public.getDateTime());
+    //public.eventLog(sql , "SQL");
 },
 SQLSetInc: function (db,field,where,inc){
 	var sql = 'UPDATE ' + db + ' SET ' + field + ' = ' + field + ' + ' + inc + ' ' + this.parseWhere(where);
 
     SQLdb.run(sql);
-    public.eventLog(sql , "SQL");
+    debug("[%s] " + sql, public.getDateTime());
+    //public.eventLog(sql , "SQL");
 	
 },
 SQLFind: function(db,field,where,callback){
     var sql = "SELECT " + this.parseField(field) + " FROM " +  db  + this.parseWhere(where);
-    public.eventLog(sql , "SQL");
+    debug("[%s] " + sql, public.getDateTime());
+    //public.eventLog(sql , "SQL");
     SQLdb.all(sql, function(err, data) {
         if(data.length > 0){
             callback(data[0]);
@@ -56,7 +62,8 @@ SQLFind: function(db,field,where,callback){
 },
 SQLGetField: function(db,field,where,callback){
     var sql = "SELECT " + this.parseField(field) + " FROM " +  db  + this.parseWhere(where);
-    public.eventLog(sql , "SQL");
+    debug("[%s] " + sql, public.getDateTime());
+    //public.eventLog(sql , "SQL");
     SQLdb.all(sql, function(err, data) {
     	if(data.length > 0){
     		callback(data[0][field]);
@@ -68,7 +75,8 @@ SQLGetField: function(db,field,where,callback){
 SQLSetField: function (db,field,where){
 
 	var sql = 'UPDATE ' + db + ' SET ' + this.parseField(field) + this.parseWhere(where);
-	public.eventLog(sql , "SQL");
+    debug("[%s] " + sql, public.getDateTime());
+	//public.eventLog(sql , "SQL");
     SQLdb.run(sql);
 },
 
@@ -80,19 +88,22 @@ SQLSetConfig: function (db,field){
     }
     var sql = 'UPDATE ' + db + ' SET ' + this.parseField({value:query,timestamp:public.timestamp()}) + this.parseWhere({name:where});
 	SQLdb.run(sql);
-    public.eventLog(sql , "SQL");
+    debug("[%s] " + sql, public.getDateTime());
+    //public.eventLog(sql , "SQL");
 
 },
 SQLDelete: function (db,where){
 
     var sql = 'DELETE FROM ' + db + this.parseWhere(where);
     SQLdb.run(sql);
-    public.eventLog(sql , "SQL");
+    debug("[%s] " + sql, public.getDateTime());
+    //public.eventLog(sql , "SQL");
 },
 SQLSelect: function(db,field,where,order,callback){
 
 	var sql = "SELECT " + this.parseField(field) + " FROM " +  db  + this.parseWhere(where);
-    public.eventLog(sql , "SQL");
+    debug("[%s] " + sql, public.getDateTime());
+    //public.eventLog(sql , "SQL");
     SQLdb.all(sql, function(err, data) {
         if(data.length > 0){
             callback(data);

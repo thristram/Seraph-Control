@@ -2,6 +2,7 @@ var Accessory = require('../').Accessory;
 var Service = require('../').Service;
 var Characteristic = require('../').Characteristic;
 var uuid = require('../').uuid;
+var debug = require('debug')('SPC_HAPAccessory');
 var SSPLinker = require('../../Lib/HomeKit_Link.js');
 var public = require("../../Lib/public.js");
 var loadData = require("../../Lib/preloadData.js");
@@ -31,21 +32,21 @@ var reverseFlag = false;
 // here's a fake hardware device that we'll expose to HomeKit
 var SPowerControl = {
     setPowerOn: function(on) {
-        public.eventLog("Turning the " + seraphConfig.name + " %s!...", on ? "on" : "off");
+        debug("Turning the " + seraphConfig.name + " %s!...", on ? "on" : "off");
         if (on) {
           deviceValue.power = true;
           if(err) { return console.log(err); }
-          public.eventLog("Seraph Power Control is now ON.");
+          debug("Seraph Power Control is now ON.");
           SSPLinker.SPCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, true)
         } else {
           deviceValue.power = false;
           if(err) { return console.log(err); }
-          public.eventLog("Seraph Power Control is now OFF.");
+          debug("Seraph Power Control is now OFF.");
           SSPLinker.SPCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, false)
         }
     },
     identify: function() {
-        public.eventLog("Identify the Seraph Power Control.");
+        debug("Identify the Seraph Power Control.");
     }
 }
 
@@ -77,16 +78,19 @@ var updateDeviceStatus = function(time, device){
 };
 var checkDeviceStatus = function(callback){
     loadData.loadHomeKitData(function(){
-
-        if(parseInt(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value) > 0){
-            public.eventLog("Checking Status of " + seraphConfig.deviceID + " Channel " + seraphConfig.channelID + " : ON")
-            deviceValue.power = true;
-        }   else    {
-            public.eventLog("Checking Status of " + seraphConfig.deviceID + " Channel " + seraphConfig.channelID + " : OFF")
-            deviceValue.power = false;
-        }
+        updateSeraphConfigStatus(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value)
         callback()
     })
+}
+
+var updateSeraphConfigStatus = function(value){
+    if(parseInt(value) > 0){
+        debug("Checking Status of " + seraphConfig.deviceID + " Channel " + seraphConfig.channelID + " : ON")
+        deviceValue.power = true;
+    }   else    {
+        debug("Checking Status of " + seraphConfig.deviceID + " Channel " + seraphConfig.channelID + " : OFF")
+        deviceValue.power = false;
+    }
 }
 
 var SPCService = function(){
@@ -149,9 +153,20 @@ var SPCService = function(){
 
 
         });
-    SSPLinker.HAPEvent.on('receipt', function(){
-        updateDeviceStatus(1,lightAccessory);
-    })
+
+    SSPLinker.HAPEvent.on('statusUpdate', function(deviceID, channel, value){
+
+        if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)){
+            debug("Receive Status Message of " + deviceID + " Channel " + channel + " : " + value)
+            reverseFlag = true;
+            updateSeraphConfigStatus(value);
+            outlet
+                .getService(Service.Outlet)
+                .setCharacteristic(Characteristic.On, deviceValue.power);
+            reverseFlag = false;
+        }
+
+    });
     updateDeviceStatus(3000,outlet)
 
 

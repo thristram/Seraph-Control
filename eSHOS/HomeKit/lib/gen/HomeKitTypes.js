@@ -274,7 +274,7 @@ Characteristic.CarbonDioxideLevel = function() {
     format: Characteristic.Formats.FLOAT,
     maxValue: 100000,
     minValue: 0,
-    minStep: 100,
+    minStep: 10,
     perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
   });
   this.value = this.getDefaultValue();

@@ -305,7 +305,13 @@ module.exports = {
         	tmparr.push(n);
     	}
     	return tmparr;
+	},
+	translateCChannel: function(c){
+    	if(c.charAt(0) == "C"){
+    		return parseInt(c.substring(1));
+		}
 	}
+
 
 
 

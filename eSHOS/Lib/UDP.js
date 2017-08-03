@@ -4,15 +4,15 @@
 var dgram = require("dgram");
 var AES =  require ("./AES.js");
 var public = require("./public.js");
-
-
+var smartConnect = require("./smartConnect.js");
+var config = require("../../config.js");
 //////////////////////////////////////
         //CREATE UDP CLIENT//
 //////////////////////////////////////
 
 
 
-
+var UDPServer;
 
 module.exports = {
 
@@ -179,9 +179,102 @@ module.exports = {
         })
 
 
-    }
+    },
+
+
+
 
 }
+
+/************************************/
+
+            //UDP Server//
+
+/************************************/
+
+
+
+
+var createUDPServer = function(){
+    var port = config.UDPPort;
+    UDPServer = dgram.createSocket("udp4");
+    UDPServer.bind(port,function () {
+        UDPServer.setBroadcast(true);
+    });
+    UDPServer.on('listening', function () {
+        var address = UDPServer.address();
+        public.eventLog('UDP Server listening on ' + address.address + ":" + address.port,"UDP Server");
+    });
+
+    UDPServer.on('message', function (message, remote) {
+        public.eventLog("Receiving Message from " + remote.address + ':' + remote.port +' - ' + public.bufferString(new Buffer(message)),"UDP Server");
+        if(checkSICP(message,remote)){
+            parseSCIP(message,remote);
+        }
+    });
+    //return UDPServer;
+
+}
+
+var parseSCIP = function(message,remote){
+    var type = message.readInt8(4);
+    var content = message.slice(5,message.length);
+    switch(type){
+        case 3:
+            sicpSmartConnectUDPReply(content,remote);
+            break;
+        default:
+            break;
+    }
+}
+var checkSICP = function(message,remote){
+    var SICPIdentifier = new Buffer("aa", 'hex');
+
+    if(message[0] == 170 && message[1] == 170){
+        var messageLength = message.readInt8(2) * 128 + message.readInt8(3) + 4;
+
+        if(message.length == messageLength){
+            return true;
+        }   else    {
+            public.eventError("SICP Message Length Error","UDP Server");
+            return false;
+        }
+    }   else    {
+        public.eventError("SICP Not Supported","UDP Server");
+        return false
+    }
+}
+var sicpSmartConnectUDPReply = function(message,remote){
+    var idKey = message.slice(1,message.length).toString('hex');
+    public.eventLog("Parsed ID Key: " + idKey,"Smart Connect Status");
+    if(typeof approvedSS[remote.address] === "undefined"){
+        public.eventLog("New TCP Client Connection is Approved, IDKey: " + idKey + ", IP Address: " + remote.address ,"Smart Connect Status");
+    }
+
+    approvedSS[remote.address] = idKey;
+
+
+    if(message){
+        var code = message.readInt8(0);
+        switch (code){
+            case 0:
+                public.eventLog("New TCP Server Connected","Smart Connect Status");break;
+            case 1:
+                public.eventLog("Dropped from Current TCP Server, New TCP Server Connected","Smart Connect Status");break;
+            case 2:
+                public.eventLog("Keep Current Connection","Smart Connect Status");break;
+            case 3:
+                public.eventError("Cannot Connect to TCP Server","Smart Connect Status");break;
+            default:
+                break;
+        }
+    }
+}
+
+module.exports.createUDPServer = createUDPServer;
+module.exports.parseSCIP = parseSCIP;
+module.exports.checkSICP = checkSICP;
+module.exports.sicpSmartConnectUDPReply = sicpSmartConnectUDPReply;
 
 
 

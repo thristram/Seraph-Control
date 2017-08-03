@@ -29,25 +29,13 @@ function loadDirectory(dir, callback) {
 
   // exported accessory objects loaded from this dir
   var accessories = [];
-    /*
-
-     var SCID = "SCAA55AB56";
-     var SSDeviceID = "SSE11T26";
-     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "3", "SP 1-1&2"));
-     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "5", "SP 1-1&3"));
-     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "6", "SP 1-2&3"));
-     accessories.push(loadSPC(dir, SSDeviceID, SCID, "1", "7", "SP 1-1&2&3"));
-
-     accessories.push(loadSLC(dir, SSDeviceID, SCID, "3", "3", "SL 3-1&2"));
-     accessories.push(loadSLC(dir, SSDeviceID, SCID, "4", "3", "SL 4-1&2"));
-     */
 
     var channelData = preloadData.channelData;
     var sensorData = preloadData.sensorData;
     var deviceREF = preloadData.deviceREF;
 
-    console.log(channelData)
-    console.log(sensorData)
+    //console.log(channelData)
+    //console.log(sensorData)
 
     for (var SEPKey in channelData){
 
@@ -85,24 +73,56 @@ function loadDirectory(dir, callback) {
 
     }
 
+    var sensorInSSDevice = {}
+
     for (var sensorKey in sensorData){
 
+
         var deviceID = sensorData[sensorKey].deviceID;
+
         var deviceValue = {
             "value"         :   sensorData[sensorKey].value,
             "lastupdate"    :   sensorData[sensorKey].lastupdate
         }
 
+
+        if(!sensorInSSDevice[deviceID]){
+            sensorInSSDevice[deviceID] = {};
+        }
+        sensorInSSDevice[deviceID][sensorData[sensorKey].code] = deviceValue;
+
         switch(sensorData[sensorKey].code){
             case "TP":
-                accessories.push(loadTPSensor(dir, deviceID, "Temperature Sensor", deviceValue));
+                accessories.push(loadSensor(dir, deviceID, "Temperature Sensor", "TP", "TemperatureSensor", deviceValue));
                 break;
             case "HM":
-                accessories.push(loadHMSensor(dir, deviceID, "Humidity Sensor", deviceValue));
+                accessories.push(loadSensor(dir, deviceID, "Humidity Sensor", "HM", "HumiditySensor", deviceValue));
+                break;
+            case "CD":
+                accessories.push(loadSensor(dir, deviceID, "CO2 Sensor", "CD", "CO2Sensor", deviceValue));
+                break;
+            case "PR":
+                accessories.push(loadSensor(dir, deviceID, "Motion Sensor", "PR", "MotionSensor", deviceValue));
+                break;
+            case "CO":
+                accessories.push(loadSensor(dir, deviceID, "CO Sensor", "CO", "COSensor", deviceValue));
+                break;
+            case "SM":
+                accessories.push(loadSensor(dir, deviceID, "Smoke Sensor", "SM", "SmokeSensor", deviceValue));
                 break;
             default:
                 break;
         }
+    }
+
+    for(var AQkey in sensorInSSDevice){
+        deviceValue = {
+            "CO"    : sensorInSSDevice[AQkey]["CO"].value,
+            "CD"    : sensorInSSDevice[AQkey]["CD"].value,
+            "VO"    : sensorInSSDevice[AQkey]["VO"].value,
+            "PT"    : sensorInSSDevice[AQkey]["PT"].value,
+        }
+        accessories.push(loadSensor(dir, deviceID, "Air Quality Sensor", "AQ", "AirQualitySensor", deviceValue));
     }
     // now we need to coerce all accessory objects into instances of Accessory (some or all of them may
     // be object-literal JSON-style accessories)
@@ -147,28 +167,19 @@ function loadSLC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, nam
     loadedAccessory.startSLCService();
     return loadedAccessory.accessory;
 }
-function loadHMSensor(dir, SSDeviceID, name, deviceValue){
-    var file = "HumiditySensor_accessory.js"
+function loadSensor(dir, SSDeviceID, name, channelID, sensorClassName, deviceValue){
+    var file = sensorClassName + "_accessory.js"
     debug('Parsing accessory: %s', file);
     var loadedAccessory = requireUncached(path.join(dir, file));
     loadedAccessory.setSeraphConfig("deviceID", SSDeviceID);
     loadedAccessory.setSeraphConfig("SSdeviceID", SSDeviceID);
-    loadedAccessory.setSeraphConfig("channelID", "21");
+    loadedAccessory.setSeraphConfig("channelID", channelID);
     loadedAccessory.setSeraphConfig("name", name);
-    loadedAccessory.startSPCService();
+    loadedAccessory.setDeviceValue(deviceValue);
+    loadedAccessory.startSensorService();
     return loadedAccessory.accessory;
 }
-function loadTPSensor(dir, SSDeviceID, name, deviceValue){
-    var file = "TemperatureSensor_accessory.js"
-    debug('Parsing accessory: %s', file);
-    var loadedAccessory = requireUncached(path.join(dir, file));
-    loadedAccessory.setSeraphConfig("deviceID", SSDeviceID);
-    loadedAccessory.setSeraphConfig("SSdeviceID", SSDeviceID);
-    loadedAccessory.setSeraphConfig("channelID", "22");
-    loadedAccessory.setSeraphConfig("name", name);
-    loadedAccessory.startSPCService();
-    return loadedAccessory.accessory;
-}
+
 /**
  * Accepts object-literal JSON structures from previous versions of HAP-NodeJS and parses them into
  * newer-style structures of Accessory/Service/Characteristic objects.
