@@ -1,9 +1,8 @@
-var http = require('http');
+
 var net = require('net');
-var url = require('url');
 var dgram = require('dgram');
 var path = require('path');
-var qs = require('querystring');
+
 
 
 
@@ -13,13 +12,10 @@ var qs = require('querystring');
 //////////////////////////////////////
 
 var serverSocket;
-var UDPServer;
-
 
 //////////////////////////////////////
       //TCP Clients Variables//
 //////////////////////////////////////
-var sysConfigs = {};
 var TCPClients = {};
 var approvedSS = {};
 
@@ -29,14 +25,7 @@ var approvedSS = {};
 var SSInfos = [];
 
 
-//////////////////////////////////////
-        //System Variables//
-//////////////////////////////////////
-var isSmartConnecting = false;
-var isBroadcastingServerIP = false;
-var isSecuredSmartConnecting = false;
-var securedSmartConnectMac = "";
-var defaultMeshID = "8001";
+
 
 
 //////////////////////////////////////
@@ -51,16 +40,20 @@ var SQLAction =  require ("./SQLAction.js");
 var webAction = require("./webAction.js");
 var smartConnect = require("./smartConnect.js");
 var UDP = require("./UDP.js");
+var HTTPServer = require("./HTTPServer.js");
 var AES = require("./AES.js");
 var constructSIDPMessage = require("./Construct/constructSIDPMessage.js");
 var constructSICPMessage = require("./Construct/constructSICPMessage.js");
 var ParseHardwareMessage = require("./Parse/parseHardwareMessage.js");
 var homeKit;
 var processIncomming = require("./processReturn.js");
-var SSPB_APIs = require("./SSP-B.js");
+
 var SIDP_APIs = require("./SIDP.js");
 var SICP_APIs = require("./SICP.js");
-var preloadData = require("./preloadData.js")
+var SSPB_APIs = require("./SSP-B.js");
+var TEST_APIs = require("./TEST_API.js");
+var preloadData = require("./preloadData.js");
+var rotationalCheck = require("./rotationalCheck.js");
 
 //////////////////////////////////////
             //HomeKit//
@@ -76,10 +69,9 @@ var queueingTime = 1000;
          //TEMPERATELY//
 //////////////////////////////////////
 
-var tempIncommingData = [];
+
 var SCIPStartHeartBeats = true;
-var checksumValue = "00";
-var currentData = "";
+
 
 
 
@@ -90,7 +82,7 @@ var currentData = "";
 /************************************/
 
 
-function createAllClients(){
+var createAllClients = function(){
     SQLAction.SQLConnection.run('UPDATE seraph_device SET cStatus = 0 WHERE type="SS"');
 
 
@@ -125,7 +117,7 @@ function createAllClients(){
 }
 
 
-function destroyAllClients(){
+var destroyAllClients = function(){
 
     for(var value in TCPClients){
         if(value.isServer != 1) {
@@ -143,7 +135,7 @@ function destroyAllClients(){
 
     SSInfos = [];
 }
-function destroyConnectedClients(SSDeviceID){
+var destroyConnectedClients = function(SSDeviceID){
 
     if(TCPClients[SSDeviceID].TCPClient){
         TCPClients[SSDeviceID].TCPClient.end();
@@ -156,44 +148,32 @@ function destroyConnectedClients(SSDeviceID){
     delete TCPClients[SSDeviceID];
 
 }
-function loadAddDataFromDB(){
-    sysConfigs = {};
-    var sql = "SELECT * FROM config";
-    SQLAction.SQLConnection.all(sql, function(err, res) {
-        res.forEach(function (value) {
-            sysConfigs[value.name] = value.value;
-        })
-        createUDPServer();
-        //public.eventLog(sysConfigs);
-    });
 
-}
 webAction.getLocalIP(function(localIP){
     //UDP.broadCastingServerAddress(localIP);
     //public.eventLog(localIP);
 });
-loadAddDataFromDB();
 createAllClients();
 webAction.refreshAll(function(){});
 
 
 
 setInterval(function(){
+    /*
     if(SCIPStartHeartBeats){
-        //SICP_APIs.SICPHeartBeat();
+        SICP_APIs.SICPHeartBeat();
     }
+    */
 },5000);
-
-preloadData.loadHomeKitData(function(){
-    homeKit = require("../HomeKit/BridgedCore.js");
-})
 
 
 //////////////////////////////////////
             //HomeKit//
 //////////////////////////////////////
 
-
+preloadData.loadHomeKitData(function(){
+    homeKit = require("../HomeKit/BridgedCore.js");
+})
 
 /************************************/
 
@@ -293,33 +273,47 @@ function handleTCPReply(data){
 
         var correctData = data;
 
-        var headerRL = parseMessage.parseFixedHeaderRL(data);
-        var parsedTotalLength = headerRL.byte + 3 + headerRL.message;
-        var incommingMessageData;
 
-        console.log("Total Length: " + data.length);
-        console.log("Parsed Total Length: " + parsedTotalLength);
+        var bufStr = data.toString('hex').toUpperCase();
+        var separateCommands = bufStr.split("0A0A");
+        console.log(separateCommands);
+        for(var key in separateCommands){
+            if(separateCommands[key] != ''){
+            var singleData = new Buffer(separateCommands[key],"hex");
 
-        if(parsedTotalLength != data.length){
-            incommingMessageData = {
-                "code"      :   "0x505001",
-                "msg"       :   "Protocol NOT Supported!",
-                "raw"       :   data.toString(),
-                "raw Hex"   :   public.bufferString(data),
-                "message"   :   "Total Length: " + data.length + "\n" + "Parsed Total Length: " + parsedTotalLength,
-                "correct Data" : public.bufferString(correctData)
+                var headerRL = parseMessage.parseFixedHeaderRL(singleData);
+                var parsedTotalLength = headerRL.byte + 1 + headerRL.message;
+                var incommingMessageData;
+
+                console.log("Total Length: " + singleData.length);
+                console.log("Parsed Total Length: " + parsedTotalLength);
+
+                if(parsedTotalLength != singleData.length){
+                    incommingMessageData = {
+                        "code"      :   "0x505001",
+                        "msg"       :   "Protocol NOT Supported!",
+                        "raw"       :   singleData.toString(),
+                        "raw Hex"   :   public.bufferString(singleData),
+                        "message"   :   "Total Length: " + singleData.length + "\n" + "Parsed Total Length: " + parsedTotalLength,
+                        "correct Data" : public.bufferString(correctData)
+                    }
+                }   else    {
+                    incommingMessageData = parseMessage.parseMessage(singleData,false);
+                    processIncomming.processSSPBIncomming(incommingMessageData);
+                }
             }
-        }   else    {
-            incommingMessageData = parseMessage.parseMessage(data,false);
-            processIncomming.processSSPBIncomming(incommingMessageData);
+
         }
 
 
 
+
+
+
     }
-    tempIncommingData.push(incommingMessageData);
+    //TEST_APIs.tempIncommingData.push(incommingMessageData);
     if(incommingMessageData.isRequest){
-        var msg = constructReturnMessage(2,incommingMessageData.messageID,"0x2000001","Operation Complete.",null);
+        var msg = SSPB_APIs.constructReturnMessage(2,incommingMessageData.messageID,"0x2000001","Operation Complete.",null);
         //TCPSocketWrite(SSDevice,msg);
     }	else	{
 
@@ -327,90 +321,7 @@ function handleTCPReply(data){
 
 
 }
-/************************************/
 
-            //UDP Server//
-
-/************************************/
-
-
-
-
-function createUDPServer(){
-    var port = config.UDPPort;
-    UDPServer = dgram.createSocket("udp4");
-    UDPServer.bind(port,function () {
-        UDPServer.setBroadcast(true);
-    });
-    UDPServer.on('listening', function () {
-        var address = UDPServer.address();
-        public.eventLog('UDP Server listening on ' + address.address + ":" + address.port,"UDP Server");
-    });
-
-    UDPServer.on('message', function (message, remote) {
-        public.eventLog("Receiving Message from " + remote.address + ':' + remote.port +' - ' + public.bufferString(new Buffer(message)),"UDP Server");
-        if(checkSICP(message,remote)){
-            parseSCIP(message,remote);
-        }
-    });
-    smartConnect.startBroadcastingServerIP(UDPServer);
-
-}
-
-function parseSCIP(message,remote){
-    var type = message.readInt8(4);
-    var content = message.slice(5,message.length);
-    switch(type){
-        case 3:
-            sicpSmartConnectUDPReply(content,remote);
-            break;
-        default:
-            break;
-    }
-}
-function checkSICP(message,remote){
-    var SICPIdentifier = new Buffer("aa", 'hex');
-
-    if(message[0] == 170 && message[1] == 170){
-        var messageLength = message.readInt8(2) * 128 + message.readInt8(3) + 4;
-
-        if(message.length == messageLength){
-            return true;
-        }   else    {
-            public.eventError("SICP Message Length Error","UDP Server");
-            return false;
-        }
-    }   else    {
-        public.eventError("SICP Not Supported","UDP Server");
-        return false
-    }
-}
-function sicpSmartConnectUDPReply(message,remote){
-    var idKey = message.slice(1,message.length).toString('hex');
-    public.eventLog("Parsed ID Key: " + idKey,"Smart Connect Status");
-    if(typeof approvedSS[remote.address] === "undefined"){
-        public.eventLog("New TCP Client Connection is Approved, IDKey: " + idKey + ", IP Address: " + remote.address ,"Smart Connect Status");
-    }
-
-    approvedSS[remote.address] = idKey;
-
-
-    if(message){
-        var code = message.readInt8(0);
-        switch (code){
-            case 0:
-                public.eventLog("New TCP Server Connected","Smart Connect Status");break;
-            case 1:
-                public.eventLog("Dropped from Current TCP Server, New TCP Server Connected","Smart Connect Status");break;
-            case 2:
-                public.eventLog("Keep Current Connection","Smart Connect Status");break;
-            case 3:
-                public.eventError("Cannot Connect to TCP Server","Smart Connect Status");break;
-            default:
-                break;
-        }
-    }
-}
 
 /************************************/
 
@@ -446,6 +357,12 @@ function handleConnection(con) {
             con.on('data', onConData);
             con.once('close', onConClose);
             con.on('error', onConError);
+            if(remoteAddress != "127.0.0.1"){
+                rotationalCheck.startCheckDeviceStatus(tempTCPClient.deviceID);
+                setTimeout(function(){
+                    rotationalCheck.startCheckSensorValue(tempTCPClient.deviceID);
+                },1000)
+            }
 
         }   else    {
             con.end();
@@ -505,6 +422,7 @@ function authTCPClients(con,callback){
 }
 
 var TCPSocketWrite = function(SSDevice, msg, command, options){
+    SSPB_APIs.recordCommandData(options);
     TCPWrite(SSDevice, msg);
     /*
     var queueItem = {
@@ -532,6 +450,7 @@ var TCPSocketWrite = function(SSDevice, msg, command, options){
     */
 
 }
+
 var TCPWrite = function(SSDeviceID,msg){
 
     var SSDevice = {}
@@ -554,6 +473,7 @@ var TCPWrite = function(SSDeviceID,msg){
     }
 }
 
+
 function processQueue(){
 
     var QETemp = {};
@@ -561,7 +481,7 @@ function processQueue(){
     //Keep the last command
 
     for(var key in commandQueue){
-        if(commandQueue[key].command = "QE"){
+        if(commandQueue[key].command = "/qe"){
             switch(commandQueue[key].options.action){
                 case "WP":
                 case "DM":
@@ -582,660 +502,15 @@ function processQueue(){
     }
 
 }
-/************************************/
 
-		   //HTTP SERVER//
 
-/************************************/
-
-
-
-
-var server = http.createServer(function (request, response) {
-    handleHTTPRequest(request, response);
-    //response.end("Hello World\n");
-});
-
-function handleHTTPRequest(req,res,next){
-
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Request-Method", 'GET,PUT,POST,DELETE,OPTIONS');
-    res.setHeader("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-seraph-version, x-seraph-messageID, x-seraph-accessToken");
-
-    if(req.method == "OPTIONS"){
-        //res.send(200);
-        res.end();
-    }   else    {
-
-        if(req.method == "POST") {
-
-            var postData = "";
-
-            req.addListener("data", function (data) {
-                postData += data;
-            });
-
-            req.addListener("end", function () {
-                var query = qs.parse(postData);
-                req.body = query;
-                attachURI(req,res)
-            });
-        }   else    {
-            attachURI(req,res)
-        }
-
-
-
-
-    }
-
-}
-
-function attachURI(req,res){
-    if (checkFunction("/test/linkService",req)) {testLinkService(req, res);}
-
-    if (checkFunction("/checkmessage",req)) {testCheckmessage(req, res);}
-    if (checkFunction("/checkonline",req)) {testCheckonline(req, res);}
-    if (checkFunction("/test/updateDeviceList",req)) {testUpdateDeviceList(req, res);}
-    if (checkFunction("/test/updateDeviceListClient",req)) {testUpdateDeviceListClient(req, res);}
-    if (checkFunction("/test/deleteFromDeviceList",req)) {testDeleteFromDeviceList(req, res);}
-    if (checkFunction("/test/updateSmartConnectInfo",req)) {testUpdateSmartConnectInfo(req, res);}
-    if (checkFunction("/test/startSmartConnect",req)) {testStartSmartConnect(req, res);}
-    if (checkFunction("/test/stopSmartConnect",req)) {testStopSmartConnect(req, res);}
-    if (checkFunction("/test/startSecuredSmartConnect",req)) {testStartSecuredSmartConnect(req, res);}
-    if (checkFunction("/test/stopSecuredSmartConnect",req)) {testStopSecuredSmartConnect(req, res);}
-    if (checkFunction("/test/startBroadcastingServerIP",req)) {testStartBroadcastingServerIP(req, res);}
-    if (checkFunction("/test/stopBroadcastingServerIP",req)) {testStopBroadcastingServerIP(req, res);}
-    if (checkFunction("/test/checksumCaluc",req)) {testChecksumCaluc(req, res);}
-    if (checkFunction("/test/updateDefaultMeshID",req)) {testUpdateDefaultMeshID(req, res);}
-
-    if (checkFunction("/actions/perform",req)) {sspaGetActionsPerform(req, res);}
-    if (checkFunction("/actions/refresh",req)) {sspaGetActionsRefresh(req, res);}
-    if (checkFunction("/actions/backlight",req)) {sspaGetActionsBacklight(req, res);}
-    if (checkFunction("/data/sync",req)) {sspaGetDataSync(req, res);}
-    if (checkFunction("/data/recent",req)) {sspaGetDataRecent(req, res);}
-    if (checkFunction("data/ir",req)) {sspaGetDataIr(req, res);}
-    if (checkFunction("/config/ss",req)) {sspaGetConfigSS(req, res);}
-    if (checkFunction("/config/ss",req,"POST")) {sspaPostConfigSS(req, res);}
-    if (checkFunction("/config/strategy",req)) {sspaGetConfigStrategy(req, res);}
-    if (checkFunction("/config/strategy",req,"POST")) {sspaPostConfigStrategy(req, res);}
-    if (checkFunction("/device/status",req)) {sspaGetDeviceStatus(req, res);}
-    if (checkFunction("/device/list",req)) {sspaGetDeviceList(req, res);}
-    if (checkFunction("/device/list",req, "POST")) {sspaPostDeviceList(req, res);}
-    if (checkFunction("/qe",req)) {sspaGetQE(req, res);}
-    if (checkFunction("/alarm",req)) {sspaGetAlarm(req, res);}
-
-
-    if (checkFunction("/sidp/action",req, "POST")) {SIDP_APIs.sidpPostAction(req, res);}
-    if (checkFunction("/sidp/receipt",req, "POST")) {SIDP_APIs.sidpPostReceipt(req, res);}
-    if (checkFunction("/sidp/alarm",req, "POST")) {SIDP_APIs.sidpPostAlarm(req, res);}
-    if (checkFunction("/sidp/ble",req, "POST")) {SIDP_APIs.sidpPostBLE (req, res);}
-    if (checkFunction("/sidp/config",req, "POST")) {SIDP_APIs.sidpPostConfig (req, res);}
-    if (checkFunction("/sidp/led",req, "POST")) {SIDP_APIs.sidpPostLED (req, res);}
-    if (checkFunction("/sidp/cmd",req, "POST")) {SIDP_APIs.sidpPostCMD (req, res);}
-}
-
-// Listen on port 8000, IP defaults to 127.0.0.1
-server.listen(config.HTTPort);
-
-// Put a friendly message on the terminal
-public.eventLog('Seraph eSHOS Testing Console Listening on Port ' + config.HTTPort + '...', "HTTP Server")
-
-function checkFunction(name,req,method){
-
-    if(!method) {method = "GET"};
-    if(req.method == method) {
-
-        var path = url.parse(req.url, true).pathname;
-
-        if (path.indexOf(name) == 0) {
-            return name;
-        } else {
-            return false;
-        }
-    }   else    {
-        return false;
-    }
-}
-
-/************************************/
-
-            //TESTING API//
-
-/************************************/
-
-
-
-function testLinkService(req, res) {
-
-    var sql = "SELECT * FROM seraph_IR_type";
-    public.eventLog("Link Service Started","Link Service");
-    SQLAction.SQLConnection.all(sql, function(err, data) {
-        var val = {
-            TCPClient: SSInfos,
-            IRType: data,
-            sysConfig: sysConfigs,
-            isSmartConnecting: isSmartConnecting,
-            isSecuredSmartConnecting: isSecuredSmartConnecting,
-            isBroadcastingServerIP: isBroadcastingServerIP,
-            securedSmartConnectMac: securedSmartConnectMac,
-            resultChecksum: checksumValue,
-            defaultMeshID: public.bufferString(defaultMeshID),
-            currentData: currentData
-        };
-        for(var i = 0; i < val.TCPClient.length; i ++){
-            delete val.TCPClient[i].TCPClient;
-        }
-        res.end(JSON.stringify(val))
-    });
-
-}
-
-
-function testCheckmessage(req, res) {
-    //res.setHeader('Content-Type', 'application/json');
-    var message = tempIncommingData;
-    tempIncommingData = []
-    res.end(JSON.stringify(message))
-
-}
-
-function testCheckonline(req, res) {
-
-    var sql = "SELECT * FROM seraph_device WHERE type = 'SS'";
-    SQLAction.SQLConnection.all(sql, function(err, data) {
-        res.end(JSON.stringify(data))
-    });
-
-}
-
-
-function testUpdateDeviceList(req, res) {
-    var query = url.parse(req.url, true).query;
-    var data = {
-        IPAddress   : query.IPAddress,
-        model       : query.model,
-        deviceID    : query.deviceID,
-    }
-    if(query.id > 0){
-        SQLAction.SQLSetField("seraph_device",data,"id=" + query.id);
-    }   else    {
-        data.macBLE = "39:10:9f:e4:ca:13";
-        data.isMaster = false;
-        data.type = "SS";
-        SQLAction.SQLAdd("seraph_device",data);
-    }
-
-    destroyAllClients();
-    createAllClients();
-    res.writeHead(302, {'Location': 'http://' + query.orgURI});
-    res.end();
-
-}
-function testUpdateDeviceListClient(req, res) {
-
-    var query = url.parse(req.url, true).query;
-    var data = {
-        macWiFi     : query.macWiFi,
-        macBLE      : query.macWiFi,
-        model       : query.model,
-        deviceID    : query.deviceID,
-        isServer    : 1,
-        idKey       : AES.genIDKey(query.macWiFi,true),
-        isMaster    : 0,
-        type        : "SS"
-    }
-    SQLAction.SQLAdd("seraph_device",data);
-
-    res.writeHead(302, {'Location': 'http://' + query.orgURI});
-    res.end();
-
-}
-function testDeleteFromDeviceList(req, res) {
-
-    var query = url.parse(req.url, true).query;
-    SQLAction.SQLFind("seraph_device",["deviceID","isServer"],{id:query.id},function(SSDevice){
-
-        SQLAction.SQLDelete("seraph_device",{id:query.id});
-        if(SSDevice.isServer == 1){
-
-            destroyConnectedClients(SSDevice.deviceID);
-            res.writeHead(302, {'Location': 'http://' + query.orgURI});
-            res.end();
-
-        }   else    {
-
-            destroyAllClients();
-            createAllClients();
-            res.writeHead(302, {'Location': 'http://' + query.orgURI});
-            res.end();
-        }
-    })
-
-
-}
-function testUpdateSmartConnectInfo(req, res) {
-    var query = url.parse(req.url, true).query;
-    SQLAction.SQLSetConfig("config", { ROUTER_SSID	    : query.wifi_ssid });
-    SQLAction.SQLSetConfig("config", { ROUTER_PASSWORD 	: query.wifi_password});
-    sysConfigs.ROUTER_SSID = query.wifi_ssid;
-    sysConfigs.ROUTER_PASSWORD = query.wifi_password;
-    res.writeHead(302, {'Location': 'http://' + query.orgURI});
-    res.end();
-
-}
-function testStartSmartConnect (req, res) {
-    var query = url.parse(req.url, true).query;
-    isSmartConnecting = true;
-    smartConnect.start();
-    res.writeHead(302, {'Location': 'http://' + query.orgURI});
-    res.end();
-
-}
-function testStopSmartConnect(req, res, next) {
-    var query = url.parse(req.url, true).query;
-    isSmartConnecting = false;
-    smartConnect.stop();
-
-    public.eventLog("Stop Smart Connect.","Smart Connect");
-    res.writeHead(302, {'Location': 'http://' + query.orgURI});
-    res.end();
-}
-function testStartSecuredSmartConnect(req, res) {
-    var query = url.parse(req.url, true).query;
-    var macAddress = query.mac;
-    isSecuredSmartConnecting = true;
-    securedSmartConnectMac = macAddress;
-    smartConnect.startSecured(macAddress);
-    res.writeHead(302, {'Location': 'http://' + query.orgURI});
-    res.end();
-
-}
-function testStopSecuredSmartConnect(req, res) {
-    var query = url.parse(req.url, true).query;
-    isSecuredSmartConnecting = false;
-    securedSmartConnectMac = "";
-    smartConnect.stopSecured();
-
-    public.eventLog("Stop Secured Smart Connect.","Secured Smart Connect");
-    res.writeHead(302, {'Location': 'http://' + query.orgURI});
-    res.end();
-}
-function testStartBroadcastingServerIP(req, res) {
-    var query = url.parse(req.url, true).query;
-    isBroadcastingServerIP = true;
-    smartConnect.startServerIP();
-    res.writeHead(302, {'Location': 'http://' + query.orgURI});
-    res.end();
-
-}
-function testStopBroadcastingServerIP(req, res) {
-    var query = url.parse(req.url, true).query;
-    isBroadcastingServerIP = false;
-    smartConnect.stopServerIP();
-
-    public.eventLog("Stop Broadcasting Server IP.","Smart Connect");
-    res.writeHead(302, {'Location': 'http://' + query.orgURI});
-    res.end();
-
-}
-function testChecksumCaluc(req, res) {
-
-    var query = url.parse(req.url, true).query;
-    var checksumHex = new Buffer(public.formateHex(query.checksumHex),'hex');
-    public.eventLog("Checksum String: " + public.bufferString(checksumHex),"Checksum Calculation");
-    checksumValue = public.formateHex(public.checksum(checksumHex).toString(16));
-
-    public.eventLog("Checksum Value: " + checksumValue,"Checksum Calculation");
-    data = {checksum : checksumValue}
-    res.end(JSON.stringify(data));
-
-}
-function testUpdateDefaultMeshID(req, res) {
-
-    var query = url.parse(req.url, true).query;
-    var rawMeshID = public.formateHex(query.defaultMeshID);
-    if(rawMeshID.length > 4){
-        rawMeshID = rawMeshID.substr(0,4);
-    }
-    defaultMeshID = new Buffer(rawMeshID,'hex');
-    public.eventLog("Default Mesh ID was Set to: " + public.bufferString(rawMeshID),"Mesh ID");
-
-    res.writeHead(302, {'Location': 'http://' + query.orgURI});
-    res.end();
-
-}
-
-
-
-/************************************/
-
-            //SSP-A API//
-
-/************************************/
-
-/**
- * Action Perform
- */
-function sspaGetActionsPerform(req, res) {
-
-    req.rootRoute = "actions/perform";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbActionPerform(TCPClients[SSDevice],APIQuery);
-    })
-    res.end("");
-
-
-}
-
-/**
- * Action Refresh
- */
-function sspaGetActionsRefresh (req, res) {
-
-    req.rootRoute = "actions/refresh";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbActionRefresh(TCPClients[SSDevice],APIQuery);
-    });
-    res.end('')
-}
-
-/**
- * Action Backlight
- */
-function sspaGetActionsBacklight (req, res) {
-
-    req.rootRoute = "actions/backlight";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbActionBacklight(TCPClients[SSDevice],APIQuery);
-    })
-    res.end('')
-}
-
-/**
- * Data Sync
- */
-function sspaGetDataSync (req, res) {
-
-    req.rootRoute = "data/sync";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbDataSync(TCPClients[SSDevice],APIQuery);
-    })
-    res.end('')
-}
-
-/**
- * Data Recent
- */
-function sspaGetDataRecent (req, res) {
-
-    req.rootRoute = "data/recent";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbDataRecent(TCPClients[SSDevice],APIQuery);
-    })
-    res.end('')
-}
-
-
-/**
- * Data IR
- */
-function sspaGetDataIr(req, res) {
-
-    req.rootRoute = "data/ir";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbDataIR(TCPClients[SSDevice],APIQuery);
-    })
-    res.end('')
-}
-
-
-/**
- * Config SS
- */
-function sspaGetConfigSS(req, res) {
-
-    req.rootRoute = "config/ss";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbConfigssGet(TCPClients[SSDevice],APIQuery);
-    })
-    res.end('')
-
-}
-
-function sspaPostConfigSS (req, res) {
-    req.rootRoute = "config/ss";
-    var APIQuery = parseExpressURI(req);
-
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbConfigssPost(TCPClients[SSDevice],APIQuery);
-    })
-    res.end('')
-}
-
-
-/**
- * Config SS
- */
-
-function sspaGetConfigStrategy(req, res) {
-
-    req.rootRoute = "/config/strategy/htsp";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbConfigStrategyHTSPGet(TCPClients[SSDevice],APIQuery);
-    })
-    res.end('')
-
-}
-
-function sspaPostConfigStrategy (req, res) {
-    req.rootRoute = "/config/strategy/htsp";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbConfigStrategyHTSPPost(TCPClients[SSDevice],APIQuery);
-    })
-
-    res.end('')
-}
-
-
-/**
- * Device Status
- */
-
-function sspaGetDeviceStatus (req, res) {
-
-    req.rootRoute = "/device/status";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbDeviceStatus(TCPClients[SSDevice],APIQuery);
-    })
-
-    res.end('')
-
-}
-
-
-/**
- * Device List
- */
-
-function sspaGetDeviceList (req, res) {
-
-    req.rootRoute = "/device/list";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbDeviceListGet(TCPClients[SSDevice],APIQuery);
-    })
-
-    res.end('')
-
-}
-
-function sspaPostDeviceList (req, res) {
-    req.rootRoute = "/device/list";
-    var APIQuery = parseExpressURI(req);
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbDeviceListPost(TCPClients[SSDevice],APIQuery);
-    })
-
-    res.end('')
-}
-
-
-/**
- * Quick Event
- */
-
-function sspaGetQE (req, res) {
-
-    req.rootRoute = "/qe";
-    var APIQuery = parseExpressURI(req);
-    var data = {}
-    switch(APIQuery.action){
-        case "DM":
-        case "WP":
-            data["CH"] = APIQuery.query.CH;
-            data["topos"] = APIQuery.query.TOPOS;
-            break;
-        case "UR":
-            if(APIQuery.query.hasOwnProperty("type")){
-                data["type"] = APIQuery.query.type;
-            }
-            if(APIQuery.query.hasOwnProperty("code")){
-                data["code"] = APIQuery.query.code;
-            }
-            if(APIQuery.query.hasOwnProperty("raw")){
-                data["raw"] = APIQuery.query.raw;
-            }
-            if(APIQuery.query.hasOwnProperty("address")){
-                data["address"] = APIQuery.query.address;
-            }
-            if(APIQuery.query.hasOwnProperty("other")){
-                data["other"] = APIQuery.query.other;
-            }
-            break;
-        default:
-            break;
-
-    }
-
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbQE(TCPClients[SSDevice], APIQuery.query.action, APIQuery.query.SEPID, data);
-    })
-
-    res.end('')
-
-}
-
-/**
- * Alarm
- */
-
-function sspaGetAlarm (req, res) {
-
-    req.rootRoute = "/alarm";
-    var APIQuery = parseExpressURI(req);
-
-    APIQuery.device.forEach(function (SSDevice) {
-        SSPB_APIs.sspbAlarm(TCPClients[SSDevice],APIQuery);
-    })
-
-
-    res.end('')
-
-}
-
-
-
-
-
-/************************************/
-
-		//SSP-A API Function//
-
-/************************************/
-
-
-function parseExpressURI(request){
-    var query;
-    if(request.method == "GET") {
-        query = url.parse(request.url, true).query;
-    }	else if(request.method == "POST") {
-
-		query = request.body;
-    }
-
-    if(!query.protocolType) query.protocolType = "SSP-A";
-    if(!query.ssuid) query.ssuid = "";
-    var APIQuery = {
-        action 			: request.rootRoute,
-        query 			: query,
-        paramURL 		: request.url,
-        method 			: request.method,
-		device			: query.ssuid.split(","),
-        protocolType    : query.protocolType
-    };
-    public.eventTitle("REQUEST RECEIVED",1,APIQuery.protocolType + " Request");
-
-
-
-    public.dataLog(APIQuery,"SSP-A Request")
-
-    if(APIQuery.device[0] == ''){
-        APIQuery.device = [];
-        public.eventTitle("NO DEVICE SELECTED",2,APIQuery.protocolType + " Request",true);
-
-    }
-
-    return APIQuery;
-}
-
-
-
-/************************************/
-
-		  //SSP RETURN//
-
-/************************************/
-
-function constructReturnMessage(messgeType,messageID,code,msg,other){
-	var data = {
-		isRequest 	: false,
-		QoS 		: 0,
-		QosNeeded	: 0,
-		dup 		: 0,
-		MessageType : messgeType,
-		Topic 		: "",
-		MessageID   : messageID,
-		MessageIDextended   : 0,
-		payload 	: ""
-	}
-	data.payload = constructStatusMessage(code,msg);
-	var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,"SSM00000")
-
-	return msg;
-}
-
-function constructStatusMessage(code,msg){
-	var message = {
-		code 	: code,
-		msg 	: msg
-	}
-	return JSON.stringify(message);
-}
 
 
 
 module.exports.TCPClients = TCPClients
 module.exports.TCPSocketWrite = TCPSocketWrite;
+module.exports.destroyAllClients = destroyAllClients;
+module.exports.destroyConnectedClients = destroyConnectedClients;
+module.exports.createAllClients = createAllClients;
+module.exports.SSInfos =  SSInfos;
 
