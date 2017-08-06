@@ -4,6 +4,8 @@ var storage = require('node-persist');
 var uuid = require('./').uuid;
 var Bridge = require('./').Bridge;
 var Accessory = require('./').Accessory;
+var Service = require('./').Service;
+var Characteristic = require('./').Characteristic;
 var accessoryLoader = require('./lib/AccessoryLoader');
 
 
@@ -14,6 +16,11 @@ storage.initSync();
 
 // Start by creating our Bridge which will host all loaded Accessories
 var bridge = new Bridge('Seraph Hub', uuid.generate("Seraph Hub"));
+bridge
+    .getService(Service.AccessoryInformation)
+    .setCharacteristic(Characteristic.Manufacturer, "Seraph Technology")
+    .setCharacteristic(Characteristic.Model, "Seraph Hub Rev. 1")
+    .setCharacteristic(Characteristic.SerialNumber, "SH1A890B31");
 
 // Listen for bridge identification event
 bridge.on('identify', function(paired, callback) {

@@ -30,24 +30,11 @@ var setSeraphConfig = function (name, value){
     }
 };
 
-var updateDeviceStatus = function(time, device){
-    if(!time) time = 1;
-    setTimeout(function() {
-        checkDeviceStatus(function(){
-            device
-                .getService(Service.HumiditySensor)
-                .setCharacteristic(Characteristic.CurrentRelativeHumidity, Seraph_Sensor.getHumidity());
-        })
-    }, time);
-};
-var checkDeviceStatus = function(callback){
-    loadData.loadHomeKitData(function(){
-        updateSeraphConfigStatus(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value)
-        callback()
-    })
-};
 var updateSeraphConfigStatus = function(value){
-    deviceValue.currentHumidity = parseInt(value);
+    if(value.HM != "undefined"){
+        deviceValue.currentHumidity = parseInt(value.HM);
+    }
+
 }
 
 
@@ -107,7 +94,7 @@ var SensorService = function() {
 
         if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)) {
             debug("Receive Sensor Value Message of " + deviceID + " Channel " + channel + " : " + value);
-            updateSeraphConfigStatus(value);
+            updateSeraphConfigStatus({"HM":value});
             sensor
                 .getService(Service.HumiditySensor)
                 .setCharacteristic(Characteristic.CurrentRelativeHumidity, Seraph_Sensor.getHumidity());
@@ -117,7 +104,6 @@ var SensorService = function() {
 
 }
 
-module.exports.updateDeviceStatus = updateDeviceStatus;
 module.exports.setDeviceValue = updateSeraphConfigStatus;
 module.exports.setSeraphConfig = setSeraphConfig;
 module.exports.startSensorService = SensorService;

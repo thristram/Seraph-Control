@@ -46,13 +46,8 @@ function loadDirectory(dir, callback) {
         var moduleID = deviceREF[channelData[SEPKey].deviceID].moduleID;
         var channel = channelData[SEPKey].channel;
         var deviceValue = {
-            "value"         :   channelData[SEPKey].value,
+            "TOPOS"         :   channelData[SEPKey].value,
             "lastupdate"    :   channelData[SEPKey].lastupdate
-        }
-        if(deviceValue.value == 0){
-            deviceValue["power"] = false;
-        }   else    {
-            deviceValue["power"] = true;
         }
 
         switch (channelData[SEPKey].type) {
@@ -60,11 +55,6 @@ function loadDirectory(dir, callback) {
                 accessories.push(loadSPC(dir,deviceID, managedSS, managedSC, moduleID, channel, defaultName, deviceValue));
                 break;
             case "SL":
-                if(deviceValue.power){
-                    deviceValue.value += 1;
-                }   else    {
-                    deviceValue.value = 100;
-                }
                 accessories.push(loadSLC(dir,deviceID, managedSS, managedSC, moduleID, channel, defaultName, deviceValue));
                 break;
             default:
@@ -80,16 +70,13 @@ function loadDirectory(dir, callback) {
 
         var deviceID = sensorData[sensorKey].deviceID;
 
-        var deviceValue = {
-            "value"         :   sensorData[sensorKey].value,
-            "lastupdate"    :   sensorData[sensorKey].lastupdate
-        }
-
+        var deviceValue = {};
 
         if(!sensorInSSDevice[deviceID]){
             sensorInSSDevice[deviceID] = {};
         }
         sensorInSSDevice[deviceID][sensorData[sensorKey].code] = deviceValue;
+        deviceValue[sensorData[sensorKey].code] = sensorData[sensorKey].value;
 
         switch(sensorData[sensorKey].code){
             case "TP":
@@ -148,7 +135,7 @@ function loadSPC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, nam
     loadedAccessory.setSeraphConfig("channelID", channelID);
     loadedAccessory.setSeraphConfig("moduleID", moduleID);
     loadedAccessory.setSeraphConfig("name", name);
-    loadedAccessory.setDeviceValue(deviceValue);
+    loadedAccessory.setDeviceValue(deviceValue,true);
     loadedAccessory.startSPCService();
     return loadedAccessory.accessory;
 }
@@ -163,7 +150,7 @@ function loadSLC(dir, deviceID, SSDeviceID, SCdeviceID, moduleID, channelID, nam
     loadedAccessory.setSeraphConfig("channelID", channelID);
     loadedAccessory.setSeraphConfig("moduleID", moduleID);
     loadedAccessory.setSeraphConfig("name", name);
-    loadedAccessory.setDeviceValue(deviceValue);
+    loadedAccessory.setDeviceValue(deviceValue,true);
     loadedAccessory.startSLCService();
     return loadedAccessory.accessory;
 }
@@ -175,7 +162,7 @@ function loadSensor(dir, SSDeviceID, name, channelID, sensorClassName, deviceVal
     loadedAccessory.setSeraphConfig("SSdeviceID", SSDeviceID);
     loadedAccessory.setSeraphConfig("channelID", channelID);
     loadedAccessory.setSeraphConfig("name", name);
-    loadedAccessory.setDeviceValue(deviceValue);
+    loadedAccessory.setDeviceValue(deviceValue, true);
     loadedAccessory.startSensorService();
     return loadedAccessory.accessory;
 }

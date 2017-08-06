@@ -30,28 +30,16 @@ var setSeraphConfig = function (name, value){
     }
 };
 
-var updateDeviceStatus = function(time, device){
-    if(!time) time = 1;
-    setTimeout(function() {
-        checkDeviceStatus(function(){
-            device
-                .getService(Service.SmokeSensor)
-                .setCharacteristic(Characteristic.SmokeDetected, Seraph_Sensor.getSmokeDetected());
-        })
-    }, time);
-};
-var checkDeviceStatus = function(callback){
-    loadData.loadHomeKitData(function(){
-        updateSeraphConfigStatus(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value)
-        callback()
-    })
-};
 var updateSeraphConfigStatus = function(value){
-    if(parseInt(value) == 1){
-        deviceValue.SmokeDetected = true;
-    }   else    {
-        deviceValue.SmokeDetected = false;
+
+    if(value.SM != "undefined"){
+        if(parseInt(value.SM) == 1){
+            deviceValue.SmokeDetected = true;
+        }   else    {
+            deviceValue.SmokeDetected = false;
+        }
     }
+
 }
 
 
@@ -113,7 +101,7 @@ var SensorService = function() {
 
         if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)) {
             debug("Receive Sensor Value Message of " + deviceID + " Channel " + channel + " : " + value);
-            updateSeraphConfigStatus(value);
+            updateSeraphConfigStatus({"SM":value});
             sensor
                 .getService(Service.SmokeSensor)
                 .setCharacteristic(Characteristic.SmokeDetected, Seraph_Sensor.getSmokeDetected());
@@ -123,7 +111,7 @@ var SensorService = function() {
 
 }
 
-module.exports.updateDeviceStatus = updateDeviceStatus;
+
 module.exports.setDeviceValue = updateSeraphConfigStatus;
 module.exports.setSeraphConfig = setSeraphConfig;
 module.exports.startSensorService = SensorService;

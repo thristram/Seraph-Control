@@ -5,7 +5,6 @@ var uuid = require('../').uuid;
 var debug = require('debug')('SPC_HAPAccessory');
 var SSPLinker = require('../../Lib/HomeKit_Link.js');
 var public = require("../../Lib/public.js");
-var loadData = require("../../Lib/preloadData.js");
 
 
 var err = null; // in case there were any problems
@@ -45,6 +44,9 @@ var SPowerControl = {
           SSPLinker.SPCControl(seraphConfig.SSDeviceID, seraphConfig.SCdeviceID, seraphConfig.moduleID, seraphConfig.channelID, false)
         }
     },
+    getPower: function(){
+        return deviceValue.power
+    },
     identify: function() {
         debug("Identify the Seraph Power Control.");
     }
@@ -60,37 +62,19 @@ var setSeraphConfig = function (name, value){
         seraphConfig[name] = value;
     }
 }
-var setDeviceValue = function (incommingValue){
-    deviceValue.power = incommingValue.power;
-}
-
-var updateDeviceStatus = function(time, device){
-    if(!time) time = 1;
-    setTimeout(function() {
-        reverseFlag = true;
-        checkDeviceStatus(function(){
-            device
-                .getService(Service.Outlet)
-                .setCharacteristic(Characteristic.On, deviceValue.power);
-            reverseFlag = false;
-        })
-    }, time);
-};
-var checkDeviceStatus = function(callback){
-    loadData.loadHomeKitData(function(){
-        updateSeraphConfigStatus(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value)
-        callback()
-    })
-}
 
 var updateSeraphConfigStatus = function(value){
-    if(parseInt(value) > 0){
-        debug("Checking Status of " + seraphConfig.deviceID + " Channel " + seraphConfig.channelID + " : ON")
-        deviceValue.power = true;
-    }   else    {
-        debug("Checking Status of " + seraphConfig.deviceID + " Channel " + seraphConfig.channelID + " : OFF")
-        deviceValue.power = false;
+
+    if(value.TOPOS != "undefined"){
+        if(parseInt(value.TOPOS) > 0){
+            debug("Checking Status of " + seraphConfig.deviceID + " Channel " + seraphConfig.channelID + " : ON")
+            deviceValue.power = true;
+        }   else    {
+            debug("Checking Status of " + seraphConfig.deviceID + " Channel " + seraphConfig.channelID + " : OFF")
+            deviceValue.power = false;
+        }
     }
+
 }
 
 var SPCService = function(){
@@ -123,7 +107,7 @@ var SPCService = function(){
         .on('set', function(value, callback) {
             if(!reverseFlag){
                 SPowerControl.setPowerOn(value);
-                updateDeviceStatus(5000, outlet);
+
             }
             callback(); // Our fake Outlet is synchronous - this value has been successfully set
         });
@@ -140,17 +124,7 @@ var SPCService = function(){
             // few seconds to respond, Siri will give up.
 
             var err = null; // in case there were any problems
-
-            checkDeviceStatus(function(){
-
-                if (deviceValue.power) {
-                    callback(err, true);
-                }
-                else {
-                    callback(err, false);
-                }
-            })
-
+            callback(err, SPowerControl.getPower());
 
         });
 
@@ -159,24 +133,23 @@ var SPCService = function(){
         if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)){
             debug("Receive Status Message of " + deviceID + " Channel " + channel + " : " + value)
             reverseFlag = true;
-            updateSeraphConfigStatus(value);
+            updateSeraphConfigStatus({"TOPOS":value});
             outlet
                 .getService(Service.Outlet)
-                .setCharacteristic(Characteristic.On, deviceValue.power);
+                .setCharacteristic(Characteristic.On, SPowerControl.getPower());
             reverseFlag = false;
         }
 
     });
-    updateDeviceStatus(3000,outlet)
+
 
 
 };
 
 
 
-module.exports.setDeviceValue = setDeviceValue;
+module.exports.setDeviceValue = updateSeraphConfigStatus;
 module.exports.setSeraphConfig = setSeraphConfig;
-module.exports.updateDeviceStatus = updateDeviceStatus;
 module.exports.startSPCService = SPCService;
 
 

@@ -34,7 +34,7 @@ var setSeraphConfig = function (name, value){
     }
 };
 
-var updateSeraphConfigStatus = function(value){
+var updateSeraphConfigStatus = function(value, initialUpdate){
 
     //Carbon Monoxide
     if(value.CO){

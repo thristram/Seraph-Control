@@ -30,28 +30,16 @@ var setSeraphConfig = function (name, value){
     }
 };
 
-var updateDeviceStatus = function(time, device){
-    if(!time) time = 1;
-    setTimeout(function() {
-        checkDeviceStatus(function(){
-            device
-                .getService(Service.MotionSensor)
-                .setCharacteristic(Characteristic.MotionDetected, Seraph_Sensor.getMotionDetected());
-        })
-    }, time);
-};
-var checkDeviceStatus = function(callback){
-    loadData.loadHomeKitData(function(){
-        updateSeraphConfigStatus(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value)
-        callback()
-    })
-};
 var updateSeraphConfigStatus = function(value){
-    if(parseInt(value) == 1){
-        deviceValue.MotionDetected = true;
-    }   else    {
-        deviceValue.MotionDetected = false;
+
+    if(value.PR != "undefined"){
+        if(parseInt(value.PR) == 1){
+            deviceValue.MotionDetected = true;
+        }   else    {
+            deviceValue.MotionDetected = false;
+        }
     }
+
 }
 
 
@@ -113,7 +101,7 @@ var SensorService = function() {
 
         if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)) {
             debug("Receive Sensor Value Message of " + deviceID + " Channel " + channel + " : " + value);
-            updateSeraphConfigStatus(value);
+            updateSeraphConfigStatus({"PR":value});
             sensor
                 .getService(Service.MotionSensor)
                 .setCharacteristic(Characteristic.MotionDetected, Seraph_Sensor.getMotionDetected());
@@ -123,7 +111,7 @@ var SensorService = function() {
 
 }
 
-module.exports.updateDeviceStatus = updateDeviceStatus;
+
 module.exports.setDeviceValue = updateSeraphConfigStatus;
 module.exports.setSeraphConfig = setSeraphConfig;
 module.exports.startSensorService = SensorService;

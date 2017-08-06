@@ -23,6 +23,8 @@ var seraphConfig = {
 var deviceValue = {
     CarbonMonoxideDetected: false,
     CarbonMonoxideLevel: 0,
+    CarbonMonoxidePeakLevel : 0,
+    CarbonMonoxidePeakTime : 0,
 };
 
 var setSeraphConfig = function (name, value){
@@ -31,30 +33,24 @@ var setSeraphConfig = function (name, value){
     }
 };
 
-var updateDeviceStatus = function(time, device){
-    if(!time) time = 1;
-    setTimeout(function() {
-        checkDeviceStatus(function(){
-            device
-                .getService(Service.CarbonMonoxideSensor)
-                .setCharacteristic(Characteristic.CarbonMonoxideLevel, Seraph_Sensor.getCarbonMonoxideLevel())
-                .setCharacteristic(Characteristic.CarbonMonoxideDetected, Seraph_Sensor.getCarbonMonoxideDetected());
-        })
-    }, time);
-};
-var checkDeviceStatus = function(callback){
-    loadData.loadHomeKitData(function(){
-        updateSeraphConfigStatus(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value)
-        callback()
-    })
-};
 var updateSeraphConfigStatus = function(value){
-    deviceValue.CarbonMonoxideLevel = parseInt(value) / 10;
-    if(deviceValue.CarbonMonoxideDetected > 10){
-        deviceValue.CarbonMonoxideDetected = true;
-    }   else    {
-        deviceValue.CarbonMonoxideDetected = false;
+
+    var currentTime = public.timestamp();
+
+    if(value.CO != "undefined"){
+        deviceValue.CarbonMonoxideLevel = parseInt(value.CO) / 100;
+
+        if((deviceValue.CarbonMonoxideLevel > deviceValue.CarbonMonoxidePeakLevel) || ((currentTime - deviceValue.CarbonMonoxidePeakTime) > 3600)){
+            deviceValue.CarbonMonoxidePeakLevel = deviceValue.CarbonMonoxideLevel;
+            deviceValue.CarbonMonoxidePeakTime = currentTime;
+        }
+        if(deviceValue.CarbonMonoxideLevel > 10){
+            deviceValue.CarbonMonoxideDetected = true;
+        }   else    {
+            deviceValue.CarbonMonoxideDetected = false;
+        }
     }
+
 }
 
 
@@ -62,6 +58,10 @@ var Seraph_Sensor = {
     getCarbonMonoxideLevel: function() {
         debug("Getting the current Carbon Monoxide Level: " + deviceValue.CarbonMonoxideLevel);
         return deviceValue.CarbonMonoxideLevel;
+    },
+    getCarbonMonoxidePeakLevel: function() {
+        debug("Getting the current Carbon Monoxide Peak Level: " + deviceValue.CarbonMonoxidePeakLevel);
+        return deviceValue.CarbonMonoxidePeakLevel;
     },
     getCarbonMonoxideDetected: function() {
         debug("Getting if current Carbon Monoxide is Detected: " + deviceValue.CarbonMonoxideDetected);
@@ -125,22 +125,32 @@ var SensorService = function() {
             callback(null, Seraph_Sensor.getCarbonMonoxideLevel());
         });
 
+    sensor
+        .getService(Service.CarbonMonoxideSensor)
+        .addCharacteristic(Characteristic.CarbonMonoxidePeakLevel)
+        .on('get', function(callback) {
+            // return our current value
+            callback(null, Seraph_Sensor.getCarbonMonoxidePeakLevel());
+        });
+
     SSPLinker.HAPEvent.on('sensorUpdate', function(deviceID, channel, value){
 
         if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)) {
             debug("Receive Sensor Value Message of " + deviceID + " Channel " + channel + " : " + value);
-            updateSeraphConfigStatus(value);
+            updateSeraphConfigStatus({"CO":value});
             sensor
                 .getService(Service.CarbonMonoxideSensor)
                 .setCharacteristic(Characteristic.CarbonMonoxideLevel, Seraph_Sensor.getCarbonMonoxideLevel())
-                .setCharacteristic(Characteristic.CarbonMonoxideDetected, Seraph_Sensor.getCarbonMonoxideDetected());
+                .setCharacteristic(Characteristic.CarbonMonoxideDetected, Seraph_Sensor.getCarbonMonoxideDetected())
+                .setCharacteristic(Characteristic.CarbonMonoxidePeakLevel, Seraph_Sensor.getCarbonMonoxidePeakLevel());
+
         }
     });
 
 
 }
 
-module.exports.updateDeviceStatus = updateDeviceStatus;
+
 module.exports.setDeviceValue = updateSeraphConfigStatus;
 module.exports.setSeraphConfig = setSeraphConfig;
 module.exports.startSensorService = SensorService;

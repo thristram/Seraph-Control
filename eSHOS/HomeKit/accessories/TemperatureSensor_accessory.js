@@ -30,24 +30,12 @@ var setSeraphConfig = function (name, value){
     }
 };
 
-var updateDeviceStatus = function(time, device){
-    if(!time) time = 1;
-    setTimeout(function() {
-        checkDeviceStatus(function(){
-            device
-                .getService(Service.TemperatureSensor)
-                .setCharacteristic(Characteristic.CurrentTemperature, Seraph_Sensor.getTemperature());
-        })
-    }, time);
-};
-var checkDeviceStatus = function(callback){
-    loadData.loadHomeKitData(function(){
-        updateSeraphConfigStatus(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value)
-        callback()
-    })
-};
 var updateSeraphConfigStatus = function(value){
-    deviceValue.currentTemperature = parseInt(value) / 10;
+
+    if(value.TP != "undefined"){
+        deviceValue.currentTemperature = parseInt(value.TP) / 10;
+    }
+
 }
 
 
@@ -106,7 +94,7 @@ var SensorService = function() {
 
         if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)) {
             debug("Receive Sensor Value Message of " + deviceID + " Channel " + channel + " : " + value);
-            updateSeraphConfigStatus(value);
+            updateSeraphConfigStatus({"TP": value});
             sensor
                 .getService(Service.TemperatureSensor)
                 .setCharacteristic(Characteristic.CurrentTemperature, Seraph_Sensor.getTemperature());
@@ -116,7 +104,7 @@ var SensorService = function() {
 
 }
 
-module.exports.updateDeviceStatus = updateDeviceStatus;
+
 module.exports.setDeviceValue = updateSeraphConfigStatus;
 module.exports.setSeraphConfig = setSeraphConfig;
 module.exports.startSensorService = SensorService;

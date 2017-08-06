@@ -5,7 +5,6 @@ var uuid = require('../').uuid;
 var debug = require('debug')('SLC_HAPAccessory');
 var SSPLinker = require('../../Lib/HomeKit_Link.js')
 var public = require("../../Lib/public.js")
-var loadData = require("../../Lib/preloadData.js");
 
 
 var seraphConfig = {
@@ -35,10 +34,6 @@ var setSeraphConfig = function (name, value){
         seraphConfig[name] = value;
     }
 }
-var setDeviceValue = function (incommingValue){
-    deviceValue.power = incommingValue.power;
-    deviceValue.brightness = incommingValue.value;
-}
 
 var LightController = {
     name: seraphConfig.model + " " + seraphConfig.version,
@@ -56,9 +51,7 @@ var LightController = {
     },
 
     getPower: function (callback) { //get power of accessory
-        checkDeviceStatus(function(){
-            callback(deviceValue.power)
-        })
+        callback(deviceValue.power)
     },
 
     setBrightness: function (brightness) { //set brightness
@@ -68,11 +61,7 @@ var LightController = {
     },
 
     getBrightness: function (callback) { //get brightness
-        checkDeviceStatus(function(){
-            callback()
-        })
-
-        //return deviceValue.brightness;
+        callback(deviceValue.brightness);
     },
 
     setSaturation: function (saturation) { //set brightness
@@ -100,40 +89,22 @@ var LightController = {
     }
 }
 
-var updateDeviceStatus = function(time, device){
-    if(!time) time = 1;
-    setTimeout(function() {
-        reverseFlag = true;
-        checkDeviceStatus(function(){
-            device
-                .getService(Service.Lightbulb)
-                .setCharacteristic(Characteristic.On, deviceValue.power)
-                .setCharacteristic(Characteristic.Brightness, deviceValue.brightness);
-            setTimeout(function(){
-                reverseFlag = false;
-            },1000)
-
-        })
-    }, time);
-};
-var checkDeviceStatus = function(callback){
-    loadData.loadHomeKitData(function(){
-        updateSeraphConfigStatus(loadData.deviceStatus[seraphConfig.deviceID][seraphConfig.channelID].value)
-        callback()
-    })
-};
 var updateSeraphConfigStatus = function(value){
-    var brightness = parseInt(value);
-    if (brightness == 100) {
-        deviceValue.brightness = 100;
-        deviceValue.power = true;
-    } else if (brightness == 0) {
 
-        deviceValue.power = false;
-    } else {
-        deviceValue.brightness = brightness + 1;
-        deviceValue.power = true;
+    if(value.TOPOS != "undefined"){
+        var brightness = parseInt(value.TOPOS);
+        if (brightness == 100) {
+            deviceValue.brightness = 100;
+            deviceValue.power = true;
+        } else if (brightness == 0) {
+
+            deviceValue.power = false;
+        } else {
+            deviceValue.brightness = brightness + 1;
+            deviceValue.power = true;
+        }
     }
+
 }
 
 
@@ -174,13 +145,8 @@ var SLCService = function() {
         .on('set', function (value, callback) {
             if(!reverseFlag) {
                 LightController.setPower(value);
-                updateDeviceStatus(5000, lightAccessory);
             }
-            // Our light is synchronous - this value has been successfully set
-            // Invoke the callback when you finished processing the request
-            // If it's going to take more than 1s to finish the request, try to invoke the callback
-            // after getting the request instead of after finishing it. This avoids blocking other
-            // requests from HomeKit.
+
             callback();
         })
         // We want to intercept requests for our current power state so we can query the hardware itself instead of
@@ -192,14 +158,6 @@ var SLCService = function() {
 
         });
 
-    // To inform HomeKit about changes occurred outside of HomeKit (like user physically turn on the light)
-    // Please use Characteristic.updateValue
-    //
-    // lightAccessory
-    //   .getService(Service.Lightbulb)
-    //   .getCharacteristic(Characteristic.On)
-    //   .updateValue(true);
-
     // also add an "optional" Characteristic for Brightness
     lightAccessory
         .getService(Service.Lightbulb)
@@ -208,7 +166,7 @@ var SLCService = function() {
 
             if(!reverseFlag) {
                 LightController.setBrightness(value)
-                updateDeviceStatus(10000, lightAccessory);
+
             }
             callback();
         })
@@ -247,7 +205,7 @@ var SLCService = function() {
         if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)) {
             debug("Receive Status Message of " + deviceID + " Channel " + channel + " : " + value);
             reverseFlag = true;
-            updateSeraphConfigStatus(value);
+            updateSeraphConfigStatus({"TOPOS":value});
             lightAccessory
                 .getService(Service.Lightbulb)
                 .setCharacteristic(Characteristic.On, deviceValue.power)
@@ -257,13 +215,13 @@ var SLCService = function() {
             }, 1000)
         }
     });
-    updateDeviceStatus(3000,lightAccessory);
+
 };
 
 
 
-module.exports.updateDeviceStatus = updateDeviceStatus;
-module.exports.setDeviceValue = setDeviceValue;
+
+module.exports.setDeviceValue = updateSeraphConfigStatus;
 module.exports.setSeraphConfig = setSeraphConfig;
 module.exports.startSLCService = SLCService;
 
