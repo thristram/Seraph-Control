@@ -4,14 +4,8 @@ var dgram = require('dgram');
 var path = require('path');
 
 
+var debug = require('debug')('TCPClient');
 
-
-
-//////////////////////////////////////
-     //TCP Server Variables//
-//////////////////////////////////////
-
-var serverSocket;
 
 //////////////////////////////////////
       //TCP Clients Variables//
@@ -99,6 +93,22 @@ var createAllClients = function(){
                 TCPClients[value.deviceID] = tempTCPClient;
 
 
+
+                var timeout = 3000;
+                if(tempTCPClient.IPAddress != "127.0.0.1"){
+                    debug("[%s] Rotational Check Initiated for Client: " + tempTCPClient.IPAddress, public.getDateTime());
+                    setInterval(function(){
+                        if(TCPClients[value.deviceID].cStatus == 1) {
+                            SSPB_APIs.sspbDeviceStatus(TCPClients[value.deviceID]);
+                            setTimeout(function () {
+                                SSPB_APIs.sspbDataSync(TCPClients[value.deviceID]);
+                            }, 1000);
+                        }
+                    },timeout);
+
+                }
+
+
             }   else    {
                 tempTCPClient.TCPClient = new net.Socket();
                 tempTCPClient.reConnecting = false;
@@ -106,7 +116,9 @@ var createAllClients = function(){
                 TCPClients[value.deviceID] = tempTCPClient;
                 SSInfos.push(TCPClients[value.deviceID]);
                 TCPConnect(value.deviceID);
-                TCPHandle(value.deviceID)
+                TCPHandle(value.deviceID);
+
+
             }
 
         });
@@ -167,6 +179,9 @@ setInterval(function(){
 },5000);
 
 
+
+
+
 //////////////////////////////////////
             //HomeKit//
 //////////////////////////////////////
@@ -216,7 +231,7 @@ function TCPReconnect(SSConnection){
 function TCPHandle(SSConnection){
     TCPClients[SSConnection].TCPClient.on('data', function (data) {
         public.eventLog('Connection Received Data From '+TCPClients[SSConnection].IPAddress+': ' + public.bufferString(new Buffer(data)) , "TCP Client");
-		handleTCPReply(data);
+		handleTCPReply(data, TCPClients[SSConnection].TCPClient.IPAddress);
 		//broadcast(socket.name + "> " + data, socket);
 	});
 
@@ -252,7 +267,7 @@ function TCPHandle(SSConnection){
 
 /************************************/
 
-function handleTCPReply(data){
+function handleTCPReply(data, remoteAddress){
     /*
     tempIncommingData.push(parseMessage.parseMessage(constructReturnMessage(2,5000,"0x2000001","Operation Complete.",null),false))
     */
@@ -276,7 +291,6 @@ function handleTCPReply(data){
 
         var bufStr = data.toString('hex').toUpperCase();
         var separateCommands = bufStr.split("0A0A");
-        console.log(separateCommands);
         for(var key in separateCommands){
             if(separateCommands[key] != ''){
             var singleData = new Buffer(separateCommands[key],"hex");
@@ -299,6 +313,7 @@ function handleTCPReply(data){
                     }
                 }   else    {
                     incommingMessageData = parseMessage.parseMessage(singleData,false);
+                    incommingMessageData.remoteAddress = remoteAddress;
                     processIncomming.processSSPBIncomming(incommingMessageData);
                 }
             }
@@ -351,18 +366,13 @@ function handleConnection(con) {
             tempTCPClient.reConnecting = false;
             tempTCPClient.isClient = false;
             TCPClients[tempTCPClient.deviceID] = tempTCPClient;
-
+            TCPClients[tempTCPClient.deviceID].cStatus = 1;
 
             con.setKeepAlive(true,1000); //1 min = 60000 milliseconds.
             con.on('data', onConData);
             con.once('close', onConClose);
             con.on('error', onConError);
-            if(remoteAddress != "127.0.0.1"){
-                rotationalCheck.startCheckDeviceStatus(tempTCPClient.deviceID);
-                setTimeout(function(){
-                    rotationalCheck.startCheckSensorValue(tempTCPClient.deviceID);
-                },1000)
-            }
+
 
         }   else    {
             con.end();
@@ -376,13 +386,14 @@ function handleConnection(con) {
 
     function onConData(data) {
         public.eventLog('Connection Received Data From '+remoteAddress+': ' + public.bufferString(new Buffer(data))  , "TCP Server");
-        handleTCPReply(data);
+        handleTCPReply(data, remoteAddress);
         //con.write(d);
     }
 
     function onConClose() {
         public.eventLog('Connection From '+remoteAddress+' Closed' , "TCP Server");
         SQLAction.SQLSetField("seraph_device",{cStatus:0},"type = 'SS' AND IPAddress = '" + con.remoteAddress + "'" , "TCP Server");
+        TCPClients[tempTCPClient.deviceID].cStatus = 0;
         con.end();
         con.destroy();
 
@@ -395,7 +406,9 @@ function handleConnection(con) {
 
 function authTCPClients(con,callback){
 
-    SQLAction.SQLFind("seraph_device","",{type:'SS',IPAddress:con.remoteAddress},function(data){
+    SQLAction.SQLFind("seraph_device","*",{type:'SS',IPAddress:con.remoteAddress},function(data){
+
+
 
        if(data.length !== 0){
            SQLAction.SQLSetField("seraph_device",{cStatus:1},{type:"SS",IPAddress:con.remoteAddress});
@@ -412,8 +425,9 @@ function authTCPClients(con,callback){
                "cStatus"       : 1,
                "isServer"      : 1
 
-           }
+           };
            SQLAction.SQLAdd("seraph_device",data);
+
            callback(data);
        }
     });

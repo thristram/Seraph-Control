@@ -19,7 +19,8 @@ var seraphConfig = {
     "serialNumber"  : "A1S2NASF88EW",
     "udid"          : "1A:2B:3C:4D:5D:FF",
     "homeKitPin"    : "031-45-154",
-    "name"          : "Seraph Light"
+    "name"          : "Seraph Light",
+    "responseTimeout"  : "60",
 };
 var deviceValue = {
     power: false,
@@ -28,6 +29,7 @@ var deviceValue = {
     saturation: 0,
 }
 var reverseFlag = false;
+var receiptReserveTime = 0;
 
 var setSeraphConfig = function (name, value){
     if(seraphConfig.hasOwnProperty(name)){
@@ -35,7 +37,7 @@ var setSeraphConfig = function (name, value){
     }
 }
 
-var LightController = {
+var SLightController = {
     name: seraphConfig.model + " " + seraphConfig.version,
     setPower: function (status) { //set power of accessory
         debug("Turning the '%s' %s", this.name, status ? "on" : "off");
@@ -107,7 +109,6 @@ var updateSeraphConfigStatus = function(value){
 
 }
 
-
 var SLCService = function() {
     seraphConfig.udid = public.generateMACLikeUDID(seraphConfig.model, seraphConfig.deviceID, seraphConfig.channelID);
 
@@ -133,7 +134,7 @@ var SLCService = function() {
 
     // listen for the "identify" event for this Accessory
     lightAccessory.on('identify', function (paired, callback) {
-        LightController.identify();
+        SLightController.identify();
         callback();
     });
 
@@ -144,7 +145,8 @@ var SLCService = function() {
         .getCharacteristic(Characteristic.On)
         .on('set', function (value, callback) {
             if(!reverseFlag) {
-                LightController.setPower(value);
+                SLightController.setPower(value);
+                receiptReserveTime += parseInt(seraphConfig.responseTimeout);
             }
 
             callback();
@@ -152,7 +154,7 @@ var SLCService = function() {
         // We want to intercept requests for our current power state so we can query the hardware itself instead of
         // allowing HAP-NodeJS to return the cached Characteristic.value.
         .on('get', function (callback) {
-            LightController.getPower(function(){
+            SLightController.getPower(function(){
                 callback(null, deviceValue.power);
             })
 
@@ -165,13 +167,13 @@ var SLCService = function() {
         .on('set', function (value, callback) {
 
             if(!reverseFlag) {
-                LightController.setBrightness(value)
-
+                SLightController.setBrightness(value)
+                receiptReserveTime += parseInt(seraphConfig.responseTimeout);
             }
             callback();
         })
         .on('get', function (callback) {
-            LightController.getBrightness(function(){
+            SLightController.getBrightness(function(){
                 callback(null, deviceValue.brightness);
             })
 
@@ -182,11 +184,12 @@ var SLCService = function() {
         .getService(Service.Lightbulb)
         .addCharacteristic(Characteristic.Saturation)
         .on('set', function (value, callback) {
-            LightController.setSaturation(value);
+            SLightController.setSaturation(value);
+
             callback();
         })
         .on('get', function (callback) {
-            callback(null, LightController.getSaturation());
+            callback(null, SLightController.getSaturation());
         });
 
     // also add an "optional" Characteristic for Hue
@@ -194,31 +197,42 @@ var SLCService = function() {
         .getService(Service.Lightbulb)
         .addCharacteristic(Characteristic.Hue)
         .on('set', function (value, callback) {
-            LightController.setHue(value);
+            SLightController.setHue(value);
             callback();
         })
         .on('get', function (callback) {
-            callback(null, LightController.getHue());
+            callback(null, SLightController.getHue());
         });
 
-    SSPLinker.HAPEvent.on('statusUpdate', function(deviceID, channel, value){
-        if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)) {
-            debug("Receive Status Message of " + deviceID + " Channel " + channel + " : " + value);
-            reverseFlag = true;
-            updateSeraphConfigStatus({"TOPOS":value});
-            lightAccessory
-                .getService(Service.Lightbulb)
-                .setCharacteristic(Characteristic.On, deviceValue.power)
-                .setCharacteristic(Characteristic.Brightness, deviceValue.brightness);
-            setTimeout(function () {
-                reverseFlag = false;
-            }, 1000)
+    SSPLinker.HAPEvent.on('statusUpdate', function(deviceID, channel, value, ifReceipt){
+
+        if(((receiptReserveTime > 0) && (ifReceipt)) || (receiptReserveTime <= 0)){
+
+            if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)) {
+                debug("Receive Status Message of " + deviceID + " Channel " + channel + " : " + value);
+                reverseFlag = true;
+                updateSeraphConfigStatus({"TOPOS":value});
+                lightAccessory
+                    .getService(Service.Lightbulb)
+                    .setCharacteristic(Characteristic.On, deviceValue.power)
+                    .setCharacteristic(Characteristic.Brightness, deviceValue.brightness);
+                setTimeout(function () {
+                    reverseFlag = false;
+                }, 1000)
+            }
         }
+
+
+
     });
 
 };
 
-
+setInterval(function(){
+    if(receiptReserveTime > 0){
+        receiptReserveTime--;
+    }
+},100);
 
 
 module.exports.setDeviceValue = updateSeraphConfigStatus;

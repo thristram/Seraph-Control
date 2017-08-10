@@ -21,16 +21,18 @@ var seraphConfig = {
     "serialNumber"  : "A1S2NASF88EW",
     "udid"          : "1A:2B:3C:4D:5D:FF",
     "homeKitPin"    : "031-45-154",
-    "name"          : "Seraph Plug"
+    "name"          : "Seraph Plug",
+    "responseTimeout"  : "30",
 }
 var deviceValue = {
     power: false,
 }
 var reverseFlag = false;
+var receiptReserveTime = 0;
 
 // here's a fake hardware device that we'll expose to HomeKit
-var SPowerControl = {
-    setPowerOn: function(on) {
+var SPowerController = {
+    setPower: function(on) {
         debug("Turning the " + seraphConfig.name + " %s!...", on ? "on" : "off");
         if (on) {
           deviceValue.power = true;
@@ -75,7 +77,7 @@ var updateSeraphConfigStatus = function(value){
         }
     }
 
-}
+};
 
 var SPCService = function(){
     seraphConfig.udid = public.generateMACLikeUDID(seraphConfig.model, seraphConfig.deviceID, seraphConfig.channelID)
@@ -95,7 +97,7 @@ var SPCService = function(){
 
     // listen for the "identify" event for this Accessory
     outlet.on('identify', function(paired, callback) {
-        SPowerControl.identify();
+        SPowerController.identify();
         callback(); // success
     });
 
@@ -106,7 +108,8 @@ var SPCService = function(){
         .getCharacteristic(Characteristic.On)
         .on('set', function(value, callback) {
             if(!reverseFlag){
-                SPowerControl.setPowerOn(value);
+                SPowerController.setPower(value);
+                receiptReserveTime += parseInt(seraphConfig.responseTimeout);
 
             }
             callback(); // Our fake Outlet is synchronous - this value has been successfully set
@@ -124,21 +127,28 @@ var SPCService = function(){
             // few seconds to respond, Siri will give up.
 
             var err = null; // in case there were any problems
-            callback(err, SPowerControl.getPower());
+            callback(err, SPowerController.getPower());
 
         });
 
-    SSPLinker.HAPEvent.on('statusUpdate', function(deviceID, channel, value){
+    SSPLinker.HAPEvent.on('statusUpdate', function(deviceID, channel, value, ifReceipt){
 
-        if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)){
-            debug("Receive Status Message of " + deviceID + " Channel " + channel + " : " + value)
-            reverseFlag = true;
-            updateSeraphConfigStatus({"TOPOS":value});
-            outlet
-                .getService(Service.Outlet)
-                .setCharacteristic(Characteristic.On, SPowerControl.getPower());
-            reverseFlag = false;
+        if(((receiptReserveTime > 0) && (ifReceipt)) || (receiptReserveTime <= 0)){
+            if((deviceID == seraphConfig.deviceID) && (channel == seraphConfig.channelID)){
+                debug("Receive Status Message of " + deviceID + " Channel " + channel + " : " + value)
+                reverseFlag = true;
+                updateSeraphConfigStatus({"TOPOS":value});
+                outlet
+                    .getService(Service.Outlet)
+                    .setCharacteristic(Characteristic.On, SPowerController.getPower());
+                reverseFlag = false;
+            }
+
         }
+
+
+
+
 
     });
 
@@ -146,6 +156,11 @@ var SPCService = function(){
 
 };
 
+setInterval(function(){
+    if(receiptReserveTime > 0){
+        receiptReserveTime--;
+    }
+},100);
 
 
 module.exports.setDeviceValue = updateSeraphConfigStatus;

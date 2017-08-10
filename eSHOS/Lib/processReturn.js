@@ -84,7 +84,7 @@ var processQEReceipt = function (data){
             if((deviceType == "SL") || (deviceType == "SP")){
                 for (var channel in payload.status[key]){
                     SQLAction.SQLSetField("seraph_sc_device",{"value" : payload.status[key][channel], "lastupdate": public.timestamp()},"channel = " + public.translateCChannel(channel) +" AND deviceID = '" + deviceID + "' AND type = '" + deviceType + "'");
-                    HAPLinker.HAPEvent.emit("statusUpdate", key, public.translateCChannel(channel), payload.status[key][channel])
+                    HAPLinker.HAPEvent.emit("statusUpdate", key, public.translateCChannel(channel), payload.status[key][channel], true)
                 }
             }
 
@@ -125,13 +125,13 @@ var processDeviceStatusReceipt = function(data){
                 var deviceID = key.substring(2);
                 if((deviceType == "SL") || (deviceType == "SP")){
                     SQLAction.SQLSetField("seraph_sc_device",{"value" : payload[key][channel], "lastupdate": public.timestamp()},"channel = " + public.translateCChannel(channel) +" AND deviceID = '" + deviceID + "' AND type = '" + deviceType + "'");
-                    HAPLinker.HAPEvent.emit("statusUpdate", key, public.translateCChannel(channel), payload[key][channel]);
+                    HAPLinker.HAPEvent.emit("statusUpdate", key, public.translateCChannel(channel), payload[key][channel], false);
                 }
             }
         }
 
     }   catch(err) {
-        ddebug("[*******ERROR*******] [%s]", err);
+        debug("[*******ERROR*******] [%s]", err);
     }
 };
 
@@ -161,6 +161,7 @@ var processDeviceInfo = function(data){
                     break;
             }
         }   else if(data.topic == "/device/info/ss"){
+
             setTimeout(function(){
                 debug("[%s] Sending Device List Configuration to SS...", public.getDateTime());
                 SSPB_APIs.sspbDeviceListPost(TCPClient.TCPClients["SSE11T26"]);
