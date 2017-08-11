@@ -11,15 +11,6 @@ var debug = require('debug')('TCPClient');
       //TCP Clients Variables//
 //////////////////////////////////////
 var TCPClients = {};
-var approvedSS = {};
-
-//////////////////////////////////////
-   //Interface Specific Variables//
-//////////////////////////////////////
-var SSInfos = [];
-
-
-
 
 
 //////////////////////////////////////
@@ -28,6 +19,7 @@ var SSInfos = [];
 
 var config = require("../../config.js");
 var public = require("./public.js");
+var preloadData = require("./preloadData.js");
 var constructMessage = require ("./constructMessage.js")
 var parseMessage = require ("./parseMessage.js");
 var SQLAction =  require ("./SQLAction.js");
@@ -46,7 +38,7 @@ var SIDP_APIs = require("./SIDP.js");
 var SICP_APIs = require("./SICP.js");
 var SSPB_APIs = require("./SSP-B.js");
 var TEST_APIs = require("./TEST_API.js");
-var preloadData = require("./preloadData.js");
+
 var rotationalCheck = require("./rotationalCheck.js");
 
 //////////////////////////////////////
@@ -114,7 +106,6 @@ var createAllClients = function(){
                 tempTCPClient.reConnecting = false;
                 tempTCPClient.isClient = true;
                 TCPClients[value.deviceID] = tempTCPClient;
-                SSInfos.push(TCPClients[value.deviceID]);
                 TCPConnect(value.deviceID);
                 TCPHandle(value.deviceID);
 
@@ -145,7 +136,6 @@ var destroyAllClients = function(){
         }
     }
 
-    SSInfos = [];
 }
 var destroyConnectedClients = function(SSDeviceID){
 
@@ -526,5 +516,5 @@ module.exports.TCPSocketWrite = TCPSocketWrite;
 module.exports.destroyAllClients = destroyAllClients;
 module.exports.destroyConnectedClients = destroyConnectedClients;
 module.exports.createAllClients = createAllClients;
-module.exports.SSInfos =  SSInfos;
+
 

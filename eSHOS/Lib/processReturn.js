@@ -9,15 +9,15 @@ var HAPLinker = require("./HomeKit_Link.js");
 var debug = require('debug')('SSP-B');
 
 
-var processSSPBIncomming = function (data) {
+var processSSPBIncomming = function (data, remoteAddress) {
     if(!data.ifTopic){
-        processSSPBReturn(data);
+        processSSPBReturn(data, remoteAddress);
     }   else    {
-        processSSPBRequest(data);
+        processSSPBRequest(data, remoteAddress);
     }
 };
 
-var processSSPBReturn = function(data){
+var processSSPBReturn = function(data, remoteAddress){
     debug("[%s] Processing SSP-B Return Messages....", public.getDateTime());
     var messageID = data.messageID;
     var query = "messageID = '" + messageID + "' AND (finished = 0 OR finished IS NULL)";
@@ -53,7 +53,7 @@ var processSSPBReturn = function(data){
 
 };
 
-var processSSPBRequest = function(data){
+var processSSPBRequest = function(data, remoteAddress){
     debug("[%s] Processing Request from SS....", public.getDateTime());
 
     if(data.payload){
@@ -66,9 +66,9 @@ var processSSPBRequest = function(data){
 
     switch (data.topic){
         case "/device/info/sub":
-            processDeviceInfo(data);break;
+            processDeviceInfo(data, remoteAddress);break;
         case "/device/info/ss":
-            processDeviceInfo(data);break;
+            processDeviceInfo(data, remoteAddress);break;
         default:
             break;
     }
@@ -135,7 +135,7 @@ var processDeviceStatusReceipt = function(data){
     }
 };
 
-var processDeviceInfo = function(data){
+var processDeviceInfo = function(data, remoteAddress){
     debug("[%s] Processing Device Info....", public.getDateTime());
     var payload = data.parsedPayload;
     try {
@@ -162,16 +162,43 @@ var processDeviceInfo = function(data){
             }
         }   else if(data.topic == "/device/info/ss"){
 
-            setTimeout(function(){
-                debug("[%s] Sending Device List Configuration to SS...", public.getDateTime());
-                SSPB_APIs.sspbDeviceListPost(TCPClient.TCPClients["SSE11T26"]);
-            },1000);
-            setTimeout(function(){
-                debug("[%s] Sending ST Configuration to SS...", public.getDateTime());
-                SSPB_APIs.sspbConfigST(TCPClient.TCPClients["SSE11T26"]);
-            },2000)
+            var deviceID = payload.type + payload.deviceID;
+
+            SQLAction.SQLFind("seraph_device", "id, deviceID, type, IPAddress", {"deviceID": payload.deviceID, "type" : payload.type}, function(SQLData){
+                if(SQLData != [] && (deviceID != (SQLData.type + SQLData.deviceID))){
+                    updatedData.IPAddress = remoteAddress;
+                    SQLAction.SQLFind("seraph_device", "id, deviceID, type, IPAddress", {"IPAddress": remoteAddress}, function(sData){
+
+                        SQLAction.SQLSetField("seraph_device",{"IPAddress": remoteAddress},{"deviceID":payload.deviceID});
+
+                        var deviceBak = sData.type + sData.deviceID;
+
+                        if(sData != []){
+                            SQLAction.SQLDelete("seraph_device",{"id":sData.id});
+                            TCPClient.TCPClients[deviceID].reConnecting = false;
+                            TCPClient.TCPClients[deviceID].isClient = false;
+                            TCPClient.TCPClients[deviceID].TCPClient = TCPClient.TCPClients[deviceBak].TCPClient;
+                            TCPClient.TCPClients[deviceID].cStatus = 1;
+                            delete(TCPClient.TCPClients[deviceBak]);
+
+                        }
+                    });
+                }
+
+                setTimeout(function(){
+                    debug("[%s] Sending Device List Configuration to SS...", public.getDateTime());
+                    SSPB_APIs.sspbDeviceListPost(TCPClient.TCPClients[deviceID]);
+                },1000);
+                setTimeout(function(){
+                    debug("[%s] Sending ST Configuration to SS...", public.getDateTime());
+                    SSPB_APIs.sspbConfigST(TCPClient.TCPClients[deviceID]);
+                },2000)
+
+            })
+
+
         }
-        SQLAction.SQLSetField("seraph_device",updatedData,"deviceID = '" + payload.deviceID + "'");
+        SQLAction.SQLSetField("seraph_device",updatedData,{"deviceID":payload.deviceID});
 
     }   catch(err){
         debug("[*******ERROR*******] Payload Format Error....");

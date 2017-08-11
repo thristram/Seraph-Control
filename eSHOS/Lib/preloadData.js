@@ -13,6 +13,8 @@ var deviceStatus = {};
 var sensorStatus = {};
 var sysConfigs = {};
 
+SQLAction.HomeKitCachePreLoad();
+
 var loadHomeKitData = function(callback){
 
     SQLAction.SQLSelect("seraph_device","type||deviceID as deviceID, type, model, managedSS, managedSC, moduleID","","",function(deviceData){

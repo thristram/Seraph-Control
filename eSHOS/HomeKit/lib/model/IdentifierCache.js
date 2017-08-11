@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('util');
-var storage = require('node-persist');
+//var storage = require('node-persist');
 var SQLAction =  require ("../../../Lib/SQLAction.js");
 
 module.exports = {
@@ -104,16 +104,15 @@ IdentifierCache.load = function(username) {
     //console.log(key)
 
   //var saved = storage.getItem(key);
-   SQLAction.HomeKitCacheGet(key,function(saved){
-       if (saved) {
-           var info = new IdentifierCache(username);
-           info._cache = saved.cache;
-           return info;
-       }
-       else {
-           return null;
-       }
-   });
+  var saved = SQLAction.HomeKitCacheGet(key);
+  if (saved) {
+      var info = new IdentifierCache(username);
+      info._cache = saved.cache;
+      return info;
+  }
+  else {
+      return null;
+  }
 
 
 };

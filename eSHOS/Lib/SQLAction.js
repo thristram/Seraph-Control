@@ -18,6 +18,13 @@ SQLdb.on("error", function(error) {
 });
 //var SQLdb = new SQLite.Database('/Users/fangchenli/Downloads/Seraph-eSH-master/eSHOS/db//db/seraph.sqlite'));
 
+//////////////////////////////////////
+              //TEMP//
+//////////////////////////////////////
+
+
+var homeKitIdentifierCache = {}
+
 
 module.exports = {
 
@@ -156,19 +163,31 @@ module.exports = {
     },
     HomeKitCacheSet: function(key,saved) {
         var value = JSON.stringify(saved);
-
+        homeKitIdentifierCache[key] = value;
         this.SQLFind("seraph_HomeKit_cache", "id", "key = '" + key + "'", function (data) {
             if(data != []){
+
                 module.exports.SQLSetField("seraph_HomeKit_cache", {"key":key,"value":value}, "key = '" + key + "'")
             }   else    {
-                this.SQLAdd("seraph_HomeKit_cache", {"key":key, "value":value})
+                module.exports.SQLAdd("seraph_HomeKit_cache", {"key":key, "value":value})
             }
         })
     },
-    HomeKitCacheGet: function(key,callback) {
-        this.SQLFind("seraph_HomeKit_cache", "*", "key = '" + key + "'", function (data) {
+    HomeKitCacheGet: function(key) {
+        if(homeKitIdentifierCache.hasOwnProperty(key)){
+            return homeKitIdentifierCache[key];
+        }   else    {
+            return null
+        }
+
+    },
+    HomeKitCachePreLoad: function() {
+        this.SQLSelect("seraph_HomeKit_cache", "*", "","", function (data) {
             if(data != []){
-                callback(JSON.parse(data.value))
+                for(var key in data){
+                    homeKitIdentifierCache[data[key].key] = JSON.parse(data[key].value);
+                    module.exports.homeKitIdentifierCache = homeKitIdentifierCache;
+                }
             }   else    {
                 callback(null)
             }
@@ -216,3 +235,4 @@ module.exports = {
 
 
 };
+

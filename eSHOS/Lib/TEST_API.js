@@ -39,7 +39,6 @@ var testLinkService = function(req, res) {
     public.eventLog("Link Service Started","Link Service");
     SQLAction.SQLConnection.all(sql, function(err, data) {
         var val = {
-            TCPClient: TCPClient.SSInfos,
             IRType: data,
             sysConfig: preloadData.sysConfigs,
             isSmartConnecting: isSmartConnecting,
@@ -50,9 +49,6 @@ var testLinkService = function(req, res) {
             defaultMeshID: public.bufferString(module.exports.defaultMeshID),
             currentData: module.exports.currentData
         };
-        for(var i = 0; i < val.TCPClient.length; i ++){
-            delete val.TCPClient[i].TCPClient;
-        }
         res.end(JSON.stringify(val))
     });
 

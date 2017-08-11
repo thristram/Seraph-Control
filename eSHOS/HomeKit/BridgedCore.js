@@ -1,6 +1,6 @@
 var fs = require('fs');
 var path = require('path');
-var storage = require('node-persist');
+//var storage = require('node-persist');
 var uuid = require('./').uuid;
 var Bridge = require('./').Bridge;
 var Accessory = require('./').Accessory;
@@ -12,7 +12,7 @@ var accessoryLoader = require('./lib/AccessoryLoader');
 console.log("Seraph Hub HomeKit Server Starting...");
 
 // Initialize our storage system
-storage.initSync();
+//storage.initSync();
 
 // Start by creating our Bridge which will host all loaded Accessories
 var bridge = new Bridge('Seraph Hub', uuid.generate("Seraph Hub"));
