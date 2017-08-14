@@ -8,8 +8,7 @@ var Characteristic = require('./Characteristic').Characteristic;
 var uuid = require('./util/uuid');
 var debug = require('debug')('AccessoryLoader');
 var requireUncached = require('require-uncached');
-var SQLAction = require("../../Lib/SQLAction.js");
-var preloadData = require("../../Lib/preloadData.js");
+var CoreData = require("../../Lib/CoreData.js");
 var publicMethod = require("../../Lib/public.js");
 
 
@@ -30,9 +29,9 @@ function loadDirectory(dir, callback) {
   // exported accessory objects loaded from this dir
   var accessories = [];
 
-    var channelData = preloadData.channelData;
-    var sensorData = preloadData.sensorData;
-    var deviceREF = preloadData.deviceREF;
+    var channelData = CoreData.channelData;
+    var sensorData = CoreData.sensorData;
+    var deviceREF = CoreData.deviceREF;
 
     //console.log(channelData)
     //console.log(sensorData)

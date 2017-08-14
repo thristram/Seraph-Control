@@ -8,7 +8,7 @@ var url = require('url');
 var SSPB_APIs = require("./SSP-B.js");
 var config = require("../../config.js");
 var public = require("./public.js");
-var TCPClient = require ("./TCPClient.js");
+var CoreData = require ("./CoreData.js");
 
 /************************************/
 
@@ -25,7 +25,7 @@ module.exports = {
         req.rootRoute = "actions/perform";
         var APIQuery = parseExpressURI(req);
         APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbActionPerform(TCPClient.TCPClients[SSDevice]);
+            SSPB_APIs.sspbActionPerform(CoreData.TCPClients[SSDevice]);
         })
         res.end("");
 
@@ -41,7 +41,7 @@ module.exports = {
         var APIQuery = parseExpressURI(req);
         APIQuery.device.forEach(function (SSDevice) {
             var channel = APIQuery.query.CH;
-            SSPB_APIs.sspbActionRefresh(TCPClient.TCPClients[SSDevice],channel);
+            SSPB_APIs.sspbActionRefresh(CoreData.TCPClients[SSDevice],channel);
         });
         res.end('')
     },
@@ -80,7 +80,7 @@ module.exports = {
             if(APIQuery.query.timeBlank){
                 options["timeBlank"] = parseInt(APIQuery.query.timeBlank)
             }
-            SSPB_APIs.sspbActionBacklight(TCPClient.TCPClients[SSDevice], mode, options);
+            SSPB_APIs.sspbActionBacklight(CoreData.TCPClients[SSDevice], mode, options);
         })
         res.end('')
     },
@@ -95,7 +95,7 @@ module.exports = {
         APIQuery.device.forEach(function (SSDevice) {
             var sepid = APIQuery.query.SEPID;
             var channel = APIQuery.query.CH;
-            SSPB_APIs.sspbDataSync(TCPClient.TCPClients[SSDevice], sepid, channel);
+            SSPB_APIs.sspbDataSync(CoreData.TCPClients[SSDevice], sepid, channel);
         })
         res.end('')
     },
@@ -110,7 +110,7 @@ module.exports = {
         APIQuery.device.forEach(function (SSDevice) {
             var sepid = APIQuery.query.SEPID;
             var channel = APIQuery.query.CH;
-            SSPB_APIs.sspbDataRecent(TCPClient.TCPClients[SSDevice], sepid, channel);
+            SSPB_APIs.sspbDataRecent(CoreData.TCPClients[SSDevice], sepid, channel);
         })
         res.end('')
     },
@@ -125,7 +125,7 @@ module.exports = {
         var APIQuery = parseExpressURI(req);
         APIQuery.device.forEach(function (SSDevice) {
 
-            SSPB_APIs.sspbDataIR(TCPClient.TCPClients[SSDevice]);
+            SSPB_APIs.sspbDataIR(CoreData.TCPClients[SSDevice]);
         })
         res.end('')
     },
@@ -139,7 +139,7 @@ module.exports = {
         req.rootRoute = "config/ss";
         var APIQuery = parseExpressURI(req);
         APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbConfigssGet(TCPClient.TCPClients[SSDevice]);
+            SSPB_APIs.sspbConfigssGet(CoreData.TCPClients[SSDevice]);
         })
         res.end('')
 
@@ -150,7 +150,7 @@ module.exports = {
         var APIQuery = parseExpressURI(req);
 
         APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbConfigssPost(TCPClient.TCPClients[SSDevice]);
+            SSPB_APIs.sspbConfigssPost(CoreData.TCPClients[SSDevice]);
         })
         res.end('')
     },
@@ -166,7 +166,7 @@ module.exports = {
         var APIQuery = parseExpressURI(req);
         APIQuery.device.forEach(function (SSDevice) {
             var stid = APIQuery.query.STID;
-            SSPB_APIs.sspbConfigStrategyHTSPGet(TCPClient.TCPClients[SSDevice], stid);
+            SSPB_APIs.sspbConfigStrategyHTSPGet(CoreData.TCPClients[SSDevice], stid);
         })
         res.end('')
 
@@ -176,7 +176,7 @@ module.exports = {
         req.rootRoute = "/config/strategy/htsp";
         var APIQuery = parseExpressURI(req);
         APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbConfigStrategyHTSPPost(TCPClient.TCPClients[SSDevice]);
+            SSPB_APIs.sspbConfigStrategyHTSPPost(CoreData.TCPClients[SSDevice]);
         })
 
         res.end('')
@@ -194,7 +194,7 @@ module.exports = {
         APIQuery.device.forEach(function (SSDevice) {
             var sepid = APIQuery.query.SEPID;
             var channel = APIQuery.query.CH;
-            SSPB_APIs.sspbDeviceStatus(TCPClient.TCPClients[SSDevice], sepid, channel);
+            SSPB_APIs.sspbDeviceStatus(CoreData.TCPClients[SSDevice], sepid, channel);
         })
 
         res.end('')
@@ -211,7 +211,7 @@ module.exports = {
         req.rootRoute = "/device/list";
         var APIQuery = parseExpressURI(req);
         APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbDeviceListGet(TCPClient.TCPClients[SSDevice]);
+            SSPB_APIs.sspbDeviceListGet(CoreData.TCPClients[SSDevice]);
         })
 
         res.end('')
@@ -222,7 +222,7 @@ module.exports = {
         req.rootRoute = "/device/list";
         var APIQuery = parseExpressURI(req);
         APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbDeviceListPost(TCPClient.TCPClients[SSDevice]);
+            SSPB_APIs.sspbDeviceListPost(CoreData.TCPClients[SSDevice]);
         })
 
         res.end('')
@@ -267,7 +267,7 @@ module.exports = {
         }
 
         APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbQE(TCPClient.TCPClients[SSDevice], APIQuery.query.action, APIQuery.query.SEPID, data);
+            SSPB_APIs.sspbQE(CoreData.TCPClients[SSDevice], APIQuery.query.action, APIQuery.query.SEPID, data);
         })
 
         res.end('')
@@ -284,7 +284,7 @@ module.exports = {
         var APIQuery = parseExpressURI(req);
 
         APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbAlarm(TCPClient.TCPClients[SSDevice]);
+            SSPB_APIs.sspbAlarm(CoreData.TCPClients[SSDevice]);
         })
 
 

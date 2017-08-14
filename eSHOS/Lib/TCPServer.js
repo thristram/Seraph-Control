@@ -12,9 +12,7 @@ var net = require('net');
 
 var config = require("../../config.js");
 var public = require("./public.js");
-var constructMessage = require ("./constructMessage.js");
 var parseMessage = require ("./parseMessage.js");
-var SQLAction =  require ("./SQLAction.js");
 
 
 //var uart = wpi.serialOpen(config.UARTConfig.device, config.UARTConfig.bitRate)

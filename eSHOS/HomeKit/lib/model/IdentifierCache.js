@@ -2,7 +2,7 @@
 
 var util = require('util');
 //var storage = require('node-persist');
-var SQLAction =  require ("../../../Lib/SQLAction.js");
+var CoreData =  require ("../../../Lib/CoreData.js");
 
 module.exports = {
   IdentifierCache: IdentifierCache
@@ -104,7 +104,7 @@ IdentifierCache.load = function(username) {
     //console.log(key)
 
   //var saved = storage.getItem(key);
-  var saved = SQLAction.HomeKitCacheGet(key);
+  var saved = CoreData.HomeKitCacheGet(key);
   if (saved) {
       var info = new IdentifierCache(username);
       info._cache = saved.cache;
@@ -123,7 +123,7 @@ IdentifierCache.prototype.save = function() {
   };
 
   var key = IdentifierCache.persistKey(this.username);
-  SQLAction.HomeKitCacheSet(key, saved);
+  CoreData.HomeKitCacheSet(key, saved);
   //storage.setItemSync(key, saved);
   //storage.persistSync();
 };

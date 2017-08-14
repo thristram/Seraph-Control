@@ -2,11 +2,11 @@
  * Created by fangchenli on 1/28/17.
  */
 var UDP = require("./UDP.js");
-var SQLAction =  require ("./SQLAction.js");
 var AES =  require ("./AES.js");
 var dgram = require("dgram");
 var config = require("../../config.js");
 var public = require("./public.js");
+var CoreData = require("./CoreData.js");
 //////////////////////////////////////
         //REQUIRE MODULE//
 //////////////////////////////////////
@@ -20,30 +20,6 @@ var ifSecuredSmartConnecting = false;
 var ifBroadcastingServerIP = false;
 var UDPServer = UDP.createUDPServer();
 
-
-function getWiFiInfo(){
-    var sql = "SELECT * FROM config WHERE name = 'ROUTER_SSID' OR name = 'ROUTER_PASSWORD' ";
-    SQLAction.SQLConnection.all(sql, function(err, res) {
-        for(var index in res){
-            if(res[index].name == "ROUTER_PASSWORD"){
-                password = res[index].value
-            }
-            if(res[index].name == "ROUTER_SSID"){
-                ssid = res[index].value
-            }
-        }
-    })
-}
-function getServerIPInfo(){
-    var sql = "SELECT * FROM config WHERE name = 'ESH_CONFIG_LOCAL_IP'";
-    SQLAction.SQLConnection.all(sql, function(err, res) {
-        for(var index in res){
-            if(res[index].name == "ESH_CONFIG_LOCAL_IP"){
-                serverIP = res[index].value
-            }
-        }
-    })
-}
 
 function startBroadcasting() {
     var port = config.SSCPort;
@@ -72,7 +48,8 @@ var startBroadcastingServerIP = function(server){
 
 module.exports = {
     start: function(){
-        getWiFiInfo();
+        password = CoreData.sysConfigs.ROUTER_PASSWORD;
+        ssid = CoreData.sysConfigs.ROUTER_SSID;
         ifSmartConnecting = true;
     },
     stop: function(){
@@ -80,14 +57,15 @@ module.exports = {
     },
     startSecured: function(mac){
         securedSmartConfigMac = mac;
-        getWiFiInfo();
+        password = CoreData.sysConfigs.ROUTER_PASSWORD;
+        ssid = CoreData.sysConfigs.ROUTER_SSID;
         ifSecuredSmartConnecting = true;
     },
     stopSecured: function(){
         ifSecuredSmartConnecting = false;
     },
     startServerIP: function(){
-        getServerIPInfo();
+        serverIP = CoreData.ESH_CONFIG_LOCAL_IP;
         ifBroadcastingServerIP = true;
     },
     stopServerIP: function(){
@@ -98,7 +76,6 @@ module.exports = {
 }
 
 
-getWiFiInfo();
 startBroadcasting();
 startSecuredBroadcasting();
 startBroadcastingServerIP(UDPServer);

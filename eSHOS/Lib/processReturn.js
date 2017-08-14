@@ -4,9 +4,9 @@
 var public = require("./public.js");
 var SQLAction =  require ("./SQLAction.js");
 var SSPB_APIs = require("./SSP-B.js");
-var TCPClient = require("./TCPClient.js");
 var HAPLinker = require("./HomeKit_Link.js");
 var debug = require('debug')('SSP-B');
+var CoreData = require("./CoreData.js");
 
 
 var processSSPBIncomming = function (data, remoteAddress) {
@@ -83,8 +83,16 @@ var processQEReceipt = function (data){
             var deviceID = key.substring(2);
             if((deviceType == "SL") || (deviceType == "SP")){
                 for (var channel in payload.status[key]){
-                    SQLAction.SQLSetField("seraph_sc_device",{"value" : payload.status[key][channel], "lastupdate": public.timestamp()},"channel = " + public.translateCChannel(channel) +" AND deviceID = '" + deviceID + "' AND type = '" + deviceType + "'");
-                    HAPLinker.HAPEvent.emit("statusUpdate", key, public.translateCChannel(channel), payload.status[key][channel], true)
+
+                    var temp = {
+                        "value"     : payload.status[key][channel],
+                        "channel"   : public.translateCChannel(channel),
+                        "deviceID"  : deviceID,
+                        "deviceType": deviceType,
+                    };
+
+                    CoreData.updateDeviceStatus(temp.value, temp.channel, temp.deviceID, temp.deviceType);
+                    HAPLinker.HAPEvent.emit("statusUpdate", temp.deviceID, temp.channel, temp.value, true);
                 }
             }
 
@@ -105,8 +113,15 @@ var processSensorReceipt = function (data){
     try{
         for (var deviceID in payload){
             for (var channel in payload[deviceID]){
-                SQLAction.SQLSetField("seraph_sensor",{"value" : payload[deviceID][channel], "lastupdate": public.timestamp()},"code = '" + channel + "' AND deviceID = '" + deviceID + "'");
-                HAPLinker.HAPEvent.emit("sensorUpdate", deviceID, channel, payload[deviceID][channel])
+
+                var temp = {
+                    "value"     : payload[deviceID][channel],
+                    "channel"   : channel,
+                    "deviceID"  : deviceID
+                };
+
+                CoreData.updateSensorValue(temp.value, temp.channel, temp.deviceID);
+                HAPLinker.HAPEvent.emit("sensorUpdate", temp.deviceID, temp.channel, temp.value, false);
             }
         }
 
@@ -124,7 +139,15 @@ var processDeviceStatusReceipt = function(data){
                 var deviceType = key.substring(0,2);
                 var deviceID = key.substring(2);
                 if((deviceType == "SL") || (deviceType == "SP")){
-                    SQLAction.SQLSetField("seraph_sc_device",{"value" : payload[key][channel], "lastupdate": public.timestamp()},"channel = " + public.translateCChannel(channel) +" AND deviceID = '" + deviceID + "' AND type = '" + deviceType + "'");
+
+                    var temp = {
+                        "value"     : payload[key][channel],
+                        "channel"   : public.translateCChannel(channel),
+                        "deviceID"  : deviceID,
+                        "deviceType": deviceType
+                    };
+
+                    CoreData.updateDeviceStatus(temp.value, temp.channel, temp.deviceID, temp.deviceType);
                     HAPLinker.HAPEvent.emit("statusUpdate", key, public.translateCChannel(channel), payload[key][channel], false);
                 }
             }
@@ -145,7 +168,7 @@ var processDeviceInfo = function(data, remoteAddress){
             "model": payload.model,
             "firmware": payload.firmware,
             "HWtest": payload.HWtest,
-            "meshID": payload.meshID,
+            "meshID": payload.meshID.toString(16).toUpperCase(),
         }
         if(data.topic == "/device/info/sub"){
             switch(payload.type){
@@ -175,11 +198,11 @@ var processDeviceInfo = function(data, remoteAddress){
 
                         if(sData != []){
                             SQLAction.SQLDelete("seraph_device",{"id":sData.id});
-                            TCPClient.TCPClients[deviceID].reConnecting = false;
-                            TCPClient.TCPClients[deviceID].isClient = false;
-                            TCPClient.TCPClients[deviceID].TCPClient = TCPClient.TCPClients[deviceBak].TCPClient;
-                            TCPClient.TCPClients[deviceID].cStatus = 1;
-                            delete(TCPClient.TCPClients[deviceBak]);
+                            CoreData.TCPClients[deviceID].reConnecting = false;
+                            CoreData.TCPClients[deviceID].isClient = false;
+                            CoreData.TCPClients[deviceID].TCPClient = CoreData.TCPClients[deviceBak].TCPClient;
+                            CoreData.TCPClients[deviceID].cStatus = 1;
+                            delete(CoreData.TCPClients[deviceBak]);
 
                         }
                     });
@@ -187,11 +210,11 @@ var processDeviceInfo = function(data, remoteAddress){
 
                 setTimeout(function(){
                     debug("[%s] Sending Device List Configuration to SS...", public.getDateTime());
-                    SSPB_APIs.sspbDeviceListPost(TCPClient.TCPClients[deviceID]);
+                    SSPB_APIs.sspbDeviceListPost(CoreData.TCPClients[deviceID]);
                 },1000);
                 setTimeout(function(){
                     debug("[%s] Sending ST Configuration to SS...", public.getDateTime());
-                    SSPB_APIs.sspbConfigST(TCPClient.TCPClients[deviceID]);
+                    SSPB_APIs.sspbConfigST(CoreData.TCPClients[deviceID]);
                 },2000)
 
             })

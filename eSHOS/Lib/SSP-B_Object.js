@@ -14,22 +14,18 @@ var webAction = require("./webAction.js");
 /************************************/
 
 module.exports = {
-    SSConfigObject: function(callback){
-        var web = webAction;
-        webAction.getWeatherLocation(function(weatherLocation){
-            webAction.getSSConfig(function(config){
-                var conf = {
-                    system 		: config.system,
-                    wifi 		: config.wifi,
-                    time 		: public.timestamp(),
-                    location 	: weatherLocation.location,
-                    weather 	: weatherLocation.weather
-                }
-                //public.eventLog(conf);
-                callback(conf);
-            })
+    SSConfigObject: function(){
+        var config = webAction.getSSConfig();
+        var weatherLocation = webAction.getWeatherLocation();
+        var conf = {
+            system 		: config.system,
+            wifi 		: config.wifi,
+            time 		: public.timestamp(),
+            location 	: weatherLocation.location,
+            weather 	: weatherLocation.weather
+        }
 
-        });
+        return conf;
 
     },
 

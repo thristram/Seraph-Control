@@ -7,7 +7,7 @@ var constructMessage = require ("./constructMessage.js")
 var TCPClient = require ("./TCPClient.js");
 var SSPBObjects = require("./SSP-B_Object.js");
 var AES = require("./AES.js");
-var SQLAction =  require ("./SQLAction.js");
+var CoreData =  require ("./CoreData.js");
 var debug = require('debug')('SSP-B');
 
 /************************************/
@@ -273,14 +273,12 @@ module.exports = {
             MessageID   : public.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
-        }
-        SSPBObjects.SSConfigObject(function(conf){
-            data.Topic = createTopic(data.topicType, data.topicExt);
-            data.payload = JSON.stringify(conf);
-            var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-            TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
-
-        });
+        };
+        var conf = SSPBObjects.SSConfigObject;
+        data.Topic = createTopic(data.topicType, data.topicExt);
+        data.payload = JSON.stringify(conf);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
+        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
         return data;
     },
 
@@ -594,7 +592,7 @@ var recordCommandData = function(data){
         qos 			: data.QosNeeded,
         payload         : data.payload
     };
-    SQLAction.SQLAdd("seraph_sspb_command_logs",sqlData);
+    CoreData.recordSSPBCommands(sqlData);
 }
 
 

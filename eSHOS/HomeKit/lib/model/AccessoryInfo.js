@@ -5,7 +5,7 @@ var util = require('util');
 var crypto = require('crypto');
 var ed25519 = require('ed25519');
 var bufferShim = require('buffer-shims');
-var SQLAction =  require ("../../../Lib/SQLAction.js");
+var CoreData =  require ("../../../Lib/CoreData.js");
 
 module.exports = {
   AccessoryInfo: AccessoryInfo
@@ -100,7 +100,7 @@ AccessoryInfo.create = function(username) {
 
 AccessoryInfo.load = function(username) {
   var key = AccessoryInfo.persistKey(username);
-  var saved = SQLAction.HomeKitCacheGet(key);
+  var saved = CoreData.HomeKitCacheGet(key);
   if (saved) {
       var info = new AccessoryInfo(username);
       info.displayName = saved.displayName || "";
@@ -158,7 +158,7 @@ AccessoryInfo.prototype.save = function() {
 
   var key = AccessoryInfo.persistKey(this.username);
 
-  SQLAction.HomeKitCacheSet(key, saved);
+  CoreData.HomeKitCacheSet(key, saved);
   //storage.setItemSync(key, saved);
   //storage.persistSync();
 };

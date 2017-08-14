@@ -15,7 +15,6 @@ var mustacheExpress = require('mustache-express');
 
 var config = require("../../config.js");
 var public = require("./public.js");
-var SQLAction =  require ("./SQLAction.js");
 
 
 /************************************/

@@ -102,7 +102,7 @@ var updateSeraphConfigStatus = function(value){
 
             deviceValue.power = false;
         } else {
-            deviceValue.brightness = brightness + 1;
+            deviceValue.brightness = brightness;
             deviceValue.power = true;
         }
     }

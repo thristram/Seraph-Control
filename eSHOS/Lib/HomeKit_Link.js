@@ -3,12 +3,14 @@
  */
 var public = require("./public.js");
 var constructMessage = require ("./constructMessage.js")
-var TCPClient = require ("./TCPClient.js");
+var CoreData = require ("./CoreData.js");
+//var CoreData = require ("./TCPClient.js");
 var SSPB_APIs = require ("./SSP-B.js");
 var EventEmitter = require('events');
 var debug = require('debug')('HomeKit_Link');
 
 var queueing = false;
+var initialQueue = {};
 var commandQueue = {};
 var commandQueueCH = {};
 var queueingTime = 300;
@@ -34,18 +36,22 @@ module.exports = {
     SLCControl: function(SSDeviceID, deviceID, moduleID, channelID, value){
 
         debug("[%s] Calling SLC Control from HomeKit", public.getDateTime());
-        if(value == 100){
-            value = "99"
-        }
+
         if((parseInt(value) < 10) && (parseInt(value)) > -1){
             value = "0" + value;
+        }
+
+        if(parseInt(value) == 100){
+            value = "FF";
         }
 
         var options = {
             "MD"    : moduleID,
             "CH"    : public.translateChannel(channelID),
-            "topos" : value
+            "topos" : value,
+            //"duration"  : 90
         };
+
 
         addToQueue("SL", SSDeviceID, deviceID, options)
 
@@ -58,8 +64,27 @@ module.exports = {
 
 }
 
-
 function addToQueue(type, SSDeviceID, deviceID, options){
+    var commandQueueName = type + "_" + deviceID + "_" + options.MD + "_" + options.CH;
+    initialQueue[commandQueueName] = {
+        "type"          :   type,
+        "SSDeviceID"    :   SSDeviceID,
+        "deviceID"      :   deviceID,
+        "options"       :   options
+    }
+
+    if(!queueing){
+        queueing = true;
+        setTimeout(function(){
+            for(var key in initialQueue){
+                addToProcessQueue(initialQueue[key].type, initialQueue[key].SSDeviceID, initialQueue[key].deviceID, initialQueue[key].options);
+            }
+            processQueue();
+        }, queueingTime)
+    }
+}
+
+function addToProcessQueue(type, SSDeviceID, deviceID, options){
     var queueItem = {};
     for(var key in options){
         queueItem[key] = options[key]
@@ -83,16 +108,10 @@ function addToQueue(type, SSDeviceID, deviceID, options){
     commandQueue[commandQueueName][queueItem.MD].push(queueItem);
     commandQueueCH[commandQueueName][queueItem.MD].push(parseInt(queueItem.CH));
     
-    if(!queueing){
-        queueing = true;
-        setTimeout(function(){
 
-            processQueue();
-        }, queueingTime)
-    }
 }
 function processQueue(){
-
+    initialQueue = {};
     for(var key in commandQueueCH){
 
         var i = 0;
@@ -128,7 +147,7 @@ function processQueue(){
         results.MD = resultMDs.join();
         //console.log(results);
         //console.log(commandType);
-        SSPB_APIs.sspbQE(TCPClient.TCPClients[results.SSDeviceID], commandType, results.deviceID, results);
+        SSPB_APIs.sspbQE(CoreData.TCPClients[results.SSDeviceID], commandType, results.deviceID, results);
 
 
         

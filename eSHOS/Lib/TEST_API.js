@@ -6,7 +6,7 @@ var url = require('url');
 
 var TCPClient = require("./TCPClient.js");
 var AES = require("./AES.js");
-var preloadData = require("./preloadData.js");
+var CoreData = require("./CoreData.js");
 var smartConnect = require("./smartConnect.js");
 var public = require("./public.js");
 var SQLAction =  require ("./SQLAction.js");
@@ -40,7 +40,7 @@ var testLinkService = function(req, res) {
     SQLAction.SQLConnection.all(sql, function(err, data) {
         var val = {
             IRType: data,
-            sysConfig: preloadData.sysConfigs,
+            sysConfig: CoreData.sysConfigs,
             isSmartConnecting: isSmartConnecting,
             isSecuredSmartConnecting: isSecuredSmartConnecting,
             isBroadcastingServerIP: isBroadcastingServerIP,
@@ -64,12 +64,19 @@ var testCheckmessage = function(req, res) {
 }
 
 var testCheckonline = function(req, res) {
-
-    var sql = "SELECT * FROM seraph_device WHERE type = 'SS'";
-    SQLAction.SQLConnection.all(sql, function(err, data) {
-        res.end(JSON.stringify(data))
-    });
-
+    var data = [];
+    for(var key in CoreData.TCPClients){
+        var temp = {};
+        for(var tKey in CoreData.TCPClients[key]){
+            if(tKey != "TCPClient"){
+                temp[tKey] = CoreData.TCPClients[key][tKey];
+            }
+        }
+        data.push(temp);
+        delete(temp);
+    }
+    res.end(JSON.stringify(data))
+    //res.end(JSON.stringify({}))
 }
 
 
@@ -139,10 +146,11 @@ var testDeleteFromDeviceList = function(req, res) {
 }
 var testUpdateSmartConnectInfo = function(req, res) {
     var query = url.parse(req.url, true).query;
-    SQLAction.SQLSetConfig("config", { ROUTER_SSID	    : query.wifi_ssid });
-    SQLAction.SQLSetConfig("config", { ROUTER_PASSWORD 	: query.wifi_password});
-    preloadData.sysConfigs.ROUTER_SSID = query.wifi_ssid;
-    preloadData.sysConfigs.ROUTER_PASSWORD = query.wifi_password;
+    var configToSet = {
+        "ROUTER_SSID"	    : query.wifi_ssid,
+        "ROUTER_PASSWORD" 	: query.wifi_password
+    }
+    CoreData.setSysConfig(configToSet);
     res.writeHead(302, {'Location': 'http://' + query.orgURI});
     res.end();
 
