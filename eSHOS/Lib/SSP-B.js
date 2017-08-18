@@ -579,25 +579,7 @@ var createTopic = function(topicType, topicExt){
         topicType += "/" + key + "/" + topicExt[key];
     }
     return topicType;
-}
-
-var recordCommandData = function(data){
-    var sqlData = {
-        messageID 		: data.MessageID,
-        action 			: data.topicType,
-        parameter 		: JSON.stringify(data.topicExt),
-        requestedURI 	: data.Topic,
-        method 			: data.MessageType,
-        timestamp 		: public.timestamp(),
-        qos 			: data.QosNeeded,
-        payload         : data.payload
-    };
-    CoreData.recordSSPBCommands(sqlData);
-}
-
-
-
-
+};
 
 var constructStatusMessage = function(code,msg){
     var message = {
@@ -608,5 +590,4 @@ var constructStatusMessage = function(code,msg){
 }
 
 module.exports.createTopic = createTopic;
-module.exports.recordCommandData = recordCommandData;
 

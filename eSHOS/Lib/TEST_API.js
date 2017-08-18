@@ -97,7 +97,7 @@ var testUpdateDeviceList = function(req, res) {
     }
 
     TCPClient.destroyAllClients();
-    TCPClient.createAllClients();
+    CoreData.createAllTCPClients();
     res.writeHead(302, {'Location': 'http://' + query.orgURI});
     res.end();
 
@@ -136,7 +136,7 @@ var testDeleteFromDeviceList = function(req, res) {
         }   else    {
 
             TCPClient.destroyAllClients();
-            TCPClient.createAllClients();
+            CoreData.createAllTCPClients();
             res.writeHead(302, {'Location': 'http://' + query.orgURI});
             res.end();
         }

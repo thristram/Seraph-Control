@@ -64,9 +64,8 @@ module.exports = {
 
         var queryWhere = ['SP','SL','SC','ST'];
         var queryField = ['type||deviceID as deviceID', 'model', 'coord'];
-        var sql = "SELECT " + queryField.join(", ") + " FROM seraph_device WHERE managedSS = '" + ssid + "' AND (type = '" + queryWhere.join("' OR type = '") + "')";
-        SQLAction.SQLConnection.all(sql, function(err, res) {
 
+        SQLAction.SQLSelect("seraph_device", queryField, "managedSS = '" + ssid + "' AND (type = '" + queryWhere.join("' OR type = '") + "')", "", function(res){
             public.eventLog(sql);
             var data = {
                 "deviceID"  : ssid,

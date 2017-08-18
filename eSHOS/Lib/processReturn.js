@@ -19,37 +19,32 @@ var processSSPBIncomming = function (data, remoteAddress) {
 
 var processSSPBReturn = function(data, remoteAddress){
     debug("[%s] Processing SSP-B Return Messages....", public.getDateTime());
-    var messageID = data.messageID;
-    var query = "messageID = '" + messageID + "' AND (finished = 0 OR finished IS NULL)";
-    SQLAction.SQLFind("seraph_sspb_command_logs","*", query,function(SQLData){
-        if(SQLData.length != 0){
-            SQLAction.SQLSetField("seraph_sspb_command_logs",{"finished" : 1},query);
 
-            if(data.payload){
-                try {
-                    data["parsedPayload"] = JSON.parse(data.payload);
-                }   catch(err){
-                    debug("[*******ERROR*******] Payload JSON Error....");
-                }
-            }
+    CoreData.getSSPBCommands(data.messageID, function(commandData){
+       if(commandData){
+           CoreData.recordSSPBReturn(data.messageID, data);
 
-            switch (SQLData.action){
-                case "/qe":
-                    processQEReceipt(data);break;
-                case "/data/sync":
-                case "/data/recent":
-                    processSensorReceipt(data);break;
-                case "/device/status":
-                    processDeviceStatusReceipt(data);break;
-                default:
-                    break;
-            }
-            delete(SQLData);
-        }
+           if(data.payload){
+               try {
+                   data["parsedPayload"] = JSON.parse(data.payload);
+               }   catch(err){
+                   debug("[*******ERROR*******] Payload JSON Error....");
+               }
+           }
 
-    })
-
-
+           switch (commandData.action){
+               case "/qe":
+                   processQEReceipt(data);break;
+               case "/data/sync":
+               case "/data/recent":
+                   processSensorReceipt(data);break;
+               case "/device/status":
+                   processDeviceStatusReceipt(data);break;
+               default:
+                   break;
+           }
+       }
+    });
 
 };
 
@@ -69,6 +64,8 @@ var processSSPBRequest = function(data, remoteAddress){
             processDeviceInfo(data, remoteAddress);break;
         case "/device/info/ss":
             processDeviceInfo(data, remoteAddress);break;
+        case "/rt":
+            processRealTimeData(data, remoteAddress);break;
         default:
             break;
     }
@@ -190,6 +187,8 @@ var processDeviceInfo = function(data, remoteAddress){
             SQLAction.SQLFind("seraph_device", "id, deviceID, type, IPAddress", {"deviceID": payload.deviceID, "type" : payload.type}, function(SQLData){
                 if(SQLData != [] && (deviceID != (SQLData.type + SQLData.deviceID))){
                     updatedData.IPAddress = remoteAddress;
+
+
                     SQLAction.SQLFind("seraph_device", "id, deviceID, type, IPAddress", {"IPAddress": remoteAddress}, function(sData){
 
                         SQLAction.SQLSetField("seraph_device",{"IPAddress": remoteAddress},{"deviceID":payload.deviceID});
@@ -228,6 +227,38 @@ var processDeviceInfo = function(data, remoteAddress){
     }
 
 };
+
+var processRealTimeData = function(data, remoteAddress){
+    debug("[%s] Processing RT Data....", public.getDateTime());
+    var payload = data.parsedPayload;
+    try{
+        switch(payload.report.type){
+            case "MI":
+                var SSDeviceID = payload.report.sepid;
+                if(parseInt(payload.report.value) > 0){
+                    CoreData.updateSensorValue(1, "MI", SSDeviceID);
+                    HAPLinker.HAPEvent.emit("sensorUpdate", SSDeviceID, "MI", 1, false);
+                }   else    {
+                    CoreData.updateSensorValue(0, "MI", SSDeviceID);
+                    HAPLinker.HAPEvent.emit("sensorUpdate", SSDeviceID, "MI", 0, false);
+                }
+                break;
+            case "EG":
+                CoreData.updateSensorValue(parseInt(payload.report.value), "EG", payload.report.SEPID);
+                break;
+            case "CP":
+                break;
+            case "GT":
+                break;
+            case "PX":
+                break;
+            default:
+                break;
+        }
+    }   catch(err){
+        debug("[*******ERROR*******] Payload Format Error....");
+    }
+}
 
 module.exports = {
     processSSPBIncomming: processSSPBIncomming,
