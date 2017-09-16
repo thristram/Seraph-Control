@@ -13,13 +13,4 @@ module.exports = {
 
     versionNumber : 1,
 
-    TCPAddress : '127.0.0.1',
-
-    UARTConfig : {
-
-        device : '/dev/serial0',
-
-        bitRate : 115200,
-
-    }
 }

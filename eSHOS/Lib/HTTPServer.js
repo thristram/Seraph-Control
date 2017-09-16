@@ -88,6 +88,7 @@ function attachURI(req,res){
     if (checkFunction("/actions/backlight",req)) {SSPA_APIs.sspaGetActionsBacklight(req, res);}
     if (checkFunction("/data/sync",req)) {SSPA_APIs.sspaGetDataSync(req, res);}
     if (checkFunction("/data/recent",req)) {SSPA_APIs.sspaGetDataRecent(req, res);}
+    if (checkFunction("/data/history",req)) {SSPA_APIs.sspaDataHistory(req, res);}
     if (checkFunction("data/ir",req)) {SSPA_APIs.sspaGetDataIr(req, res);}
     if (checkFunction("/config/ss",req)) {SSPA_APIs.sspaGetConfigSS(req, res);}
     if (checkFunction("/config/ss",req,"POST")) {SSPA_APIs.sspaPostConfigSS(req, res);}
@@ -96,6 +97,7 @@ function attachURI(req,res){
     if (checkFunction("/device/status",req)) {SSPA_APIs.sspaGetDeviceStatus(req, res);}
     if (checkFunction("/device/list",req)) {SSPA_APIs.sspaGetDeviceList(req, res);}
     if (checkFunction("/device/list",req, "POST")) {SSPA_APIs.sspaPostDeviceList(req, res);}
+    if (checkFunction("/device/dataStatus",req)) {SSPA_APIs.sspaGetDeviceDataStatus(req, res);}
     if (checkFunction("/qe",req)) {SSPA_APIs.sspaGetQE(req, res);}
     if (checkFunction("/alarm",req)) {SSPA_APIs.sspaGetAlarm(req, res);}
 

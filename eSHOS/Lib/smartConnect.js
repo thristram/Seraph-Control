@@ -40,6 +40,7 @@ function startSecuredBroadcasting() {
 var startBroadcastingServerIP = function(server){
     var port = config.UDPPort;
     setInterval(function () {
+        serverIP = CoreData.Seraph.sysConfigs.ESH_CONFIG_LOCAL_IP;
         if (ifBroadcastingServerIP) {
             UDP.broadCastingServerAddress(server,serverIP,port);
         }
@@ -48,8 +49,8 @@ var startBroadcastingServerIP = function(server){
 
 module.exports = {
     start: function(){
-        password = CoreData.sysConfigs.ROUTER_PASSWORD;
-        ssid = CoreData.sysConfigs.ROUTER_SSID;
+        password = CoreData.Seraph.sysConfigs.ROUTER_PASSWORD;
+        ssid = CoreData.Seraph.sysConfigs.ROUTER_SSID;
         ifSmartConnecting = true;
     },
     stop: function(){
@@ -57,8 +58,8 @@ module.exports = {
     },
     startSecured: function(mac){
         securedSmartConfigMac = mac;
-        password = CoreData.sysConfigs.ROUTER_PASSWORD;
-        ssid = CoreData.sysConfigs.ROUTER_SSID;
+        password = CoreData.Seraph.sysConfigs.ROUTER_PASSWORD;
+        ssid = CoreData.Seraph.sysConfigs.ROUTER_SSID;
         ifSecuredSmartConnecting = true;
     },
     stopSecured: function(){

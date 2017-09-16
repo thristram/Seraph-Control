@@ -450,6 +450,44 @@ module.exports = {
 
     },
 
+    sspbDeviceInfoSSGet: function(SSDevice){
+        var data = {
+            isRequest 	: true,
+            QoS 		: 2,
+            QosNeeded	: 1,
+            dup 		: 0,
+            MessageType : "GET",
+            topicType 	: "/device/info/ss",
+            topicExt 	: {},
+            MessageID   : public.generateMessageID(),
+            MessageIDextended   : 0,
+            payload 	: ""
+        }
+        data.Topic = createTopic(data.topicType, data.topicExt);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
+        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        return data;
+    },
+
+    sspbDeviceInfoSubGet: function(SSDevice){
+        var data = {
+            isRequest 	: true,
+            QoS 		: 2,
+            QosNeeded	: 1,
+            dup 		: 0,
+            MessageType : "GET",
+            topicType 	: "/device/info/sub",
+            topicExt 	: {},
+            MessageID   : public.generateMessageID(),
+            MessageIDextended   : 0,
+            payload 	: ""
+        }
+        data.Topic = createTopic(data.topicType, data.topicExt);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
+        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        return data;
+    },
+
     /**
      * Quick Event
      * @param APIQuery
@@ -477,18 +515,19 @@ module.exports = {
 
         switch(action){
             case "DM":
-            case "WP":
             case "DMM":
+                data.topicExt["MD"] = options.MD;
+                data.topicExt["CH"] = options.CH;
+                data.topicExt["topos"] = options.topos;
+                data.topicExt["duration"] = options.duration;
+                break
+            case "WP":
             case "WPM":
                 data.topicExt["MD"] = options.MD;
                 data.topicExt["CH"] = options.CH;
                 data.topicExt["topos"] = options.topos;
-                if(options.hasOwnProperty("duration")){
-                    data.topicExt["duration"] = options.duration
-                }
-                if(options.hasOwnProperty("ease")){
-                    data.topicExt["ease"] = options.ease
-                }
+
+                
                 break;
             case "UR":
                 if(options.hasOwnProperty("type")){

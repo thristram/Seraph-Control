@@ -48,7 +48,7 @@ refreshAll: function(callback){
             	"WORLD_LOCATION_COUNTRY" 		: SCSResponse.location.country,
 				"WORLD_LOCATION_REGION" 		: SCSResponse.location.region
             };
-            CoreData.setGeographicData(configToSet);
+            CoreData.Seraph.setGeographicInfos(configToSet);
 
         });
     }).on('error', function(e){
@@ -59,18 +59,18 @@ refreshAll: function(callback){
 
 getIP : function(callback){
 
-	return CoreData.sysConfigs.ESH_CONFIG_PUBLIC_IP;
+	return CoreData.Seraph.sysConfigs.ESH_CONFIG_PUBLIC_IP;
 },
 
 getSSConfig : function(){
     var config = {
         system 		: {
-            HPST  		: parseInt(CoreData.sysConfigs.SS_CONFIG_HPST),
-            REFR  		: parseInt(CoreData.sysConfigs.SS_CONFIG_REFR),
+            HPST  		: parseInt(CoreData.Seraph.sysConfigs.SS_CONFIG_HPST),
+            REFR  		: parseInt(CoreData.Seraph.sysConfigs.SS_CONFIG_REFR),
         },
         wifi 		: {
-            ssid 		: CoreData.sysConfigs.ROUTER_SSID,
-            passwd 		: CoreData.sysConfigs.ROUTER_PASSWORD
+            ssid 		: CoreData.Seraph.sysConfigs.ROUTER_SSID,
+            passwd 		: CoreData.Seraph.sysConfigs.ROUTER_PASSWORD
         }
     }
 	return config;
@@ -78,27 +78,27 @@ getSSConfig : function(){
 
 getWeatherLocation : function(){
     var loc = {
-        city 		: CoreData.geographicData.WORLD_LOCATION_CITY,
-        country 	: CoreData.geographicData.WORLD_LOCATION_COUNTRY,
-        region 		: CoreData.geographicData.WORLD_LOCATION_REGION
+        city 		: CoreData.Seraph.geographicInfos.WORLD_LOCATION_CITY,
+        country 	: CoreData.Seraph.geographicInfos.WORLD_LOCATION_COUNTRY,
+        region 		: CoreData.Seraph.geographicInfos.WORLD_LOCATION_REGION
     };
 
     var weather = {
         astronomy 	: {
-            sunrise 	: CoreData.geographicData.WORLD_WEATHER_sunrise,
-            sunset 		: CoreData.geographicData.WORLD_WEATHER_sunset
+            sunrise 	: CoreData.Seraph.geographicInfos.WORLD_WEATHER_sunrise,
+            sunset 		: CoreData.Seraph.geographicInfos.WORLD_WEATHER_sunset
         },
         atmosphere 	: {
-            HM 			: CoreData.geographicData.WORLD_WEATHER_HM,
-            PR 			: CoreData.geographicData.WORLD_WEATHER_PR,
-            visibility 	: CoreData.geographicData.WORLD_WEATHER_visibility,
+            HM 			: CoreData.Seraph.geographicInfos.WORLD_WEATHER_HM,
+            PR 			: CoreData.Seraph.geographicInfos.WORLD_WEATHER_PR,
+            visibility 	: CoreData.Seraph.geographicInfos.WORLD_WEATHER_visibility,
         },
         condition 	: {
-            code 		: CoreData.geographicData.WORLD_WEATHER_code,
-            TP 			: CoreData.geographicData.WORLD_WEATHER_TP,
+            code 		: CoreData.Seraph.geographicInfos.WORLD_WEATHER_code,
+            TP 			: CoreData.Seraph.geographicInfos.WORLD_WEATHER_TP,
         },
         airquality 	: {
-            index 		: CoreData.geographicData.WORLD_WEATHER_AQ_index,
+            index 		: CoreData.Seraph.geographicInfos.WORLD_WEATHER_AQ_index,
         },
     };
 
@@ -125,12 +125,12 @@ getLocalIP: function (callback){
             if (alias >= 1) {
                 // this single interface has multiple ipv4 addresses
                 //console.log(ifname + ':' + alias, iface.address);
-				CoreData.setSysConfig({"ESH_CONFIG_LOCAL_IP"    : iface.address});
+                CoreData.Seraph.setSysConfig("ESH_CONFIG_LOCAL_IP", iface.address);
                 callback(iface.address);
             } else {
                 // this interface has only one ipv4 adress
                 //console.log(ifname, iface.address);
-                CoreData.setSysConfig({"ESH_CONFIG_LOCAL_IP"    : iface.address});
+                CoreData.Seraph.setSysConfig("ESH_CONFIG_LOCAL_IP", iface.address);
                 callback(iface.address);
             }
             ++alias;

@@ -212,7 +212,7 @@ var createUDPServer = function(){
             parseSCIP(message,remote);
         }
     });
-    //return UDPServer;
+    return UDPServer;
 
 }
 

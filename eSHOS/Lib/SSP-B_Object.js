@@ -62,11 +62,11 @@ module.exports = {
     },
     deviceListObject: function (ssid,callback){
 
-        var queryWhere = ['SP','SL','SC','ST'];
+        var queryWhere = ['SC','ST'];
         var queryField = ['type||deviceID as deviceID', 'model', 'coord'];
 
         SQLAction.SQLSelect("seraph_device", queryField, "managedSS = '" + ssid + "' AND (type = '" + queryWhere.join("' OR type = '") + "')", "", function(res){
-            public.eventLog(sql);
+
             var data = {
                 "deviceID"  : ssid,
                 "devices"   : []

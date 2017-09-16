@@ -49,7 +49,7 @@ module.exports = {
             "MD"    : moduleID,
             "CH"    : public.translateChannel(channelID),
             "topos" : value,
-            //"duration"  : 90
+            "duration"  : 20
         };
 
 

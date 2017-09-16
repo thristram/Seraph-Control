@@ -31,6 +31,7 @@ var processSSPBReturn = function(data, remoteAddress){
                    debug("[*******ERROR*******] Payload JSON Error....");
                }
            }
+           data.Topic = commandData.action;
 
            switch (commandData.action){
                case "/qe":
@@ -40,6 +41,11 @@ var processSSPBReturn = function(data, remoteAddress){
                    processSensorReceipt(data);break;
                case "/device/status":
                    processDeviceStatusReceipt(data);break;
+               case "/device/info/sub":
+                   processDeviceInfo(data, remoteAddress);break;
+               case "/device/info/ss":
+                   processDeviceInfo(data, remoteAddress);break;
+
                default:
                    break;
            }
@@ -66,6 +72,8 @@ var processSSPBRequest = function(data, remoteAddress){
             processDeviceInfo(data, remoteAddress);break;
         case "/rt":
             processRealTimeData(data, remoteAddress);break;
+        case "/device/status":
+            processDeviceStatusReceipt(data, remoteAddress);break;
         default:
             break;
     }
@@ -100,7 +108,7 @@ var processQEReceipt = function (data){
     }
 };
 
-
+var approvedSensor = ["HM", "TP", "PT", "SM", "CO" , "CD", "VO"]
     /*
     {"SSE11T26":{"HM":53,"TP":269,"PT":0,"SM":0,"PR":1,"MI":0,"BT":0,"CO":107,"CD":0,"VO":1}}
      */
@@ -111,18 +119,22 @@ var processSensorReceipt = function (data){
         for (var deviceID in payload){
             for (var channel in payload[deviceID]){
 
-                var temp = {
-                    "value"     : payload[deviceID][channel],
-                    "channel"   : channel,
-                    "deviceID"  : deviceID
-                };
+                //if(approvedSensor.indexOf(channel) > 0){
+                    var temp = {
+                        "value"     : payload[deviceID][channel],
+                        "channel"   : channel,
+                        "deviceID"  : deviceID
+                    };
 
-                CoreData.updateSensorValue(temp.value, temp.channel, temp.deviceID);
-                HAPLinker.HAPEvent.emit("sensorUpdate", temp.deviceID, temp.channel, temp.value, false);
+                    CoreData.updateSensorValue(temp.value, temp.channel, temp.deviceID);
+                    HAPLinker.HAPEvent.emit("sensorUpdate", temp.deviceID, temp.channel, temp.value, false);
+                //}
+
             }
         }
 
     }   catch(err) {
+
         debug("[*******ERROR*******] [%s]", err);
     }
 };
@@ -131,23 +143,38 @@ var processDeviceStatusReceipt = function(data){
     debug("[%s] Processing Device Status Receipt....", public.getDateTime());
     var payload = data.parsedPayload;
     try{
-        for (var key in payload){
-            for (var channel in payload[key]){
-                var deviceType = key.substring(0,2);
-                var deviceID = key.substring(2);
-                if((deviceType == "SL") || (deviceType == "SP")){
+        for (var SCDeviceID in payload){
+            for (var module in payload[SCDeviceID]){
 
-                    var temp = {
-                        "value"     : payload[key][channel],
-                        "channel"   : public.translateCChannel(channel),
-                        "deviceID"  : deviceID,
-                        "deviceType": deviceType
-                    };
+                var SEPdevice = {
+                    deviceType      : SCDeviceID.substring(0,2),
+                    SCdeviceID      : SCDeviceID.substring(2),
+                    SCdeviceIDFull  : SCDeviceID,
+                    deviceMDID      : parseInt(payload[SCDeviceID][module].MDID),
+                    deviceSubType   : (parseInt(payload[SCDeviceID][module].type)-1)?"SP":"SL",
+                };
+                SEPdevice["deviceID"] = CoreData.mdid2DeviceID[SEPdevice.SCdeviceID]["M" + SEPdevice.deviceMDID];
+                SEPdevice["deviceIDFull"] = SEPdevice.deviceID;
 
-                    CoreData.updateDeviceStatus(temp.value, temp.channel, temp.deviceID, temp.deviceType);
-                    HAPLinker.HAPEvent.emit("statusUpdate", key, public.translateCChannel(channel), payload[key][channel], false);
+
+
+                for(var channel in payload[SCDeviceID][module]){
+                    if(channel.charAt(0) == "C" && (channel.length == 2)){
+
+                        var temp = {
+                            "value"     : parseInt(payload[SCDeviceID][module][channel]),
+                            "channel"   : public.translateCChannel(channel),
+                            "deviceID"  : SEPdevice.deviceID,
+                            "deviceType": SEPdevice.deviceSubType,
+                        };
+                        CoreData.updateDeviceStatus(temp.value, temp.channel, temp.deviceID, temp.deviceType);
+                        HAPLinker.HAPEvent.emit("statusUpdate", SEPdevice.deviceIDFull, temp.channel, temp.value, false);
+
+                    }
                 }
+
             }
+
         }
 
     }   catch(err) {
@@ -159,8 +186,7 @@ var processDeviceInfo = function(data, remoteAddress){
     debug("[%s] Processing Device Info....", public.getDateTime());
     var payload = data.parsedPayload;
     try {
-        payload["type"] = payload.deviceID.substring(0,1);
-        payload.deviceID = payload.deviceID.substring(2);
+        payload["type"] = payload.deviceID.substring(0,2);
         var updatedData = {
             "model": payload.model,
             "firmware": payload.firmware,
@@ -170,22 +196,20 @@ var processDeviceInfo = function(data, remoteAddress){
         if(data.topic == "/device/info/sub"){
             switch(payload.type){
                 case "SC":
-                    updatedData.managedSEP = payload.NDevice;
+                    //updatedData.SLC= payload.SLC;
                     break;
-                case "SP":
-                case "SL":
-                    //updatedData.managedSC = payload.managedSC;
-                    updatedData.moduleID = payload.MDID
+                case "ST":
+
                     break;
                 default:
                     break;
             }
         }   else if(data.topic == "/device/info/ss"){
 
-            var deviceID = payload.type + payload.deviceID;
+            var deviceID = payload.deviceID;
 
-            SQLAction.SQLFind("seraph_device", "id, deviceID, type, IPAddress", {"deviceID": payload.deviceID, "type" : payload.type}, function(SQLData){
-                if(SQLData != [] && (deviceID != (SQLData.type + SQLData.deviceID))){
+            SQLAction.SQLFind("seraph_device", "id, deviceID, type, IPAddress", {"deviceID": deviceID, "type" : payload.type}, function(SQLData){
+                if(SQLData != [] && (deviceID != (SQLData.deviceID))){
                     updatedData.IPAddress = remoteAddress;
 
 
@@ -193,12 +217,12 @@ var processDeviceInfo = function(data, remoteAddress){
 
                         SQLAction.SQLSetField("seraph_device",{"IPAddress": remoteAddress},{"deviceID":payload.deviceID});
 
-                        var deviceBak = sData.type + sData.deviceID;
+                        var deviceBak = sData.deviceID;
 
                         if(sData != []){
                             SQLAction.SQLDelete("seraph_device",{"id":sData.id});
-                            CoreData.TCPClients[deviceID].reConnecting = false;
-                            CoreData.TCPClients[deviceID].isClient = false;
+                            CoreData.TCPClients[deviceID]["reConnecting"] = false;
+                            CoreData.TCPClients[deviceID]["isClient"] = false;
                             CoreData.TCPClients[deviceID].TCPClient = CoreData.TCPClients[deviceBak].TCPClient;
                             CoreData.TCPClients[deviceID].cStatus = 1;
                             delete(CoreData.TCPClients[deviceBak]);
@@ -232,19 +256,22 @@ var processRealTimeData = function(data, remoteAddress){
     debug("[%s] Processing RT Data....", public.getDateTime());
     var payload = data.parsedPayload;
     try{
+        var deviceID = payload.report.SEPID;
+        var sensorValue = parseInt(payload.report.value);
         switch(payload.report.type){
             case "MI":
-                var SSDeviceID = payload.report.sepid;
-                if(parseInt(payload.report.value) > 0){
-                    CoreData.updateSensorValue(1, "MI", SSDeviceID);
-                    HAPLinker.HAPEvent.emit("sensorUpdate", SSDeviceID, "MI", 1, false);
+
+                if(sensorValue > 0){
+                    CoreData.updateSensorValue(1, "MI", deviceID);
+                    HAPLinker.HAPEvent.emit("sensorUpdate", deviceID, "MI", 1, false);
                 }   else    {
-                    CoreData.updateSensorValue(0, "MI", SSDeviceID);
-                    HAPLinker.HAPEvent.emit("sensorUpdate", SSDeviceID, "MI", 0, false);
+                    CoreData.updateSensorValue(0, "MI", deviceID);
+                    HAPLinker.HAPEvent.emit("sensorUpdate", deviceID, "MI", 0, false);
                 }
                 break;
             case "EG":
-                CoreData.updateSensorValue(parseInt(payload.report.value), "EG", payload.report.SEPID);
+                var sepID = CoreData.mdid2DeviceID[deviceID]["M" + payload.report.MDID]
+                CoreData.updateSensorValue(sensorValue, "EG", sepID);
                 break;
             case "CP":
                 break;
@@ -256,7 +283,7 @@ var processRealTimeData = function(data, remoteAddress){
                 break;
         }
     }   catch(err){
-        debug("[*******ERROR*******] Payload Format Error....");
+        debug("[*******ERROR*******] %s",err);
     }
 }
 

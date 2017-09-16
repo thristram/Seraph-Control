@@ -40,14 +40,14 @@ var testLinkService = function(req, res) {
     SQLAction.SQLConnection.all(sql, function(err, data) {
         var val = {
             IRType: data,
-            sysConfig: CoreData.sysConfigs,
+            sysConfig: CoreData.Seraph.sysConfigs,
             isSmartConnecting: isSmartConnecting,
             isSecuredSmartConnecting: isSecuredSmartConnecting,
             isBroadcastingServerIP: isBroadcastingServerIP,
             securedSmartConnectMac: securedSmartConnectMac,
             resultChecksum: checksumValue,
             defaultMeshID: public.bufferString(module.exports.defaultMeshID),
-            currentData: module.exports.currentData
+            //currentData: module.exports.currentData
         };
         res.end(JSON.stringify(val))
     });
@@ -150,7 +150,7 @@ var testUpdateSmartConnectInfo = function(req, res) {
         "ROUTER_SSID"	    : query.wifi_ssid,
         "ROUTER_PASSWORD" 	: query.wifi_password
     }
-    CoreData.setSysConfig(configToSet);
+    CoreData.Seraph.setSysConfigs(configToSet);
     res.writeHead(302, {'Location': 'http://' + query.orgURI});
     res.end();
 

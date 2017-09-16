@@ -31,7 +31,8 @@ constructMessage: function (isRequest,Qos,dup,MessageType,Topic,MessageID,Messag
         msgType = MessageType;
 	}
 
-	public.eventTitle(["MESSAGE SENT: "+SSDevice.deviceID,"IP ADDRESS: "+SSDevice.IPAddress],1,"Construct Message Status");
+
+	public.eventTitle(["MESSAGE SENT: "+ SSDevice.deviceID ,"IP ADDRESS: "+SSDevice.IPAddress],1,"Construct Message Status");
     public.eventTitle("ENCORDING...",2,"Construct Message Detail");
 
 
@@ -186,6 +187,7 @@ constructTopic: function (topic){
 
 	//Topic Name
 	var topicNameBuffer = public.StingtoBuffer(topic);
+    public.log("Topic:				" + topic,"Construct Message Detail");
 	public.log("Topic:				" + public.bufferString(topicNameBuffer),"Construct Message Detail");
 
 

@@ -16,6 +16,7 @@ var webAction = require("./webAction.js");
 var ParseHardwareMessage = require("./Parse/parseHardwareMessage.js");
 var processIncomming = require("./processReturn.js");
 var SSPB_APIs = require("./SSP-B.js");
+var HTTPServer = require("./HTTPServer.js")
 
 var homeKit;
 
@@ -25,6 +26,7 @@ var homeKit;
 //////////////////////////////////////
 
 CoreData.loadHomeKitData(function(){
+    console.log(CoreData.Seraph)
     homeKit = require("../HomeKit/BridgedCore.js");
 })
 //////////////////////////////////////
@@ -163,7 +165,7 @@ var TCPHandleFromServer = function(SSConnection){
 
 /************************************/
 
-function handleTCPReply(data, remoteAddress){
+var handleTCPReply = function(data, remoteAddress){
     /*
     tempIncommingData.push(parseMessage.parseMessage(constructReturnMessage(2,5000,"0x2000001","Operation Complete.",null),false))
     */
@@ -259,7 +261,7 @@ function handleConnection(con) {
     CoreData.TCPClients[deviceID].TCPClient = con;
 
     if(remoteAddress!="127.0.0.1"){
-        SSPB_APIs.sspbConfigssGet(CoreData.TCPClients[deviceID]);
+        SSPB_APIs.sspbDeviceInfoSSGet(CoreData.TCPClients[deviceID]);
     }
 
 
@@ -368,10 +370,10 @@ var TCPWrite = function(SSDeviceID,msg){
     }   else    {
         SSDevice.TCPClient.write(msg);
     }
-}
+};
 
 
-function processQueue(){
+var processQueue = function(){
 
     var QETemp = {};
 

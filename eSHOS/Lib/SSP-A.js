@@ -7,9 +7,9 @@ var url = require('url');
 
 var SSPB_APIs = require("./SSP-B.js");
 var config = require("../../config.js");
-var public = require("./public.js");
+var publicMethods = require("./public.js");
 var CoreData = require ("./CoreData.js");
-
+var SQLAction = require("./SQLAction.js");
 /************************************/
 
             //SSP-A API//
@@ -229,6 +229,25 @@ module.exports = {
     },
 
 
+    sspaGetDeviceDataStatus: function(req, res) {
+        req.rootRoute = "/device/dataStatus";
+
+        var APIQuery = parseExpressURI(req);
+        var SSPAProtocolData = new SSPAData(req, res);
+        var fetchedResult = SSPAProtocolData.deviceDataStatus();
+
+        res.end(JSON.stringify(fetchedResult))
+
+    },
+
+    sspaDataHistory: function (req, res){
+
+        let SSPAProtocolData = new SSPAData()
+        SSPAProtocolData.sensorDataHistory(function(data){
+            res.end(JSON.stringify(data))
+        })
+
+    },
     /**
      * Quick Event
      */
@@ -237,38 +256,20 @@ module.exports = {
 
         req.rootRoute = "/qe";
         var APIQuery = parseExpressURI(req);
-        var data = {}
-        switch(APIQuery.action){
-            case "DM":
-            case "WP":
-                data["CH"] = APIQuery.query.CH;
-                data["topos"] = APIQuery.query.TOPOS;
-                break;
-            case "UR":
-                if(APIQuery.query.hasOwnProperty("type")){
-                    data["type"] = APIQuery.query.type;
-                }
-                if(APIQuery.query.hasOwnProperty("code")){
-                    data["code"] = APIQuery.query.code;
-                }
-                if(APIQuery.query.hasOwnProperty("raw")){
-                    data["raw"] = APIQuery.query.raw;
-                }
-                if(APIQuery.query.hasOwnProperty("address")){
-                    data["address"] = APIQuery.query.address;
-                }
-                if(APIQuery.query.hasOwnProperty("other")){
-                    data["other"] = APIQuery.query.other;
-                }
-                break;
-            default:
-                break;
 
+        var SSPAActions = new SSPAAction()
+        var actionData = SSPAActions.qeAction(APIQuery.query)
+
+        if(APIQuery.device = []){
+
+            SSPB_APIs.sspbQE(CoreData.TCPClients[actionData.SSDeviceID], actionData.action, actionData.SCDeviceID, actionData);
+
+        }   else    {
+            APIQuery.device.forEach(function (SSDevice) {
+                SSPB_APIs.sspbQE(CoreData.TCPClients[actionData.SSDeviceID], APIQuery.query.action, APIQuery.query.SEPID, actionData);
+            })
         }
 
-        APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbQE(CoreData.TCPClients[SSDevice], APIQuery.query.action, APIQuery.query.SEPID, data);
-        })
 
         res.end('')
 
@@ -324,21 +325,169 @@ var parseExpressURI = function(request){
         device			: query.ssuid.split(","),
         protocolType    : query.protocolType
     };
-    public.eventTitle("REQUEST RECEIVED",1,APIQuery.protocolType + " Request");
+    publicMethods.eventTitle("REQUEST RECEIVED",1,APIQuery.protocolType + " Request");
 
 
 
-    public.dataLog(APIQuery,"SSP-A Request")
+    publicMethods.dataLog(APIQuery,"SSP-A Request")
 
     if(APIQuery.device[0] == ''){
         APIQuery.device = [];
-        public.eventTitle("NO DEVICE SELECTED",2,APIQuery.protocolType + " Request",true);
+        publicMethods.eventTitle("NO DEVICE SELECTED",2,APIQuery.protocolType + " Request",true);
 
     }
 
     return APIQuery;
 }
+class SSPAAction{
+    constructor(req, res){
+        this.req = req
+        this.res = res
+    }
+
+    qeAction(query){
+        var data = {}
+        data["action"] = query.action
+
+
+        switch(query.action){
+            case "DM":
+                data["CH"] = publicMethods.translateChannel(parseInt(query.CH));
+                data["topos"] = query.TOPOS;
+                data["duration"] = query.duration;
+                data["MD"] = CoreData.deviceREF[query.SEPID].moduleID;
+                data["SCDeviceID"] = "SC" + CoreData.deviceREF[query.SEPID].managedSC
+                data["SSDeviceID"] = CoreData.deviceREF[query.SEPID].managedSS
+                break;
+            case "DMM":
+                data["CH"] = query.CH;
+                data["topos"] = query.TOPOS;
+                data["duration"] = query.duration;
+                data["MD"] = query.MDID;
+                data["SCDeviceID"] = query.SCDeviceID
+                data["SSDeviceID"] = CoreData.deviceREF[query.SCDeviceID].managedSS
+                break;
+            case "WP":
+                data["CH"] = publicMethods.translateChannel(parseInt(query.CH));
+                data["topos"] = query.TOPOS;
+                data["MD"] = CoreData.deviceREF[query.SEPID].moduleID;
+                data["SCDeviceID"] = "SC" + CoreData.deviceREF[query.SEPID].managedSC
+                data["SSDeviceID"] = CoreData.deviceREF[query.SEPID].managedSS
+                break;
+            case "WPM":
+                data["CH"] =query.CH;
+                data["topos"] = query.TOPOS;
+                data["MD"] = query.MDID;
+                data["SCDeviceID"] = query.SCDeviceID
+                data["SSDeviceID"] = CoreData.deviceREF[query.SCDeviceID].managedSS
+                break;
+            case "UR":
+                if(query.hasOwnProperty("type")){
+                    data["type"] = query.type;
+                }
+                if(query.hasOwnProperty("code")){
+                    data["code"] = query.code;
+                }
+                if(query.hasOwnProperty("raw")){
+                    data["raw"] = query.raw;
+                }
+                if(query.hasOwnProperty("address")){
+                    data["address"] = query.address;
+                }
+                if(query.hasOwnProperty("other")){
+                    data["other"] = query.other;
+                }
+                data["SSDeviceID"] = CoreData.deviceREF[query.SEPID].managedSS
+                break;
+            default:
+                break;
+
+        }
+        console.log(data)
+        return data
+    }
+}
+class SSPAData{
+    constructor(req, res){
+        this.req = req
+        this.res = res
+    }
+    deviceDataStatus(){
+        var fetchResult = {}
+        for (var deviceID in CoreData.deviceStatus){
+            fetchResult[deviceID] = {}
+            fetchResult[deviceID]["statusData"] = {}
+            for (var channelID in CoreData.deviceStatus[deviceID]){
+
+                fetchResult[deviceID]["statusData"]["C" + channelID] = {}
+                fetchResult[deviceID]["statusData"]["C" + channelID]["value"] = CoreData.deviceStatus[deviceID][channelID].value
+            }
+        }
+        for(var deviceID in CoreData.sensorStatus){
+            fetchResult[deviceID] = {}
+            fetchResult[deviceID]["sensorData"] = {}
+            for (var channelID in CoreData.sensorStatus[deviceID]){
+
+                try{
+
+
+                    fetchResult[deviceID]["sensorData"][channelID] = {}
+                    fetchResult[deviceID]["sensorData"][channelID]["value"] = parseInt(CoreData.sensorStatus[deviceID][channelID])
+
+                    if(channelID == "CO"){
+                        fetchResult[deviceID]["sensorData"][channelID]["value"] = 0
+                    }
+
+
+                }   catch(err){
+
+                }
+            }
+        }
+        //console.log(CoreData.sensorStatus)
+
+        console.log(JSON.stringify(fetchResult))
+        return fetchResult
+    }
+
+    sensorDataHistory(callback){
+        var fetchResult = {};
+        var timeScale = 24 * 3600
+        SQLAction.SQLSelect("seraph_sensor_log", "*", "timestamp > " + (publicMethods.timestamp() - 24 * 3600 * 10), "timestamp", function(rawData){
+            if(rawData != []){
+
+                for(var key in rawData){
+
+                    var item = rawData[key];
+                    //console.log(item)
+                    var deviceID = item.deviceID;
+                    var sensorID = item.channel;
+                    var sensorValue = parseInt(item.value)
+                    var currentDate = Math.floor(parseInt(item.timestamp) / timeScale) * timeScale
+
+
+                    if(!fetchResult.hasOwnProperty(deviceID)){
+                        fetchResult[deviceID] = {}
+                    }
+                    if(!fetchResult[deviceID].hasOwnProperty("sensorHistoryData")){
+                        fetchResult[deviceID]["sensorHistoryData"] = {}
+                    }
+                    if(!fetchResult[deviceID]["sensorHistoryData"].hasOwnProperty(currentDate)){
+                        fetchResult[deviceID]["sensorHistoryData"][currentDate] = {}
+                    }
+                    if(!fetchResult[deviceID]["sensorHistoryData"][currentDate].hasOwnProperty(sensorID)){
+                        fetchResult[deviceID]["sensorHistoryData"][currentDate][sensorID] = []
+                    }
+                    fetchResult[deviceID]["sensorHistoryData"][currentDate][sensorID].push(sensorValue)
+                }
+            }
+            callback(fetchResult)
+        })
+
+
+    }
+}
 
 module.exports.parseExpressURI = parseExpressURI;
-
-
+module.exports.SSPAData = { SSPAData }
+module.exports.SSPAAction = { SSPAAction }
