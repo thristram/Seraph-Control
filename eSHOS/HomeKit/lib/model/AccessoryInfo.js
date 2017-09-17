@@ -100,7 +100,8 @@ AccessoryInfo.create = function(username) {
 
 AccessoryInfo.load = function(username) {
   var key = AccessoryInfo.persistKey(username);
-  var saved = CoreData.HomeKitCacheGet(key);
+  var saved = CoreData.Seraph.getHomeKitIdentifier(key);
+
   if (saved) {
       var info = new AccessoryInfo(username);
       info.displayName = saved.displayName || "";
@@ -158,7 +159,7 @@ AccessoryInfo.prototype.save = function() {
 
   var key = AccessoryInfo.persistKey(this.username);
 
-  CoreData.HomeKitCacheSet(key, saved);
+  CoreData.Seraph.setHomeKitIdentifier(key, saved)
   //storage.setItemSync(key, saved);
   //storage.persistSync();
 };

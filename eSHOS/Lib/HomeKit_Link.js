@@ -147,7 +147,7 @@ function processQueue(){
         results.MD = resultMDs.join();
         //console.log(results);
         //console.log(commandType);
-        SSPB_APIs.sspbQE(CoreData.TCPClients[results.SSDeviceID], commandType, results.deviceID, results);
+        SSPB_APIs.sspbQE(results.SSDeviceID, commandType, results.deviceID, results);
 
 
         

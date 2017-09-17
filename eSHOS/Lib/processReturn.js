@@ -20,9 +20,9 @@ var processSSPBIncomming = function (data, remoteAddress) {
 var processSSPBReturn = function(data, remoteAddress){
     debug("[%s] Processing SSP-B Return Messages....", public.getDateTime());
 
-    CoreData.getSSPBCommands(data.messageID, function(commandData){
+    CoreData.Seraph.getSSPBCommands(data.messageID, function(commandData){
        if(commandData){
-           CoreData.recordSSPBReturn(data.messageID, data);
+           CoreData.Seraph.recordSSPBReturn(data.messageID, data);
 
            if(data.payload){
                try {
@@ -83,9 +83,7 @@ var processQEReceipt = function (data){
     debug("[%s] Processing QE Receipt....", public.getDateTime());
     var payload = data.parsedPayload;
     try{
-        for (var key in payload.status){
-            var deviceType = key.substring(0,2);
-            var deviceID = key.substring(2);
+        for (let deviceID in payload.status){
             if((deviceType == "SL") || (deviceType == "SP")){
                 for (var channel in payload.status[key]){
 
@@ -95,8 +93,7 @@ var processQEReceipt = function (data){
                         "deviceID"  : deviceID,
                         "deviceType": deviceType,
                     };
-
-                    CoreData.updateDeviceStatus(temp.value, temp.channel, temp.deviceID, temp.deviceType);
+                    CoreData.Seraph.getDevice(temp.deviceID).getChannel(channel).setValue(temp.value)
                     HAPLinker.HAPEvent.emit("statusUpdate", temp.deviceID, temp.channel, temp.value, true);
                 }
             }
@@ -125,8 +122,7 @@ var processSensorReceipt = function (data){
                         "channel"   : channel,
                         "deviceID"  : deviceID
                     };
-
-                    CoreData.updateSensorValue(temp.value, temp.channel, temp.deviceID);
+                    CoreData.Seraph.getDevice(temp.deviceID).getSensor(temp.channel).setValue(temp.value)
                     HAPLinker.HAPEvent.emit("sensorUpdate", temp.deviceID, temp.channel, temp.value, false);
                 //}
 
@@ -153,7 +149,8 @@ var processDeviceStatusReceipt = function(data){
                     deviceMDID      : parseInt(payload[SCDeviceID][module].MDID),
                     deviceSubType   : (parseInt(payload[SCDeviceID][module].type)-1)?"SP":"SL",
                 };
-                SEPdevice["deviceID"] = CoreData.mdid2DeviceID[SEPdevice.SCdeviceID]["M" + SEPdevice.deviceMDID];
+                //SEPdevice["deviceID"] = CoreData.mdid2DeviceID[SEPdevice.SCdeviceID]["M" + SEPdevice.deviceMDID];
+                SEPdevice["deviceID"] = CoreData.Seraph.getDeviceByMDID(SEPdevice.SCdeviceIDFull, SEPdevice.deviceMDID).deviceID;
                 SEPdevice["deviceIDFull"] = SEPdevice.deviceID;
 
 
@@ -167,7 +164,7 @@ var processDeviceStatusReceipt = function(data){
                             "deviceID"  : SEPdevice.deviceID,
                             "deviceType": SEPdevice.deviceSubType,
                         };
-                        CoreData.updateDeviceStatus(temp.value, temp.channel, temp.deviceID, temp.deviceType);
+                        CoreData.Seraph.getDevice(temp.deviceID).getChannel(temp.channel).setValue(temp.value);
                         HAPLinker.HAPEvent.emit("statusUpdate", SEPdevice.deviceIDFull, temp.channel, temp.value, false);
 
                     }
@@ -206,42 +203,26 @@ var processDeviceInfo = function(data, remoteAddress){
             }
         }   else if(data.topic == "/device/info/ss"){
 
-            var deviceID = payload.deviceID;
+            let SSDeviceID = payload.deviceID;
+            let device = CoreData.Seraph.getDevice(deviceID);
 
-            SQLAction.SQLFind("seraph_device", "id, deviceID, type, IPAddress", {"deviceID": deviceID, "type" : payload.type}, function(SQLData){
-                if(SQLData != [] && (deviceID != (SQLData.deviceID))){
-                    updatedData.IPAddress = remoteAddress;
+            if(device){
+                device.initTCPSocket();
+                device.TCPSocket = CoreData.tempTCPConnection[remoteAddress];
+                device.setTCPConnectionStauts(true);
+                delete(CoreData.tempTCPConnection[remoteAddress]);
 
-
-                    SQLAction.SQLFind("seraph_device", "id, deviceID, type, IPAddress", {"IPAddress": remoteAddress}, function(sData){
-
-                        SQLAction.SQLSetField("seraph_device",{"IPAddress": remoteAddress},{"deviceID":payload.deviceID});
-
-                        var deviceBak = sData.deviceID;
-
-                        if(sData != []){
-                            SQLAction.SQLDelete("seraph_device",{"id":sData.id});
-                            CoreData.TCPClients[deviceID]["reConnecting"] = false;
-                            CoreData.TCPClients[deviceID]["isClient"] = false;
-                            CoreData.TCPClients[deviceID].TCPClient = CoreData.TCPClients[deviceBak].TCPClient;
-                            CoreData.TCPClients[deviceID].cStatus = 1;
-                            delete(CoreData.TCPClients[deviceBak]);
-
-                        }
-                    });
-                }
+                SQLAction.SQLSetField("seraph_device",{"IPAddress": remoteAddress},{"deviceID":payload.deviceID});
 
                 setTimeout(function(){
                     debug("[%s] Sending Device List Configuration to SS...", public.getDateTime());
-                    SSPB_APIs.sspbDeviceListPost(CoreData.TCPClients[deviceID]);
+                    SSPB_APIs.sspbDeviceListPost(SSDeviceID);
                 },1000);
                 setTimeout(function(){
                     debug("[%s] Sending ST Configuration to SS...", public.getDateTime());
-                    SSPB_APIs.sspbConfigST(CoreData.TCPClients[deviceID]);
+                    SSPB_APIs.sspbConfigST(SSDeviceID);
                 },2000)
-
-            })
-
+            }
 
         }
         SQLAction.SQLSetField("seraph_device",updatedData,{"deviceID":payload.deviceID});
@@ -260,18 +241,15 @@ var processRealTimeData = function(data, remoteAddress){
         var sensorValue = parseInt(payload.report.value);
         switch(payload.report.type){
             case "MI":
-
+                CoreData.Seraph.getDevice(deviceID).getSensor("MI").setValue(sensorValue);
                 if(sensorValue > 0){
-                    CoreData.updateSensorValue(1, "MI", deviceID);
                     HAPLinker.HAPEvent.emit("sensorUpdate", deviceID, "MI", 1, false);
                 }   else    {
-                    CoreData.updateSensorValue(0, "MI", deviceID);
                     HAPLinker.HAPEvent.emit("sensorUpdate", deviceID, "MI", 0, false);
                 }
                 break;
             case "EG":
-                var sepID = CoreData.mdid2DeviceID[deviceID]["M" + payload.report.MDID]
-                CoreData.updateSensorValue(sensorValue, "EG", sepID);
+                CoreData.Seraph.getDeviceByMDID(deviceID, payload.report.MDID).getSensor("EG").setValue(sensorValue);
                 break;
             case "CP":
                 break;

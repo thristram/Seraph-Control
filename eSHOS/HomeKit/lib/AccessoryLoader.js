@@ -29,87 +29,59 @@ function loadDirectory(dir, callback) {
   // exported accessory objects loaded from this dir
   var accessories = [];
 
-    var channelData = CoreData.channelData;
-    var sensorData = CoreData.sensorData;
-    var deviceREF = CoreData.deviceREF;
 
-    //console.log(channelData)
-    //console.log(sensorData)
-
-    for (var SEPKey in channelData){
-
-        var defaultName = channelData[SEPKey].type + " " + deviceREF[channelData[SEPKey].deviceID].moduleID + "-" + channelData[SEPKey].channel;
-        var deviceID = channelData[SEPKey].deviceID;
-        var managedSS = deviceREF[channelData[SEPKey].deviceID].managedSS;
-        var managedSC = "SC" + deviceREF[channelData[SEPKey].deviceID].managedSC;
-        var moduleID = deviceREF[channelData[SEPKey].deviceID].moduleID;
-        var channel = channelData[SEPKey].channel;
-        var deviceValue = {
-            "TOPOS"         :   channelData[SEPKey].value,
-            "lastupdate"    :   channelData[SEPKey].lastupdate
-        }
-
-        switch (channelData[SEPKey].type) {
-            case "SP":
-                accessories.push(loadSPC(dir,deviceID, managedSS, managedSC, moduleID, channel, defaultName, deviceValue));
-                break;
-            case "SL":
-                accessories.push(loadSLC(dir,deviceID, managedSS, managedSC, moduleID, channel, defaultName, deviceValue));
-                break;
-            default:
-                break;
-        }
-
-    }
-
-    var sensorInSSDevice = {}
-
-    for (var sensorKey in sensorData){
-
-
-        var deviceID = sensorData[sensorKey].deviceID;
-
-        var deviceValue = {};
-
-        if(!sensorInSSDevice[deviceID]){
-            sensorInSSDevice[deviceID] = {};
-        }
-        sensorInSSDevice[deviceID][sensorData[sensorKey].code] = deviceValue;
-        deviceValue[sensorData[sensorKey].code] = sensorData[sensorKey].value;
-
-        switch(sensorData[sensorKey].code){
-            case "TP":
-                accessories.push(loadSensor(dir, deviceID, "Temperature Sensor", "TP", "TemperatureSensor", deviceValue));
-                break;
-            case "HM":
-                accessories.push(loadSensor(dir, deviceID, "Humidity Sensor", "HM", "HumiditySensor", deviceValue));
-                break;
-            case "CD":
-                accessories.push(loadSensor(dir, deviceID, "CO2 Sensor", "CD", "CO2Sensor", deviceValue));
-                break;
-            case "PR":
-                accessories.push(loadSensor(dir, deviceID, "Motion Sensor", "PR", "MotionSensor", deviceValue));
-                break;
-            case "CO":
-                accessories.push(loadSensor(dir, deviceID, "CO Sensor", "CO", "COSensor", deviceValue));
-                break;
-            case "SM":
-                accessories.push(loadSensor(dir, deviceID, "Smoke Sensor", "SM", "SmokeSensor", deviceValue));
-                break;
-            default:
-                break;
+    let SCEPDevices = CoreData.Seraph.getDeviceList(["SL","SP"]);
+    for(let key in SCEPDevices){
+        let deviceID = SCEPDevices[key];
+        let device = CoreData.Seraph.getDevice(deviceID);
+        let SSDeviceID = device.SSDeviceID;
+        let SCDeviceID = device.SCDeviceID;
+        let moduleID = device.MDID;
+        for(let ckey in device.channels){
+            let channel = device.channels[ckey];
+            let channelID = "" + channel.channelID;
+            let deviceName = channel.getName();
+            let deviceValue = {
+                "TOPOS"         :   channel.getValue(),
+                "lastupdate"    :   channel.lastupdate
+            }
+            //console.log(deviceID + "/" + SSDeviceID + "/" + SCDeviceID + "/" + moduleID + "/" + channelID + "/" + deviceName + "/" + deviceValue["TOPOS"]);
+            switch(channel.channelType){
+                case "SP":
+                    accessories.push(loadSPC(dir,deviceID, SSDeviceID, SCDeviceID, moduleID, channelID, deviceName, deviceValue));
+                    break;
+                case "SL":
+                    accessories.push(loadSLC(dir,deviceID, SSDeviceID, SCDeviceID, moduleID, channelID, deviceName, deviceValue));
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
-    for(var AQkey in sensorInSSDevice){
-        deviceValue = {
-            "CO"    : sensorInSSDevice[AQkey]["CO"].value,
-            "CD"    : sensorInSSDevice[AQkey]["CD"].value,
-            "VO"    : sensorInSSDevice[AQkey]["VO"].value,
-            "PT"    : sensorInSSDevice[AQkey]["PT"].value,
+    let SSDevices = CoreData.Seraph.getDeviceList(["SS"]);
+    let AirQualityDeviceValue = {};
+    for(let key in SSDevices){
+        let deviceID = SSDevices[key];
+        let device = CoreData.Seraph.getDevice(deviceID);
+        for(let sensorID in device.sensors){
+            let sensor = device.sensors[sensorID];
+            let deviceValue = {};
+            deviceValue[sensorID] = "" + sensor.getValue()
+            let displayName = sensor.shortName + " Sensor";
+            let IDName = sensor.shortName + "Sensor";
+
+            if(["TP","HM","CO","CD","MI","CO","SM"].indexOf(sensorID) > (-1)){
+                accessories.push(loadSensor(dir, deviceID, displayName, sensorID, IDName, deviceValue));
+            }
+            if(["CO","CD","VO","PT"].indexOf(sensorID) > (-1)){
+                AirQualityDeviceValue[sensorID] = deviceValue[sensorID]
+            }
+
         }
-        accessories.push(loadSensor(dir, deviceID, "Air Quality Sensor", "AQ", "AirQualitySensor", deviceValue));
+        accessories.push(loadSensor(dir, deviceID, "Air Quality Sensor", "AQ", "AirQualitySensor", AirQualityDeviceValue));
     }
+
     // now we need to coerce all accessory objects into instances of Accessory (some or all of them may
     // be object-literal JSON-style accessories)
     return accessories.map(function(accessory) {

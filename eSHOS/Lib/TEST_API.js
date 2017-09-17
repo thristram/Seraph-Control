@@ -65,13 +65,19 @@ var testCheckmessage = function(req, res) {
 
 var testCheckonline = function(req, res) {
     var data = [];
-    for(var key in CoreData.TCPClients){
-        var temp = {};
-        for(var tKey in CoreData.TCPClients[key]){
-            if(tKey != "TCPClient"){
-                temp[tKey] = CoreData.TCPClients[key][tKey];
-            }
-        }
+    for(var key in CoreData.Seraph.getDeviceList(["SS"])){
+
+        let SSDeviceID = CoreData.Seraph.getDeviceList(["SS"])[key];
+        let device = CoreData.Seraph.getDevice(SSDeviceID);
+        var temp = {
+            "deviceID"  : SSDeviceID,
+            "IPAddress" : device.IPAddress,
+            "cStatus"   : device.connectionStatus,
+            "isServer"  : device.isServer,
+            "isClient"  : !device.isServer,
+            "model"     : device.model
+        };
+
         data.push(temp);
         delete(temp);
     }
@@ -96,8 +102,6 @@ var testUpdateDeviceList = function(req, res) {
         SQLAction.SQLAdd("seraph_device",data);
     }
 
-    TCPClient.destroyAllClients();
-    CoreData.createAllTCPClients();
     res.writeHead(302, {'Location': 'http://' + query.orgURI});
     res.end();
 
@@ -135,8 +139,6 @@ var testDeleteFromDeviceList = function(req, res) {
 
         }   else    {
 
-            TCPClient.destroyAllClients();
-            CoreData.createAllTCPClients();
             res.writeHead(302, {'Location': 'http://' + query.orgURI});
             res.end();
         }

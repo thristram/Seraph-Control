@@ -104,7 +104,7 @@ IdentifierCache.load = function(username) {
     //console.log(key)
 
   //var saved = storage.getItem(key);
-  var saved = CoreData.HomeKitCacheGet(key);
+  var saved = CoreData.Seraph.getHomeKitIdentifier(key);
   if (saved) {
       var info = new IdentifierCache(username);
       info._cache = saved.cache;
@@ -123,7 +123,7 @@ IdentifierCache.prototype.save = function() {
   };
 
   var key = IdentifierCache.persistKey(this.username);
-  CoreData.HomeKitCacheSet(key, saved);
+  CoreData.Seraph.setHomeKitIdentifier(key, saved)
   //storage.setItemSync(key, saved);
   //storage.persistSync();
 };

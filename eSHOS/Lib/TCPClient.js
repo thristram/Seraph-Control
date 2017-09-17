@@ -12,23 +12,20 @@ var config = require("../../config.js");
 var public = require("./public.js");
 var CoreData = require("./CoreData.js");
 var parseMessage = require ("./parseMessage.js");
-var webAction = require("./webAction.js");
+
 var ParseHardwareMessage = require("./Parse/parseHardwareMessage.js");
 var processIncomming = require("./processReturn.js");
 var SSPB_APIs = require("./SSP-B.js");
 var HTTPServer = require("./HTTPServer.js")
 
-var homeKit;
 
 
 //////////////////////////////////////
         //HomeKit//
 //////////////////////////////////////
 
-CoreData.loadHomeKitData(function(){
-    console.log(CoreData.Seraph)
-    homeKit = require("../HomeKit/BridgedCore.js");
-})
+
+
 //////////////////////////////////////
             //HomeKit//
 //////////////////////////////////////
@@ -51,42 +48,28 @@ var queueingTime = 1000;
 
 var destroyAllClients = function(){
 
-    for(var value in CoreData.TCPClients){
-        if(value.isServer != 1) {
-            if(CoreData.TCPClients[value].TCPClient){
-                CoreData.TCPClients[value].TCPClient.end();
-                CoreData.TCPClients[value].TCPClient.destroy();
-                CoreData.TCPClients[value].TCPClient.removeAllListeners();
-            }
-
-            public.eventLog(CoreData.TCPClients[value].deviceID + "@" + CoreData.TCPClients[value].IPAddress + " is Destroyed.",'TCP Client');
-            delete CoreData.TCPClients[value];
-
-        }
+    for(var key in CoreData.Seraph.getDeviceList(["SS"])){
+        let SSDeviceID = CoreData.Seraph.getDeviceList(["SS"])[key]
+        destroyConnectedClients(SSDeviceID)
     }
 
 }
 var destroyConnectedClients = function(SSDeviceID){
 
-    if(CoreData.TCPClients[SSDeviceID].TCPClient){
-        CoreData.TCPClients[SSDeviceID].TCPClient.end();
-        CoreData.TCPClients[SSDeviceID].TCPClient.destroy();
-        CoreData.TCPClients[SSDeviceID].TCPClient.removeAllListeners();
-        public.eventLog(CoreData.TCPClients[SSDeviceID].deviceID + "@" + CoreData.TCPClients[SSDeviceID].IPAddress + " was Kicked out by Server.",'TCP Server')
+    let SSDevice = CoreData.Seraph.getDevice(SSDeviceID);
+    if(SSDevice.TCPSocket != {}){
+        SSDevice.TCPSocket.end();
+        SSDevice.TCPSocket.destroy();
+        SSDevice.TCPSocket.removeAllListeners();
+        public.eventLog(SSDevice.deviceID + "@" + SSDevice.IPAddress + " was Kicked out by Server.",'TCP Server')
     }
 
-    public.eventLog(CoreData.TCPClients[SSDeviceID].deviceID + "@" + CoreData.TCPClients[SSDeviceID].IPAddress + " was Removed from Connection List.",'TCP Server');
-    delete CoreData.TCPClients[SSDeviceID];
+    public.eventLog(SSDevice.deviceID + "@" + SSDevice.IPAddress + " was Removed from Connection List.",'TCP Server');
+    SSDevice.TCPSocket = {};
 
 }
 
-webAction.getLocalIP(function(localIP){
-});
 
-webAction.refreshAll(function(){});
-
-
-CoreData.createAllTCPClients();
 
 
 
@@ -100,22 +83,24 @@ CoreData.createAllTCPClients();
 
 //TCP Client
 var TCPConnect2Server = function(SSConnection){
-    public.eventLog('Connecting to Seraph Sense TCP Server: ' + CoreData.TCPClients[SSConnection].IPAddress + ":" + config.TCPort + "..." , "TCP Client");
-    CoreData.TCPClients[SSConnection].TCPClient.connect(config.TCPort, CoreData.TCPClients[SSConnection].IPAddress, function() {
-	   public.eventLog('Connected to Seraph Sense TCP Server: ' + CoreData.TCPClients[SSConnection].IPAddress + ":" + config.TCPort, "TCP Client");
-	   CoreData.TCPClients[SSConnection].cStatus = 1;
-	   CoreData.TCPClients[SSConnection].reConnecting = false
+    let SSDevice = CoreData.Seraph.getDevice(SSConnection);
+    public.eventLog('Connecting to Seraph Sense TCP Server: ' + SSDevice.IPAddress + ":" + config.TCPort + "..." , "TCP Client");
+    SSDevice.TCPSocket.connect(config.TCPort, SSDevice.IPAddress, function() {
+	   public.eventLog('Connected to Seraph Sense TCP Server: ' + CoreData.Seraph.getDevice(SSConnection).IPAddress + ":" + config.TCPort, "TCP Client");
+	   CoreData.Seraph.getDevice(SSConnection).setTCPConnectionStauts(true);
+	   CoreData.Seraph.getDevice(SSConnection).reConnecting = false
 	});
 }
 
 var TCPReconnect2Server = function(SSConnection){
-    CoreData.TCPClients[SSConnection].reConnecting = true;
-    public.eventError('[' + public.getDateTime() + '] ' + 'Attempting to reconnect Seraph Sense TCP Server: ' + CoreData.TCPClients[SSConnection].IPAddress + ":" + config.TCPort, "TCP Client");
+    let SSDevice = CoreData.Seraph.getDevice(SSConnection)
+    SSDevice.reConnecting = true;
+    public.eventError('[' + public.getDateTime() + '] ' + 'Attempting to reconnect Seraph Sense TCP Server: ' + SSDevice.IPAddress + ":" + config.TCPort, "TCP Client");
 
     setTimeout(function () {
-        if(!CoreData.TCPClients[SSConnection].destroyed){
+        if(!SSDevice.TCPSocket.destroyed){
             TCPConnect2Server(SSConnection);
-            CoreData.TCPClients[SSConnection].reConnecting = false
+            SSDevice.reConnecting = false
         }
     }, 3000)
 
@@ -129,28 +114,29 @@ var TCPReconnect2Server = function(SSConnection){
 
 /************************************/
 var TCPHandleFromServer = function(SSConnection){
-    CoreData.TCPClients[SSConnection].TCPClient.on('data', function (data) {
-        public.eventLog('Connection Received Data From '+ CoreData.TCPClients[SSConnection].IPAddress+': ' + public.bufferString(new Buffer(data)) , "TCP Client");
-		handleTCPReply(data, CoreData.TCPClients[SSConnection].TCPClient.IPAddress);
+    CoreData.Seraph.getDevice(SSConnection).TCPSocket.on('data', function (data) {
+        let SSDevice = CoreData.Seraph.getDevice(SSConnection);
+        public.eventLog('Connection Received Data From '+ SSDevice.IPAddress+': ' + public.bufferString(new Buffer(data)) , "TCP Client");
+		handleTCPReply(data, SSDevice.IPAddress);
 		//broadcast(socket.name + "> " + data, socket);
 	});
 
-    CoreData.TCPClients[SSConnection].TCPClient.on('error', function(error) {
+    CoreData.Seraph.getDevice(SSConnection).TCPSocket.on('error', function(error) {
+        let SSDevice = CoreData.Seraph.getDevice(SSConnection);
+        public.eventError('Failed to connect to Seraph Sense: ' + SSDevice.IPAddress + ":" + config.TCPort, "TCP Client");
+        CoreData.Seraph.getDevice(SSConnection).setTCPConnectionStauts(false)
 
-        public.eventError('Failed to connect to Seraph Sense: ' + CoreData.TCPClients[SSConnection].IPAddress + ":" + config.TCPort, "TCP Client");
-        CoreData.TCPClients[SSConnection].cStatus = 0
-
-        if(!CoreData.TCPClients[SSConnection].reConnecting){
+        if(!SSDevice.reConnecting){
             TCPReconnect2Server(SSConnection)
         }
 		//webSocket.emit('error', error);
 		//client.close();
 	});
-    CoreData.TCPClients[SSConnection].TCPClient.on('close', function() {
-
-        public.eventError('Connection Closed: ' + CoreData.TCPClients[SSConnection].IPAddress + ":" + config.TCPort, "TCP Client");
-        CoreData.TCPClients[SSConnection].cStatus = 0;
-        if(!CoreData.TCPClients[SSConnection].reConnecting){
+    CoreData.Seraph.getDevice(SSConnection).TCPSocket.on('close', function() {
+        let SSDevice = CoreData.Seraph.getDevice(SSConnection);
+        public.eventError('Connection Closed: ' + SSDevice.IPAddress + ":" + config.TCPort, "TCP Client");
+        CoreData.Seraph.getDevice(SSConnection).setTCPConnectionStauts(false)
+        if(!CoreData.Seraph.getDevice(SSConnection).reConnecting){
             TCPReconnect2Server(SSConnection)
         }
 
@@ -252,19 +238,14 @@ server.listen(config.TCPort,"0.0.0.0",function() {
 function handleConnection(con) {
     var remoteAddress = con.remoteAddress;
     public.eventLog('New Client Connection From: '+ remoteAddress,"TCP Server");
-    var deviceID = authTCPClients(con);
+
 
     con.setKeepAlive(true,1000); //1 min = 60000 milliseconds.
     con.on('data', onConData);
     con.once('close', onConClose);
     con.on('error', onConError);
-    CoreData.TCPClients[deviceID].TCPClient = con;
-
-    if(remoteAddress!="127.0.0.1"){
-        SSPB_APIs.sspbDeviceInfoSSGet(CoreData.TCPClients[deviceID]);
-    }
-
-
+    authTCPClients(con);
+    CoreData.tempTCPConnection[con.remoteAddress] = con;
 
     function onConData(data) {
         public.eventLog('Connection Received Data From '+remoteAddress+': ' + public.bufferString(new Buffer(data))  , "TCP Server");
@@ -274,7 +255,7 @@ function handleConnection(con) {
 
     function onConClose() {
         public.eventLog('Connection From ' + remoteAddress + ' Closed' , "TCP Server");
-        CoreData.setTCPClientOffline(deviceID);
+        CoreData.Seraph.getDeviceByIP(con.remoteAddress).setTCPConnectionStauts(false);
         con.end();
         con.destroy();
 
@@ -287,41 +268,17 @@ function handleConnection(con) {
 
 function authTCPClients(con){
 
-    var deviceID = CoreData.findTCPClientByIP(con.remoteAddress);
-    if(deviceID){
-        CoreData.setTCPClientOnline(deviceID);
-
-    }   else    {
-        var data = {
-            "deviceID"      : "SS"+ Math.random().toString(36).substring(3,9).toUpperCase(),
-            "type"          : "SS",
-            "model"         : 1,
-            "isMaster"      : 0,
-            "IPAddress"     : con.remoteAddress,
-            "macBLE"        : "39:10:9f:e4:ca:13",
-            "status"        : 0,
-            "cStatus"       : 0,
-            "isServer"      : 1
-
-        };
-        CoreData.setSingleTCPClient(deviceID, data, true);
+    if(con.remoteAddress !== "127.0.0.1"){
+        SSPB_APIs.sspbDeviceInfoSSGet(con);
     }
 
     public.eventLog('Connection From: '+ con.remoteAddress + " is Registered","TCP Server");
 
 
-    return deviceID;
-
-
-
-    //con.end();
-    //con.destroy();
-
-
 }
 
 var TCPSocketWrite = function(SSDevice, msg, command, options){
-    CoreData.recordSSPBCommands(options);
+    CoreData.Seraph.recordSSPBCommands(options);
     TCPWrite(SSDevice, msg);
     /*
     var queueItem = {
@@ -355,20 +312,20 @@ var TCPWrite = function(SSDeviceID,msg){
     var SSDevice = {}
 
     if(typeof(SSDeviceID) == "string"){
-        SSDevice = CoreData.TCPClients[SSDeviceID]
+        SSDevice = CoreData.Seraph.getDevice(SSDeviceID).TCPSocket
     }   else    {
-        SSDevice = SSDeviceID;
+        SSDevice = SSDeviceID.TCPClient;
     }
-    if(SSDevice.isServer == 1){
+    if(SSDevice.isServer){
 
-        if(SSDevice.TCPClient){
-            SSDevice.TCPClient.write(msg);
+        if(SSDevice){
+            SSDevice.write(msg);
         }   else    {
             public.eventTitle("DEVICE NOT CONNECTED",2,"SSP-A Request",true);
 
         }
     }   else    {
-        SSDevice.TCPClient.write(msg);
+        SSDevice.write(msg);
     }
 };
 

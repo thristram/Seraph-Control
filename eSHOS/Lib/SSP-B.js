@@ -19,11 +19,11 @@ var debug = require('debug')('SSP-B');
 module.exports = {
     /**
      *
-     * @param SSDevice
+     * @param SSDeviceID
      * @param APIQuery
      */
 
-    sspbActionPerform: function(SSDevice){
+    sspbActionPerform: function(SSDeviceID){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -43,19 +43,19 @@ module.exports = {
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
         data.payload = JSON.stringify(payload);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
 
         return data;
     },
 
     /**
      *
-     * @param SSDevice
+     * @param SSDeviceID
      * @param APIQuery
      */
 
-    sspbActionRefresh : function (SSDevice,channel){
+    sspbActionRefresh : function (SSDeviceID,channel){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -72,17 +72,17 @@ module.exports = {
             data.TopicExt["CH"] = channel;
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
     /**
      *
-     * @param SSDevice
+     * @param SSDeviceID
      * @param APIQuery
      */
-    sspbActionBacklight: function(SSDevice, mode, options){
+    sspbActionBacklight: function(SSDeviceID, mode, options){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -137,17 +137,17 @@ module.exports = {
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
         data.payload = JSON.stringify(payload);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
     /**
      *
-     * @param SSDevice
+     * @param SSDeviceID
      * @param APIQuery
      */
-    sspbDataSync: function(SSDevice, sepid, channel){
+    sspbDataSync: function(SSDeviceID, sepid, channel){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -167,8 +167,8 @@ module.exports = {
             data.topicExt["CH"] = channel;
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
@@ -179,7 +179,7 @@ module.exports = {
      */
 
 
-    sspbDataRecent: function(SSDevice, sepid, channel){
+    sspbDataRecent: function(SSDeviceID, sepid, channel){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -200,22 +200,22 @@ module.exports = {
             data.topicExt["CH"] = channel;
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
 
     /**
      *
-     * @param SSDevice
+     * @param SSDeviceID
      * @param APIQuery
      * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
      */
 
-    sspbDataIR: function(SSDevice){
+    sspbDataIR: function(SSDeviceID){
 
-        var SEPID = {"SEPID":SSDevice.deviceID}
+        var SEPID = {"SEPID":SSDeviceID}
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -229,19 +229,19 @@ module.exports = {
             payload 	: JSON.stringify(SEPID)
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
     /**
      *
-     * @param SSDevice
+     * @param SSDeviceID
      * @param APIQuery
      * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
      */
 
-    sspbConfigssGet: function(SSDevice){
+    sspbConfigssGet: function(SSDeviceID){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -255,13 +255,13 @@ module.exports = {
             payload 	: ""
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
 
     },
 
-    sspbConfigssPost: function(SSDevice){
+    sspbConfigssPost: function(SSDeviceID){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -277,8 +277,8 @@ module.exports = {
         var conf = SSPBObjects.SSConfigObject;
         data.Topic = createTopic(data.topicType, data.topicExt);
         data.payload = JSON.stringify(conf);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
@@ -288,7 +288,7 @@ module.exports = {
      * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
      */
 
-    sspbConfigStrategyHTSPGet: function(SSDevice, stid){
+    sspbConfigStrategyHTSPGet: function(SSDeviceID, stid){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -306,13 +306,13 @@ module.exports = {
             data.topicExt["STID"] = stid;
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
 
     },
 
-    sspbConfigStrategyHTSPPost: function(SSDevice){
+    sspbConfigStrategyHTSPPost: function(SSDeviceID){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -333,12 +333,12 @@ module.exports = {
         };
         data.Topic = createTopic(data.topicType, data.topicExt);
         data.payload = JSON.stringify(payload);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
-    sspbConfigST: function (SSDevice){
+    sspbConfigST: function (SSDeviceID){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -352,12 +352,12 @@ module.exports = {
             payload 	: ""
         }
 
-        var managedSS = SSDevice.deviceID;
+        var managedSS = SSDeviceID;
         SSPBObjects.configSTObject(managedSS,function(SQLData){
             data.Topic = createTopic(data.topicType, data.topicExt);
             data.payload = JSON.stringify(SQLData);
-            var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-            TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+            var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+            TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
 
         })
         return data;
@@ -371,7 +371,7 @@ module.exports = {
      */
 
 
-    sspbDeviceStatus: function(SSDevice, sepid, channel){
+    sspbDeviceStatus: function(SSDeviceID, sepid, channel){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -392,8 +392,8 @@ module.exports = {
             data.topicExt["CH"] = channel
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
@@ -403,7 +403,7 @@ module.exports = {
      * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
      */
 
-    sspbDeviceListGet: function(SSDevice){
+    sspbDeviceListGet: function(SSDeviceID){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -417,12 +417,12 @@ module.exports = {
             payload 	: ""
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
-    sspbDeviceListPost: function sspbDeviceListPost(SSDevice){
+    sspbDeviceListPost: function sspbDeviceListPost(SSDeviceID){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -436,13 +436,13 @@ module.exports = {
             payload 	: ""
         }
 
-        var managedSS = SSDevice.deviceID;
+        var managedSS = SSDeviceID;
 
         SSPBObjects.deviceListObject(managedSS,function(SQLData){
             data.Topic = createTopic(data.topicType, data.topicExt);
             data.payload = JSON.stringify(SQLData);
-            var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-            TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+            var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+            TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         });
 
         return data;
@@ -450,7 +450,7 @@ module.exports = {
 
     },
 
-    sspbDeviceInfoSSGet: function(SSDevice){
+    sspbDeviceInfoSSGet: function(SSDeviceID){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -464,12 +464,12 @@ module.exports = {
             payload 	: ""
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
-    sspbDeviceInfoSubGet: function(SSDevice){
+    sspbDeviceInfoSubGet: function(SSDeviceID){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -483,8 +483,8 @@ module.exports = {
             payload 	: ""
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
@@ -494,7 +494,7 @@ module.exports = {
      * @returns {{isRequest: boolean, QoS: number, QosNeeded: number, dup: number, MessageType: number, Topic: string, MessageID: *, MessageIDextended: number, payload: string}}
      */
 
-    sspbQE: function(SSDevice, action, sepid, options){
+    sspbQE: function(SSDeviceID, action, sepid, options){
 
         var data = {
             isRequest 	: true,
@@ -550,8 +550,8 @@ module.exports = {
 
         data.Topic = createTopic(data.topicType, data.topicExt);
         data.hash = AES.md5(JSON.stringify(data));
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice);
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID);
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
 
@@ -564,7 +564,7 @@ module.exports = {
      */
 
 
-    sspbAlarm: function(SSDevice){
+    sspbAlarm: function(SSDeviceID){
         var data = {
             isRequest 	: true,
             QoS 		: 2,
@@ -578,8 +578,8 @@ module.exports = {
             payload 	: ""
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDevice)
-        TCPClient.TCPSocketWrite(SSDevice, msg, data.topicType, data);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceIDID)
+        TCPClient.TCPSocketWrite(SSDeviceIDID, msg, data.topicType, data);
         return data;
     },
 

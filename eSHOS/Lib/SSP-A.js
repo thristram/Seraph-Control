@@ -24,8 +24,8 @@ module.exports = {
 
         req.rootRoute = "actions/perform";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbActionPerform(CoreData.TCPClients[SSDevice]);
+        APIQuery.device.forEach(function (SSDeviceID) {
+            SSPB_APIs.sspbActionPerform(SSDeviceID);
         })
         res.end("");
 
@@ -39,9 +39,9 @@ module.exports = {
 
         req.rootRoute = "actions/refresh";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
+        APIQuery.device.forEach(function (SSDeviceID) {
             var channel = APIQuery.query.CH;
-            SSPB_APIs.sspbActionRefresh(CoreData.TCPClients[SSDevice],channel);
+            SSPB_APIs.sspbActionRefresh(SSDeviceID,channel);
         });
         res.end('')
     },
@@ -53,7 +53,7 @@ module.exports = {
 
         req.rootRoute = "actions/backlight";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
+        APIQuery.device.forEach(function (SSDeviceID) {
             var mode = APIQuery.query.mode;
             var options = {};
             if(APIQuery.query.colors){
@@ -80,7 +80,7 @@ module.exports = {
             if(APIQuery.query.timeBlank){
                 options["timeBlank"] = parseInt(APIQuery.query.timeBlank)
             }
-            SSPB_APIs.sspbActionBacklight(CoreData.TCPClients[SSDevice], mode, options);
+            SSPB_APIs.sspbActionBacklight(SSDeviceID, mode, options);
         })
         res.end('')
     },
@@ -92,10 +92,10 @@ module.exports = {
 
         req.rootRoute = "data/sync";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
+        APIQuery.device.forEach(function (SSDeviceID) {
             var sepid = APIQuery.query.SEPID;
             var channel = APIQuery.query.CH;
-            SSPB_APIs.sspbDataSync(CoreData.TCPClients[SSDevice], sepid, channel);
+            SSPB_APIs.sspbDataSync(SSDeviceID, sepid, channel);
         })
         res.end('')
     },
@@ -107,10 +107,10 @@ module.exports = {
 
         req.rootRoute = "data/recent";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
+        APIQuery.device.forEach(function (SSDeviceID) {
             var sepid = APIQuery.query.SEPID;
             var channel = APIQuery.query.CH;
-            SSPB_APIs.sspbDataRecent(CoreData.TCPClients[SSDevice], sepid, channel);
+            SSPB_APIs.sspbDataRecent(SSDeviceID, sepid, channel);
         })
         res.end('')
     },
@@ -123,9 +123,9 @@ module.exports = {
 
         req.rootRoute = "data/ir";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
+        APIQuery.device.forEach(function (SSDeviceID) {
 
-            SSPB_APIs.sspbDataIR(CoreData.TCPClients[SSDevice]);
+            SSPB_APIs.sspbDataIR(SSDeviceID);
         })
         res.end('')
     },
@@ -138,8 +138,8 @@ module.exports = {
 
         req.rootRoute = "config/ss";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbConfigssGet(CoreData.TCPClients[SSDevice]);
+        APIQuery.device.forEach(function (SSDeviceID) {
+            SSPB_APIs.sspbConfigssGet(SSDeviceID);
         })
         res.end('')
 
@@ -149,8 +149,8 @@ module.exports = {
         req.rootRoute = "config/ss";
         var APIQuery = parseExpressURI(req);
 
-        APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbConfigssPost(CoreData.TCPClients[SSDevice]);
+        APIQuery.device.forEach(function (SSDeviceID) {
+            SSPB_APIs.sspbConfigssPost(SSDeviceID);
         })
         res.end('')
     },
@@ -164,9 +164,9 @@ module.exports = {
 
         req.rootRoute = "/config/strategy/htsp";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
+        APIQuery.device.forEach(function (SSDeviceID) {
             var stid = APIQuery.query.STID;
-            SSPB_APIs.sspbConfigStrategyHTSPGet(CoreData.TCPClients[SSDevice], stid);
+            SSPB_APIs.sspbConfigStrategyHTSPGet(SSDeviceID, stid);
         })
         res.end('')
 
@@ -175,8 +175,8 @@ module.exports = {
     sspaPostConfigStrategy: function(req, res) {
         req.rootRoute = "/config/strategy/htsp";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbConfigStrategyHTSPPost(CoreData.TCPClients[SSDevice]);
+        APIQuery.device.forEach(function (SSDeviceID) {
+            SSPB_APIs.sspbConfigStrategyHTSPPost(SSDeviceID);
         })
 
         res.end('')
@@ -191,10 +191,10 @@ module.exports = {
 
         req.rootRoute = "/device/status";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
+        APIQuery.device.forEach(function (SSDeviceID) {
             var sepid = APIQuery.query.SEPID;
             var channel = APIQuery.query.CH;
-            SSPB_APIs.sspbDeviceStatus(CoreData.TCPClients[SSDevice], sepid, channel);
+            SSPB_APIs.sspbDeviceStatus(SSDeviceID, sepid, channel);
         })
 
         res.end('')
@@ -210,8 +210,8 @@ module.exports = {
 
         req.rootRoute = "/device/list";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbDeviceListGet(CoreData.TCPClients[SSDevice]);
+        APIQuery.device.forEach(function (SSDeviceID) {
+            SSPB_APIs.sspbDeviceListGet(SSDeviceID);
         })
 
         res.end('')
@@ -221,8 +221,8 @@ module.exports = {
     sspaPostDeviceList: function(req, res) {
         req.rootRoute = "/device/list";
         var APIQuery = parseExpressURI(req);
-        APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbDeviceListPost(CoreData.TCPClients[SSDevice]);
+        APIQuery.device.forEach(function (SSDeviceID) {
+            SSPB_APIs.sspbDeviceListPost(SSDeviceID);
         })
 
         res.end('')
@@ -260,15 +260,7 @@ module.exports = {
         var SSPAActions = new SSPAAction()
         var actionData = SSPAActions.qeAction(APIQuery.query)
 
-        if(APIQuery.device = []){
-
-            SSPB_APIs.sspbQE(CoreData.TCPClients[actionData.SSDeviceID], actionData.action, actionData.SCDeviceID, actionData);
-
-        }   else    {
-            APIQuery.device.forEach(function (SSDevice) {
-                SSPB_APIs.sspbQE(CoreData.TCPClients[actionData.SSDeviceID], APIQuery.query.action, APIQuery.query.SEPID, actionData);
-            })
-        }
+        SSPB_APIs.sspbQE(actionData.SSDeviceID, actionData.action, actionData.SCDeviceID, actionData);
 
 
         res.end('')
@@ -284,8 +276,8 @@ module.exports = {
         req.rootRoute = "/alarm";
         var APIQuery = parseExpressURI(req);
 
-        APIQuery.device.forEach(function (SSDevice) {
-            SSPB_APIs.sspbAlarm(CoreData.TCPClients[SSDevice]);
+        APIQuery.device.forEach(function (SSDeviceID) {
+            SSPB_APIs.sspbAlarm(SSDeviceID);
         })
 
 
@@ -348,40 +340,51 @@ class SSPAAction{
     qeAction(query){
         var data = {}
         data["action"] = query.action
-
+        let device = {};
+        let SCDevice = {};
+        if(query.SEPID){
+            device = CoreData.Seraph.getDevice(query.SEPID);
+        }
+        if(query.SCDeviceID){
+            SCDevice = CoreData.Seraph.getDevice(query.SCDeviceID);
+        }
 
         switch(query.action){
             case "DM":
                 data["CH"] = publicMethods.translateChannel(parseInt(query.CH));
                 data["topos"] = query.TOPOS;
                 data["duration"] = query.duration;
-                data["MD"] = CoreData.deviceREF[query.SEPID].moduleID;
-                data["SCDeviceID"] = "SC" + CoreData.deviceREF[query.SEPID].managedSC
-                data["SSDeviceID"] = CoreData.deviceREF[query.SEPID].managedSS
+                data["MD"] = device.MDID;
+                data["SCDeviceID"] = device.SCDeviceID;
+                data["SSDeviceID"] = device.SSDeviceID;
                 break;
             case "DMM":
+                //let SCDevice = CoreData.Seraph.getDevice(query.SCDeviceID);
                 data["CH"] = query.CH;
                 data["topos"] = query.TOPOS;
                 data["duration"] = query.duration;
                 data["MD"] = query.MDID;
-                data["SCDeviceID"] = query.SCDeviceID
-                data["SSDeviceID"] = CoreData.deviceREF[query.SCDeviceID].managedSS
+                data["SCDeviceID"] = query.SCDeviceID;
+                data["SSDeviceID"] = SCDevice.SSDeviceID;
                 break;
             case "WP":
+                //let device = CoreData.Seraph.getDevice(query.SEPID);
                 data["CH"] = publicMethods.translateChannel(parseInt(query.CH));
                 data["topos"] = query.TOPOS;
-                data["MD"] = CoreData.deviceREF[query.SEPID].moduleID;
-                data["SCDeviceID"] = "SC" + CoreData.deviceREF[query.SEPID].managedSC
-                data["SSDeviceID"] = CoreData.deviceREF[query.SEPID].managedSS
+                data["MD"] = device.MDID;
+                data["SCDeviceID"] = device.SCDeviceID;
+                data["SSDeviceID"] = device.SSDeviceID;
                 break;
             case "WPM":
+                //let SCDevice = CoreData.Seraph.getDevice(query.SCDeviceID);
                 data["CH"] =query.CH;
                 data["topos"] = query.TOPOS;
                 data["MD"] = query.MDID;
-                data["SCDeviceID"] = query.SCDeviceID
-                data["SSDeviceID"] = CoreData.deviceREF[query.SCDeviceID].managedSS
+                data["SCDeviceID"] = query.SCDeviceID;
+                data["SSDeviceID"] = SCDevice.SSDeviceID;
                 break;
             case "UR":
+                //let device = CoreData.Seraph.getDevice(query.SEPID);
                 if(query.hasOwnProperty("type")){
                     data["type"] = query.type;
                 }
@@ -397,7 +400,7 @@ class SSPAAction{
                 if(query.hasOwnProperty("other")){
                     data["other"] = query.other;
                 }
-                data["SSDeviceID"] = CoreData.deviceREF[query.SEPID].managedSS
+                data["SSDeviceID"] = device.SSDeviceID;
                 break;
             default:
                 break;
@@ -414,37 +417,37 @@ class SSPAData{
     }
     deviceDataStatus(){
         var fetchResult = {}
-        for (var deviceID in CoreData.deviceStatus){
+        for (let key in CoreData.Seraph.getDeviceList(["SL","SP"])){
+            let deviceID = CoreData.Seraph.getDeviceList(["SL","SP"])[key];
+            let device = CoreData.Seraph.getDevice(deviceID);
             fetchResult[deviceID] = {}
             fetchResult[deviceID]["statusData"] = {}
-            for (var channelID in CoreData.deviceStatus[deviceID]){
-
+            for (let channelID in device.channels){
+                let channel = device.channels[channelID];
                 fetchResult[deviceID]["statusData"]["C" + channelID] = {}
-                fetchResult[deviceID]["statusData"]["C" + channelID]["value"] = CoreData.deviceStatus[deviceID][channelID].value
+                fetchResult[deviceID]["statusData"]["C" + channelID]["value"] = channel.getValue();
             }
         }
-        for(var deviceID in CoreData.sensorStatus){
+
+        for (let key in CoreData.Seraph.getDeviceList(["SS"])){
+            let deviceID = CoreData.Seraph.getDeviceList(["SS"])[key];
+            let device = CoreData.Seraph.getDevice(deviceID);
             fetchResult[deviceID] = {}
             fetchResult[deviceID]["sensorData"] = {}
-            for (var channelID in CoreData.sensorStatus[deviceID]){
-
+            for (let sensorID in device.sensors){
+                let sensor = device.sensors[sensorID];
                 try{
+                    fetchResult[deviceID]["sensorData"][sensorID] = {}
+                    fetchResult[deviceID]["sensorData"][sensorID]["value"] = parseInt(sensor.getValue())
 
-
-                    fetchResult[deviceID]["sensorData"][channelID] = {}
-                    fetchResult[deviceID]["sensorData"][channelID]["value"] = parseInt(CoreData.sensorStatus[deviceID][channelID])
-
-                    if(channelID == "CO"){
-                        fetchResult[deviceID]["sensorData"][channelID]["value"] = 0
+                    if(sensorID == "CO"){
+                        fetchResult[deviceID]["sensorData"][sensorID]["value"] = 0
                     }
-
-
                 }   catch(err){
 
                 }
             }
         }
-        //console.log(CoreData.sensorStatus)
 
         console.log(JSON.stringify(fetchResult))
         return fetchResult

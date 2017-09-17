@@ -18,9 +18,9 @@ var constructSICPMessage = require("./Construct/constructSICPMessage.js");
 module.exports = {
     SICPHeartBeat: function(){
         var msg = constructSICPMessage.constructSICPHeartBeats();
-        for (SSDevice in CoreData.TCPClients){
+        for (let SSDeviceID in CoreData.Seraph.getDeviceList(["SS"])){
             public.eventLog("Network Status Sent: " + public.bufferString(msg),"SICP Network Status")
-            TCPClient.TCPSocketWrite(CoreData.TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(SSDeviceID,msg);
         }
     }
 }

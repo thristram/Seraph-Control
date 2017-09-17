@@ -50,7 +50,7 @@ module.exports = {
                 APIQuery.query.type,
                 data
             );
-            TCPClient.TCPSocketWrite(CoreData.TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(SSDevice,msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
             TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
@@ -73,7 +73,7 @@ module.exports = {
                 new Buffer(TEST_APIs.defaultMeshID,'hex'),
                 APIQuery.query.type
             );
-            TCPClient.TCPSocketWrite(CoreData.TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(SSDevice,msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
             TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
@@ -96,7 +96,7 @@ module.exports = {
                 new Buffer(TEST_APIs.defaultMeshID,'hex'),
                 APIQuery.query.type
             );
-            TCPClient.TCPSocketWrite(CoreData.TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(SSDevice,msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
             TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
@@ -119,7 +119,7 @@ module.exports = {
                 new Buffer(TEST_APIs.defaultMeshID,'hex'),
                 APIQuery.query.type
             );
-            TCPClient.TCPSocketWrite(CoreData.TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(SSDevice,msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
             TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
@@ -162,7 +162,7 @@ module.exports = {
                 parseInt(APIQuery.query.type),
                 data
             );
-            TCPClient.TCPSocketWrite(CoreData.TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(SSDevice,msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
             TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
@@ -211,7 +211,7 @@ module.exports = {
                 parseInt(APIQuery.query.type),
                 data
             );
-            TCPClient.TCPSocketWrite(CoreData.TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(SSDevice,msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
             TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
@@ -241,7 +241,7 @@ module.exports = {
                 APIQuery.query.type,
                 data
             );
-            TCPClient.TCPSocketWrite(CoreData.TCPClients[SSDevice],msg);
+            TCPClient.TCPSocketWrite(SSDevice,msg);
             displayedMessage = displayedMessage +  req.body.protocolType + " MESSAGE SENT: " + public.bufferString(msg) + '\n';
             TEST_APIs.currentData = TEST_APIs.currentData + displayedMessage;
         });
