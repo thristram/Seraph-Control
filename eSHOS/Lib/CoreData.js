@@ -3,7 +3,7 @@
  */
 
 var net = require('net');
-var TCPClient
+var TCPClient;
 
 var SQLAction = require("./SQLAction.js");
 var publicMethods = require("./public.js");
@@ -31,7 +31,7 @@ class Sensor{
         this.allocateAttribute();
     }
     setValue(value, lastUpdate){
-        this.value = value;
+        this.value = parseInt(value);
         this.lastUpdate = lastUpdate;
         if(this.sensorID === "MI"){
             Seraph.getDevice(this.deviceID)
@@ -120,7 +120,7 @@ class Sensor{
                     timestamp   : timestamp
                 };
                 SQLAction.SQLAdd("seraph_sensor_log", data);
-
+                SQLAction.SQLSetField("seraph_sensor",{"value": this.value, "lastupdate": timestamp});
             }
 
             this.currentLog = [];
@@ -206,6 +206,8 @@ class SDevice{
     getSensor(sensorID){
         if (this.checkExistSensor(sensorID)){
             return this.sensors[sensorID]
+        }   else    {
+            console.log(sensorID + " Sensor not found")
         }
     }
     checkExistChannel(channelID){
@@ -222,8 +224,9 @@ class SDevice{
 
     }
     checkExistSensor(sensorID){
-        if(this.type === "SS") {
-            if (this.sensors.hasOwnProperty(sensorID)) {
+        let self = this;
+        if(self.type == "SS") {
+            if (self.sensors.hasOwnProperty(sensorID)) {
                 return true
             } else {
                 return false
@@ -271,7 +274,7 @@ class SSDevice extends SDevice{
                 break
         }
     }
-    setTCPConnectionStauts(connectionStatus){
+    setTCPConnectionStatus(connectionStatus){
         if(connectionStatus){
             this.connectionStatus = true;
             this.deviceStatus = 1
@@ -285,8 +288,9 @@ class SSDevice extends SDevice{
         return this.connectionStatus;
     }
 
-    initTCPSocket(){
+    initTCPSocket(con){
         this.reConnecting = false;
+        this.TCPSocket = con;
     }
 
     initQueryCommandToSS(){
@@ -295,9 +299,9 @@ class SSDevice extends SDevice{
         if(this.IPAddress !== "127.0.0.1"){
             setInterval(function(){
                 if(self.getTCPConnectionStauts()) {
-                    SSPB_APIs.sspbDeviceStatus(self.TCPSocket);
+                    SSPB_APIs.sspbDeviceStatus(self.deviceID);
                     setTimeout(function () {
-                        SSPB_APIs.sspbDataSync(self.TCPSocket);
+                        SSPB_APIs.sspbDataSync(self.deviceID);
                     }, 1000);
                 }
             },timeout);
@@ -310,6 +314,17 @@ class SSDevice extends SDevice{
         TCPClient.TCPConnect2Server(this.deviceID);
         TCPClient.TCPHandleFromServer(this.deviceID);
     }
+    initSSConfig(){
+        let self = this;
+        SSPB_APIs.sspbDeviceListPost(self.deviceID);
+        setTimeout(function(){
+            SSPB_APIs.sspbConfigST(self.deviceID);
+            setTimeout(function(){
+                SSPB_APIs.sspbConfigssGet(self.deviceID)
+            },1000)
+        },1000)
+    }
+
 
 
 
@@ -390,9 +405,9 @@ class SeraphHome extends Home {
         this.homeKitIdentifiers = {};
         this.sysConfigs = {};
         this.geographicInfos = {};
-        this.SSPBLogs = {}
+        this.SSPBLogs = {};
 
-        let self = this
+        let self = this;
 
 
         self.initHomeKitIdentifiers(function(){
@@ -476,12 +491,13 @@ class SeraphHome extends Home {
         }
     }
     getDeviceByMDID(SCDeviceID, moduleID){
-        let MDID = parseInt(moduleID)
+        let MDID = parseInt(moduleID);
         for(let key in this.devices) {
             let device = this.devices[key];
-            if(device.type === "SP" || device.type === "SL"){
-                if(device.SCDeviceID === SCDeviceID){
-                    if(device.checkExistChannel(MDID)){
+            if(device.type == "SL" || device.type == "SP"){
+
+                if(device.SCDeviceID == SCDeviceID){
+                    if(device.MDID ==  MDID){
                         return device
                     }
                 }
@@ -561,6 +577,7 @@ class SeraphHome extends Home {
     }
 
     recordSSPBCommands(data){
+
         let commandData = {
             messageID 		: data.MessageID,
             action 			: data.topicType,
@@ -583,12 +600,13 @@ class SeraphHome extends Home {
     }
 
     getSSPBCommands(messageID, callback){
-        if(this.SSPBLogs.hasOwnProperty(messageID)){
-            callback(this.SSPBLogs[messageID]);
+        let self = this;
+        if(self.SSPBLogs.hasOwnProperty(messageID)){
+            callback(self.SSPBLogs[messageID]);
         }   else    {
             let query = "messageID = '" + messageID + "' AND (finished = 0 OR finished IS NULL)";
             SQLAction.SQLFind("seraph_sspb_command_logs","*", query,function(SQLData){
-                this.SSPBLogs[messageID] = SQLData;
+                self.SSPBLogs[messageID] = SQLData;
                 callback(SQLData);
             });
         }
@@ -614,7 +632,7 @@ var tempTCPConnection = {}
 var Seraph = new SeraphHome("HM0000001", "Seraph Home");
 
 var initDevices = function(callback) {
-    SQLAction.SQLSelect("seraph_device", "type||deviceID as deviceID, type, model, managedSS, managedSC, moduleID", "", "", function (deviceData) {
+    SQLAction.SQLSelect("seraph_device", "type||deviceID as deviceID, type, model, managedSS, managedSC, moduleID, IPAddress", "", "", function (deviceData) {
 
         for (let key in deviceData) {
             if (deviceData.hasOwnProperty(key)) {
@@ -626,9 +644,11 @@ var initDevices = function(callback) {
                 let managedSC = "SC" + deviceData[key].managedSC;
                 let moduleID = deviceData[key].moduleID;
                 let deviceType = deviceData[key].type;
+
                 if (deviceType === "SS") {
+                    let IPAddress = deviceData[key].IPAddress;
                     deviceID = deviceID.substring(2);
-                    let device = new SSDevice(deviceID, model);
+                    let device = new SSDevice(deviceID, model, IPAddress);
                     Seraph.addDevcie(deviceID, device);
                 } else if (deviceType === "SP" || deviceType === "SL") {
                     let device = new SCEPDevice(deviceID, model, managedSS, managedSC, moduleID);
@@ -685,31 +705,29 @@ var assignInitialSensorValue = function(callback){
 
 var initConnectionWithSeraphCloud = function(){
     var httpPush = new pushToServer();
-    var SSPAActions = new SSPAAction()
+    var SSPAActions = new SSPAAction();
     setInterval(function(){
-        var SSPAProtocolData = new SSPAData()
-        var data = SSPAProtocolData.deviceDataStatus()
+        var SSPAProtocolData = new SSPAData();
+        var data = SSPAProtocolData.deviceDataStatus();
         httpPush.webCall("POST", "/device/dataStatus", data, function(res){
-            console.log(res)
-
-            var body = JSON.parse(res)
+            let body = JSON.parse(res);
             if( body != []){
-                for (var key in body){
+                for (let key in body){
 
-                    var command = JSON.parse(body[key])
+                    let command = JSON.parse(body[key]);
 
                     if(["WP","WPM","DM","DMM","UR","CP"].indexOf(command.action) > -1) {
-                        var parsedCommand = SSPAActions.qeAction(command)
+                        var parsedCommand = SSPAActions.qeAction(command);
 
-                        SSPB_APIs.sspbQE(TCPClients[parsedCommand.SSDeviceID], parsedCommand.action, parsedCommand.SCDeviceID, parsedCommand);
+                        SSPB_APIs.sspbQE(parsedCommand.SSDeviceID, parsedCommand.action, parsedCommand.SCDeviceID, parsedCommand);
                     }
                 }
             }
         })
-    }, 3000)
+    }, 3000);
 
     setInterval(function(){
-        var SSPAProtocolData = new SSPAData()
+        var SSPAProtocolData = new SSPAData();
         SSPAProtocolData.sensorDataHistory(function(data){
             httpPush.webCall("POST", "/data/history", data, function(res){})
         })
@@ -720,4 +738,4 @@ var initConnectionWithSeraphCloud = function(){
 
 
 module.exports.Seraph = Seraph;
-module.exports.tempTCPConnection = tempTCPConnection
+module.exports.tempTCPConnection = tempTCPConnection;

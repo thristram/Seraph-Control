@@ -118,11 +118,16 @@ module.exports = {
 
 	},
 	log:function(data,type,err){
-		if(err){
-			console.warn(data);
+		if(["Construct Message Full", "Construct Message", "Parse Message Full","Parse Message Status","Parse Message Detail" ,"Construct Message Detail" ,"SSP-A Request"].indexOf(type) > (-1)){
+
 		}	else	{
-			console.log(data);
+            if(err){
+                console.warn(data);
+            }	else	{
+                console.log(data);
+            }
 		}
+
 	},
 
 	eventLog:  function(data,type){

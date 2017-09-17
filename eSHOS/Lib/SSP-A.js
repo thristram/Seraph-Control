@@ -406,7 +406,6 @@ class SSPAAction{
                 break;
 
         }
-        console.log(data)
         return data
     }
 }
@@ -420,10 +419,11 @@ class SSPAData{
         for (let key in CoreData.Seraph.getDeviceList(["SL","SP"])){
             let deviceID = CoreData.Seraph.getDeviceList(["SL","SP"])[key];
             let device = CoreData.Seraph.getDevice(deviceID);
-            fetchResult[deviceID] = {}
-            fetchResult[deviceID]["statusData"] = {}
-            for (let channelID in device.channels){
-                let channel = device.channels[channelID];
+            fetchResult[deviceID] = {};
+            fetchResult[deviceID]["statusData"] = {};
+            for (let cID in device.channels){
+                let channel = device.channels[cID];
+                let channelID = parseInt(cID) + 1;
                 fetchResult[deviceID]["statusData"]["C" + channelID] = {}
                 fetchResult[deviceID]["statusData"]["C" + channelID]["value"] = channel.getValue();
             }
@@ -431,25 +431,27 @@ class SSPAData{
 
         for (let key in CoreData.Seraph.getDeviceList(["SS"])){
             let deviceID = CoreData.Seraph.getDeviceList(["SS"])[key];
-            let device = CoreData.Seraph.getDevice(deviceID);
-            fetchResult[deviceID] = {}
-            fetchResult[deviceID]["sensorData"] = {}
-            for (let sensorID in device.sensors){
-                let sensor = device.sensors[sensorID];
-                try{
-                    fetchResult[deviceID]["sensorData"][sensorID] = {}
-                    fetchResult[deviceID]["sensorData"][sensorID]["value"] = parseInt(sensor.getValue())
+            if(deviceID != "SS000000"){
+                let device = CoreData.Seraph.getDevice(deviceID);
+                fetchResult[deviceID] = {}
+                fetchResult[deviceID]["sensorData"] = {}
+                for (let sensorID in device.sensors){
+                    let sensor = device.sensors[sensorID];
+                    try{
+                        fetchResult[deviceID]["sensorData"][sensorID] = {}
+                        fetchResult[deviceID]["sensorData"][sensorID]["value"] = parseInt(sensor.getValue())
 
-                    if(sensorID == "CO"){
-                        fetchResult[deviceID]["sensorData"][sensorID]["value"] = 0
+                        if(sensorID == "CO"){
+                            fetchResult[deviceID]["sensorData"][sensorID]["value"] = 0
+                        }
+                    }   catch(err){
+
                     }
-                }   catch(err){
-
                 }
             }
+
         }
 
-        console.log(JSON.stringify(fetchResult))
         return fetchResult
     }
 

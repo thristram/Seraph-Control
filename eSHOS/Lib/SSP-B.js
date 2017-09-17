@@ -392,7 +392,7 @@ module.exports = {
             data.topicExt["CH"] = channel
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID);
         TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },

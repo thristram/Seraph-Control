@@ -7,8 +7,8 @@
 var config = require("../../config.js");
 var public = require("./public.js");
 var parseMessage = require ("./parseMessage.js");
-
-
+var CoreData = require("./CoreData.js");
+var debug = require("debug")("ConstructMessage");
 module.exports = {
   
 
@@ -30,9 +30,19 @@ constructMessage: function (isRequest,Qos,dup,MessageType,Topic,MessageID,Messag
 	}	else	{
         msgType = MessageType;
 	}
+	let deviceID = "";
+	let IPAddress = "";
 
 
-	public.eventTitle(["MESSAGE SENT: "+ SSDevice.deviceID ,"IP ADDRESS: "+SSDevice.IPAddress],1,"Construct Message Status");
+	if(typeof(SSDevice) === "string"){
+		deviceID = SSDevice;
+		IPAddress = CoreData.Seraph.getDevice(SSDevice).IPAddress;
+	}	else	{
+        deviceID = "Device ID Pending";
+        IPAddress = SSDevice.remoteAddress
+	}
+
+	public.eventTitle(["MESSAGE SENT: "+ deviceID ,"IP ADDRESS: "+ IPAddress],1,"Construct Message Status");
     public.eventTitle("ENCORDING...",2,"Construct Message Detail");
 
 
@@ -48,6 +58,11 @@ constructMessage: function (isRequest,Qos,dup,MessageType,Topic,MessageID,Messag
 	public.log(public.bufferString(messageBuffer),"Construct Message Full");
 	//parseMessage.parseMessage(messageBuffer,true);
     public.eventTitle("MESSAGE ENDS",2,"Construct Message");
+
+    debug(MessageID  + "：" + Topic);
+    if(payload){
+        debug(payload)
+    }
 
 	return messageBuffer;
 },

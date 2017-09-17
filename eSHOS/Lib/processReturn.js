@@ -7,7 +7,7 @@ var SSPB_APIs = require("./SSP-B.js");
 var HAPLinker = require("./HomeKit_Link.js");
 var debug = require('debug')('SSP-B');
 var CoreData = require("./CoreData.js");
-
+var debugReceive = require("debug")("ReceivedMessage");
 
 var processSSPBIncomming = function (data, remoteAddress) {
     if(!data.ifTopic){
@@ -19,8 +19,8 @@ var processSSPBIncomming = function (data, remoteAddress) {
 
 var processSSPBReturn = function(data, remoteAddress){
     debug("[%s] Processing SSP-B Return Messages....", public.getDateTime());
-
     CoreData.Seraph.getSSPBCommands(data.messageID, function(commandData){
+
        if(commandData){
            CoreData.Seraph.recordSSPBReturn(data.messageID, data);
 
@@ -31,8 +31,11 @@ var processSSPBReturn = function(data, remoteAddress){
                    debug("[*******ERROR*******] Payload JSON Error....");
                }
            }
-           data.Topic = commandData.action;
-
+           data.Topic = commandData.messageID + ": " + commandData.action;
+           debugReceive(data.Topic);
+           if(data["parsedPayload"]){
+               debugReceive(data["parsedPayload"])
+           }
            switch (commandData.action){
                case "/qe":
                    processQEReceipt(data);break;
@@ -63,6 +66,10 @@ var processSSPBRequest = function(data, remoteAddress){
         }   catch(err){
             debug("[*******ERROR*******] Payload JSON Error....");
         }
+    }
+    debugReceive(data.topic);
+    if(data["parsedPayload"]){
+        debugReceive(data["parsedPayload"])
     }
 
     switch (data.topic){
@@ -112,27 +119,27 @@ var approvedSensor = ["HM", "TP", "PT", "SM", "CO" , "CD", "VO"]
 var processSensorReceipt = function (data){
     debug("[%s] Processing Sensor Receipt....", public.getDateTime());
     var payload = data.parsedPayload;
-    try{
+    //try{
         for (var deviceID in payload){
             for (var channel in payload[deviceID]){
 
-                //if(approvedSensor.indexOf(channel) > 0){
+                if(approvedSensor.indexOf(channel) > (-1)){
                     var temp = {
                         "value"     : payload[deviceID][channel],
                         "channel"   : channel,
                         "deviceID"  : deviceID
                     };
-                    CoreData.Seraph.getDevice(temp.deviceID).getSensor(temp.channel).setValue(temp.value)
+                    CoreData.Seraph.getDevice(temp.deviceID).getSensor(temp.channel).setValue(temp.value);
                     HAPLinker.HAPEvent.emit("sensorUpdate", temp.deviceID, temp.channel, temp.value, false);
-                //}
+                }
 
             }
         }
 
-    }   catch(err) {
+    //}   catch(err) {
 
-        debug("[*******ERROR*******] [%s]", err);
-    }
+        //debug("[*******ERROR*******] [%s]", err);
+    //}
 };
 
 var processDeviceStatusReceipt = function(data){
@@ -149,7 +156,7 @@ var processDeviceStatusReceipt = function(data){
                     deviceMDID      : parseInt(payload[SCDeviceID][module].MDID),
                     deviceSubType   : (parseInt(payload[SCDeviceID][module].type)-1)?"SP":"SL",
                 };
-                //SEPdevice["deviceID"] = CoreData.mdid2DeviceID[SEPdevice.SCdeviceID]["M" + SEPdevice.deviceMDID];
+
                 SEPdevice["deviceID"] = CoreData.Seraph.getDeviceByMDID(SEPdevice.SCdeviceIDFull, SEPdevice.deviceMDID).deviceID;
                 SEPdevice["deviceIDFull"] = SEPdevice.deviceID;
 
@@ -204,16 +211,15 @@ var processDeviceInfo = function(data, remoteAddress){
         }   else if(data.topic == "/device/info/ss"){
 
             let SSDeviceID = payload.deviceID;
-            let device = CoreData.Seraph.getDevice(deviceID);
+            let device = CoreData.Seraph.getDevice(SSDeviceID);
 
             if(device){
-                device.initTCPSocket();
-                device.TCPSocket = CoreData.tempTCPConnection[remoteAddress];
-                device.setTCPConnectionStauts(true);
+                //device.initTCPSocket(CoreData.tempTCPConnection[remoteAddress]);
+                device.setTCPConnectionStatus(true);
                 delete(CoreData.tempTCPConnection[remoteAddress]);
 
-                SQLAction.SQLSetField("seraph_device",{"IPAddress": remoteAddress},{"deviceID":payload.deviceID});
-
+                //SQLAction.SQLSetField("seraph_device",{"IPAddress": remoteAddress},{"deviceID":payload.deviceID});
+                public.eventLog('Connection From: '+ con.remoteAddress + " is Registered","TCP Server");
                 setTimeout(function(){
                     debug("[%s] Sending Device List Configuration to SS...", public.getDateTime());
                     SSPB_APIs.sspbDeviceListPost(SSDeviceID);
