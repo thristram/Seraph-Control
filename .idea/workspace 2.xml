@@ -1,0 +1,1078 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="548dc962-659c-4bd0-b50b-ce5a84ec9704" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/eSHOS/Lib/IRCodecs.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/public.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/public.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/CoreData.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/CoreData.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/TCPClient.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/TCPClient.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/SSP-A.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/SSP-A.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/SSP-B.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/SSP-B.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/SSP-B_Object.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/SSP-B_Object.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/constructMessage.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/constructMessage.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/HTTPServer.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/HTTPServer.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/pushToServer.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/pushToServer.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/processReturn.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/processReturn.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/db/seraph.sqlite" afterPath="$PROJECT_DIR$/eSHOS/db/seraph.sqlite" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eSHOS/Lib/test.js" afterPath="$PROJECT_DIR$/eSHOS/Lib/test.js" />
+    </list>
+    <ignored path="$PROJECT_DIR$/.tmp/" />
+    <ignored path="$PROJECT_DIR$/temp/" />
+    <ignored path="$PROJECT_DIR$/tmp/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileColors">
+    <fileColor scope="Non-Project Files (Material Default)" color="2E3C43" />
+    <fileColor scope="Non-Project Files (Material Darker)" color="323232" />
+    <fileColor scope="Non-Project Files (Material Lighter)" color="eae8e8" />
+    <fileColor scope="Non-Project Files (Material Palenight)" color="2f2e43" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="public.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/eSHOS/Lib/public.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1110">
+              <caret line="37" column="15" lean-forward="false" selection-start-line="37" selection-start-column="15" selection-end-line="37" selection-end-column="15" />
+              <folding>
+                <marker date="1508163727000" expanded="true" signature="7126:7131" ph="{...}" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="constructMessage.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/eSHOS/Lib/constructMessage.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="300">
+              <caret line="10" column="46" lean-forward="false" selection-start-line="10" selection-start-column="30" selection-end-line="10" selection-end-column="46" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SSP-A.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/eSHOS/Lib/SSP-A.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="10440">
+              <caret line="349" column="0" lean-forward="false" selection-start-line="349" selection-start-column="0" selection-end-line="349" selection-end-column="0" />
+              <folding>
+                <marker date="1509332426000" expanded="false" signature="0:7" ph="/** Use Pure Node.js ...*/" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="HTTPServer.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/eSHOS/Lib/HTTPServer.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3150">
+              <caret line="105" column="74" lean-forward="false" selection-start-line="105" selection-start-column="74" selection-end-line="105" selection-end-column="74" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SSP-B.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/eSHOS/Lib/SSP-B.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5400">
+              <caret line="180" column="32" lean-forward="false" selection-start-line="180" selection-start-column="32" selection-end-line="180" selection-end-column="32" />
+              <folding>
+                <marker date="1509330514000" expanded="true" signature="20465:20505" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="processReturn.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/eSHOS/Lib/processReturn.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="8940">
+              <caret line="298" column="17" lean-forward="false" selection-start-line="298" selection-start-column="17" selection-end-line="298" selection-end-column="17" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IRCodecs.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/eSHOS/Lib/IRCodecs.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="570">
+              <caret line="19" column="33" lean-forward="false" selection-start-line="19" selection-start-column="33" selection-end-line="19" selection-end-column="33" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pushToServer.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/eSHOS/Lib/pushToServer.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="855">
+              <caret line="30" column="60" lean-forward="false" selection-start-line="30" selection-start-column="60" selection-end-line="30" selection-end-column="60" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="CoreData.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/eSHOS/Lib/CoreData.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="29820">
+              <caret line="994" column="38" lean-forward="false" selection-start-line="994" selection-start-column="38" selection-end-line="994" selection-end-column="38" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/eSHOS/Lib/test.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>managedSC</find>
+      <find>type||deviceID</find>
+      <find>type||deviceID as deviceID</find>
+      <find>type||deviceID as</find>
+      <find>seraph_sc_device</find>
+      <find>.substring</find>
+      <find>!</find>
+      <find>Floor(</find>
+      <find>class fl</find>
+      <find>class scep</find>
+      <find>.append</find>
+      <find>.getDeviceList</find>
+      <find>.getDevice</find>
+      <find>class room</find>
+      <find>/config/home</find>
+      <find>seraph.appli</find>
+      <find>webcall</find>
+      <find>seraph.app</find>
+      <find>bin2</find>
+      <find>bufferstri</find>
+      <find>class SDevice</find>
+      <find>SSDevice</find>
+      <find>class SSDevice</find>
+      <find>new</find>
+      <find>bin2h</find>
+      <find>remotePush</find>
+      <find>ACDe</find>
+      <find>cmd2[13</find>
+      <find>sspbac</find>
+      <find>sspa</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>chKey</replace>
+      <replace>deviceValue.power</replace>
+      <replace>updateDeviceStatus</replace>
+      <replace>SSPA_APIs.parseExpressURI</replace>
+      <replace>debug</replace>
+      <replace>TEST_APIs.defaultMeshID</replace>
+      <replace>deviceValue.CurrentRelativeHumidity</replace>
+      <replace>Characteristic.Ca</replace>
+      <replace>MessageType : &quot;POST&quot;,</replace>
+      <replace>deviceValue.CarbonDioxideLevel</replace>
+      <replace>Service.SmokeSensor</replace>
+      <replace>CurrentRelativeHumidity</replace>
+      <replace>Monoxide</replace>
+      <replace>Dioxide</replace>
+      <replace>SPowerControler</replace>
+      <replace>setPower</replace>
+      <replace>SLightController</replace>
+      <replace>parseWhere</replace>
+      <replace>authTCPClients</replace>
+      <replace>CoreData.TCPClients</replace>
+      <replace>CoreData</replace>
+      <replace>publicMethods</replace>
+      <replace>this</replace>
+      <replace>this.sensorName</replace>
+      <replace>SSDevice</replace>
+      <replace>(SSDeviceID</replace>
+      <replace>SSDeviceID</replace>
+      <replace>HomeKitIdentifiers</replace>
+      <replace>= 0</replace>
+      <replace>this.</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GradleLocalSettings">
+    <option name="externalProjectsViewState">
+      <projects_view />
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/eSHOS/Lib/Util/webAction.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/ProtocolAPIs/SICP.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/ProtocolAPIs/SIDP.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/Tests/test.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/Util/SQLAction.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/lib/HAPServer.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/lib/Advertiser.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/lib/gen/HomeKitTypes.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/.node-persist/storage/368c58d94814e6b79051f61a61b85c65" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/accessories/HumiditySensor_accessory.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/accessories/TemperatureSensor_accessory.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/accessories/SmokeSensor_accessory.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/accessories/MotionSensor_accessory.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/accessories/AirQualitySensor_accessory.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/accessories/CO2Sensor_accessory.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/accessories/COSensor_accessory.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/accessories/Outlet_accessory.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/BridgedCore.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/preloadData.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/accessories/Light_accessory.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/rotationalCheck.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/TCPServer.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/index.js" />
+        <option value="$PROJECT_DIR$/eSHOS/html/index.html" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/SQLAction.js" />
+        <option value="$PROJECT_DIR$/config.js" />
+        <option value="$PROJECT_DIR$/eSHOS/install/dependency.sh" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/UDP.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/smartConnect.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/webAction.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/lib/model/AccessoryInfo.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/lib/model/IdentifierCache.js" />
+        <option value="$PROJECT_DIR$/eSHOS/HomeKit/lib/AccessoryLoader.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/HomeKit_Link.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/SICP.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/SIDP.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/TEST_API.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/parseMessage.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/constructMessage.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/TCPClient.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/SSP-B_Object.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/IRCodes.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/public.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/test.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/CoreData.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/IRCodecs.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/SSP-B.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/processReturn.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/SSP-A.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/HTTPServer.js" />
+        <option value="$PROJECT_DIR$/eSHOS/Lib/pushToServer.js" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsFlowSettings">
+    <service-enabled>true</service-enabled>
+    <exe-path />
+    <annotation-enable>false</annotation-enable>
+    <other-services-enabled>true</other-services-enabled>
+    <auto-save>true</auto-save>
+  </component>
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="PhpServers">
+    <servers />
+  </component>
+  <component name="PhpWorkspaceProjectConfiguration" backward_compatibility_performed="true" />
+  <component name="ProjectFrameBounds" fullScreen="true">
+    <option name="width" value="2560" />
+    <option name="height" value="1440" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>AngularJS</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
+  </component>
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scratches" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="eSH" type="b2602c69:ProjectViewProjectNode" />
+              <item name="eSH" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="eSH" type="b2602c69:ProjectViewProjectNode" />
+              <item name="eSH" type="462c0819:PsiDirectoryNode" />
+              <item name="eSHOS" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="eSH" type="b2602c69:ProjectViewProjectNode" />
+              <item name="eSH" type="462c0819:PsiDirectoryNode" />
+              <item name="eSHOS" type="462c0819:PsiDirectoryNode" />
+              <item name="Lib" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="AndroidView" />
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_interpreter_path" value="/usr/local/bin/node" />
+    <property name="HbShouldOpenHtmlAsHb" value="" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="ToolWindowEvent Log.ShowToolbar" value="false" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+    <property name="JavaScriptPreferStrict" value="false" />
+    <property name="JavaScriptWeakerCompletionTypeGuess" value="true" />
+    <property name="project.structure.last.edited" value="Project" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/eSHOS/HomeKit/accessories" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/eSHOS/Lib" />
+      <recent name="$PROJECT_DIR$/eSHOS/Lib/Util" />
+      <recent name="$PROJECT_DIR$/eSHOS/Lib/Tests" />
+      <recent name="$PROJECT_DIR$/eSHOS/Lib/Protocol_Links" />
+      <recent name="$PROJECT_DIR$/eSHOS/Lib/Construct" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Node.js.CoreData.js">
+    <configuration name="CoreData.js" type="NodeJSConfigurationType" factoryName="Node.js" temporary="true" path-to-node="project" path-to-js-file="CoreData.js" working-dir="$PROJECT_DIR$/eSHOS/Lib" />
+    <configuration name="IRCodecs.js" type="NodeJSConfigurationType" factoryName="Node.js" temporary="true" path-to-node="project" path-to-js-file="IRCodecs.js" working-dir="$PROJECT_DIR$/eSHOS/Lib" />
+    <configuration name="TCPClient.js" type="NodeJSConfigurationType" factoryName="Node.js" temporary="true" path-to-node="project" path-to-js-file="$PROJECT_DIR$/eSHOS/Lib/TCPClient.js" working-dir="$PROJECT_DIR$/eSHOS/Lib" />
+    <configuration name="TCPServer.js" type="NodeJSConfigurationType" factoryName="Node.js" temporary="true" path-to-node="project" path-to-js-file="TCPServer.js" working-dir="$PROJECT_DIR$/eSHOS/Lib" />
+    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerJest" factoryName="Jest">
+      <node-interpreter value="project" />
+      <working-dir value="" />
+      <envs />
+      <scope-kind value="ALL" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerProtractor" factoryName="Protractor">
+      <config-file value="" />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.npm" factoryName="npm">
+      <command value="run" />
+      <scripts />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration name="test.js" type="NodeJSConfigurationType" factoryName="Node.js" temporary="true" path-to-node="project" path-to-js-file="test.js" working-dir="$PROJECT_DIR$/eSHOS/Lib" />
+    <list size="5">
+      <item index="0" class="java.lang.String" itemvalue="Node.js.TCPClient.js" />
+      <item index="1" class="java.lang.String" itemvalue="Node.js.TCPServer.js" />
+      <item index="2" class="java.lang.String" itemvalue="Node.js.test.js" />
+      <item index="3" class="java.lang.String" itemvalue="Node.js.IRCodecs.js" />
+      <item index="4" class="java.lang.String" itemvalue="Node.js.CoreData.js" />
+    </list>
+    <recent_temporary>
+      <list size="2">
+        <item index="0" class="java.lang.String" itemvalue="Node.js.CoreData.js" />
+        <item index="1" class="java.lang.String" itemvalue="Node.js.IRCodecs.js" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="548dc962-659c-4bd0-b50b-ce5a84ec9704" name="Default" comment="" />
+      <created>1498182438808</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1498182438808</updated>
+      <workItem from="1498182440979" duration="105000" />
+      <workItem from="1498182556153" duration="8000" />
+      <workItem from="1498182620489" duration="3580000" />
+      <workItem from="1498217430033" duration="21465000" />
+      <workItem from="1498544349976" duration="37000" />
+      <workItem from="1499058971373" duration="174000" />
+      <workItem from="1499062588154" duration="9077000" />
+      <workItem from="1499323622812" duration="29777000" />
+      <workItem from="1499688082755" duration="67000" />
+      <workItem from="1499688239440" duration="2065000" />
+      <workItem from="1499746539203" duration="13506000" />
+      <workItem from="1499767759284" duration="38340000" />
+      <workItem from="1500805059884" duration="13368000" />
+      <workItem from="1501560323143" duration="24000" />
+      <workItem from="1501560368391" duration="28830000" />
+      <workItem from="1501743751262" duration="16141000" />
+      <workItem from="1502081673184" duration="55000" />
+      <workItem from="1502081757268" duration="27000" />
+      <workItem from="1502100988982" duration="433000" />
+      <workItem from="1502119687438" duration="162000" />
+      <workItem from="1502170143895" duration="5144000" />
+      <workItem from="1502356291938" duration="32113000" />
+      <workItem from="1502898226814" duration="12668000" />
+      <workItem from="1503731593493" duration="3642000" />
+      <workItem from="1503898356854" duration="6170000" />
+      <workItem from="1504097620022" duration="279000" />
+      <workItem from="1504256321060" duration="619000" />
+      <workItem from="1504257030709" duration="596000" />
+      <workItem from="1504523040891" duration="172000" />
+      <workItem from="1505052721351" duration="8630000" />
+      <workItem from="1505209581543" duration="8603000" />
+      <workItem from="1505221538910" duration="1039000" />
+      <workItem from="1505393595538" duration="1029000" />
+      <workItem from="1505403036889" duration="15145000" />
+      <workItem from="1505496169896" duration="46771000" />
+      <workItem from="1505707646292" duration="8303000" />
+      <workItem from="1505979781678" duration="498000" />
+      <workItem from="1505980301021" duration="14917000" />
+      <workItem from="1506312805193" duration="2136000" />
+      <workItem from="1507715983565" duration="13000" />
+      <workItem from="1508147793174" duration="233000" />
+      <workItem from="1508148087528" duration="203000" />
+      <workItem from="1508148446048" duration="4000" />
+      <workItem from="1508148695151" duration="76000" />
+      <workItem from="1508148939385" duration="962000" />
+      <workItem from="1508152169535" duration="45000" />
+      <workItem from="1508152220295" duration="21000" />
+      <workItem from="1508152265890" duration="38561000" />
+      <workItem from="1508786151623" duration="3858000" />
+      <workItem from="1508945666653" duration="370000" />
+      <workItem from="1508964152082" duration="844000" />
+      <workItem from="1509065017573" duration="13000" />
+      <workItem from="1509065045742" duration="203000" />
+      <workItem from="1509065266296" duration="1115000" />
+      <workItem from="1509067811924" duration="60000" />
+      <workItem from="1509067885363" duration="1411000" />
+      <workItem from="1509329898182" duration="5002000" />
+      <workItem from="1509559755889" duration="719000" />
+      <workItem from="1512374885971" duration="1000" />
+    </task>
+    <task id="LOCAL-00001" summary="HomeKit添加对传感器的支持，支持查询处理返回数据">
+      <created>1501743827123</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1501743827123</updated>
+    </task>
+    <task id="LOCAL-00002" summary="HomeKit添加对传感器的支持，支持查询处理返回数据">
+      <created>1501743924853</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1501743924853</updated>
+    </task>
+    <task id="LOCAL-00003" summary="完善HomeKit传感器支持，减少不必要的数据库IO，将presist改成SQLite">
+      <created>1502007560776</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1502007560776</updated>
+    </task>
+    <task id="LOCAL-00004" summary="状态返回更圆滑">
+      <created>1502344983327</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1502344983327</updated>
+    </task>
+    <task id="LOCAL-00005" summary="去除node-persist">
+      <created>1502425079866</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1502425079866</updated>
+    </task>
+    <task id="LOCAL-00006" summary="减少SQLite IO操作，建立数据模型">
+      <created>1502699168757</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1502699168757</updated>
+    </task>
+    <task id="LOCAL-00007" summary="去掉icon文件">
+      <created>1502788308281</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1502788308281</updated>
+    </task>
+    <task id="LOCAL-00008" summary="减少SQLite的IO操作，将大部分IO变成模型内的内存操作">
+      <created>1503026528266</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1503026528266</updated>
+    </task>
+    <task id="LOCAL-00009" summary="修改CoreData为ES6结构，添加云端获取数据，控制的支持">
+      <created>1505589293324</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1505589293324</updated>
+    </task>
+    <task id="LOCAL-00010" summary="完成CoreData的ES6结构">
+      <created>1505634456831</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1505634456831</updated>
+    </task>
+    <task id="LOCAL-00011" summary="完成CoreData的ES6结构，修复BUG">
+      <created>1505660461098</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1505660461098</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="405226000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="0" width="2560" height="1440" extended-state="0" />
+    <layout>
+      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26578072" sideWeight="0.13630952" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31222707" sideWeight="0.8636905" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1359375" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Nl-Palette" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Properties" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Statistic" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2981057" sideWeight="0.49761903" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection Results" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18199418" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22925764" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="HomeKit添加对传感器的支持，支持查询处理返回数据" />
+    <MESSAGE value="完善HomeKit传感器支持，减少不必要的数据库IO，将presist改成SQLite" />
+    <MESSAGE value="状态返回更圆滑" />
+    <MESSAGE value="去除node-persist" />
+    <MESSAGE value="减少SQLite IO操作，建立数据模型" />
+    <MESSAGE value="去掉icon文件" />
+    <MESSAGE value="减少SQLite的IO操作，将大部分IO变成模型内的内存操作" />
+    <MESSAGE value="修改CoreData为ES6结构，添加云端获取数据，控制的支持" />
+    <MESSAGE value="完成CoreData的ES6结构" />
+    <MESSAGE value="完成CoreData的ES6结构，修复BUG" />
+    <option name="LAST_COMMIT_MESSAGE" value="完成CoreData的ES6结构，修复BUG" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="10" />
+    </breakpoint-manager>
+    <watches-manager />
+  </component>
+  <component name="antWorkspaceConfiguration">
+    <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
+    <option name="FILTER_TARGETS" value="false" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/TemperatureSensor_accessory.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="34" column="30" lean-forward="false" selection-start-line="34" selection-start-column="30" selection-end-line="34" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/SmokeSensor_accessory.js" />
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/MotionSensor_accessory.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="415">
+          <caret line="34" column="30" lean-forward="false" selection-start-line="34" selection-start-column="30" selection-end-line="34" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/HumiditySensor_accessory.js" />
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/lib/gen/HomeKitTypes.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="38079">
+          <caret line="3040" column="14" lean-forward="false" selection-start-line="3040" selection-start-column="0" selection-end-line="3040" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/Thermostat_accessory.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/Lock_accessory.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/GarageDoorOpener_accessory.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/Fan_accessory.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/AirQualitySensor_accessory.js" />
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/COSensor_accessory.js" />
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/Outlet_accessory.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1650">
+          <caret line="110" column="43" lean-forward="false" selection-start-line="110" selection-start-column="43" selection-end-line="110" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/Core.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/CoreData.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1305">
+          <caret line="87" column="45" lean-forward="false" selection-start-line="87" selection-start-column="45" selection-end-line="87" selection-end-column="45" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/rotationalCheck.js" />
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/CO2Sensor_accessory.js" />
+    <entry file="file://$PROJECT_DIR$/eSHOS/install/software.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/install/setup.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-705">
+          <caret line="47" column="12" lean-forward="false" selection-start-line="47" selection-start-column="12" selection-end-line="47" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/install/dependency.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="25" column="2" lean-forward="true" selection-start-line="25" selection-start-column="2" selection-end-line="25" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/UDP.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3210">
+          <caret line="214" column="4" lean-forward="true" selection-start-line="214" selection-start-column="4" selection-end-line="214" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/accessories/Light_accessory.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3090">
+          <caret line="206" column="36" lean-forward="false" selection-start-line="206" selection-start-column="30" selection-end-line="206" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/BridgedCore.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="2" lean-forward="false" selection-start-line="2" selection-start-column="2" selection-end-line="2" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/lib/Bridge.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/lib/Accessory.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2895">
+          <caret line="193" column="19" lean-forward="false" selection-start-line="193" selection-start-column="19" selection-end-line="193" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/html/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="29190">
+          <caret line="1946" column="27" lean-forward="false" selection-start-line="1946" selection-start-column="25" selection-end-line="1946" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" column="21" lean-forward="false" selection-start-line="11" selection-start-column="17" selection-end-line="11" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="0" lean-forward="false" selection-start-line="3" selection-start-column="0" selection-end-line="4" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/TCPServer.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="465">
+          <caret line="31" column="31" lean-forward="false" selection-start-line="31" selection-start-column="31" selection-end-line="31" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/smartConnect.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="239">
+          <caret line="42" column="35" lean-forward="false" selection-start-line="42" selection-start-column="35" selection-end-line="42" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/SQLAction.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="235">
+          <caret line="89" column="10" lean-forward="false" selection-start-line="89" selection-start-column="10" selection-end-line="89" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/webAction.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="413">
+          <caret line="132" column="0" lean-forward="false" selection-start-line="132" selection-start-column="0" selection-end-line="132" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/lib/model/AccessoryInfo.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1530">
+          <caret line="102" column="56" lean-forward="false" selection-start-line="102" selection-start-column="56" selection-end-line="102" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/lib/AccessoryLoader.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="30" column="0" lean-forward="false" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/HomeKit/lib/model/IdentifierCache.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="106" column="56" lean-forward="false" selection-start-line="106" selection-start-column="56" selection-end-line="106" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/HomeKit_Link.js" />
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/TEST_API.js" />
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/SIDP.js" />
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/parseMessage.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/SICP.js" />
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/SSP-B_Object.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1395">
+          <caret line="93" column="29" lean-forward="false" selection-start-line="93" selection-start-column="29" selection-end-line="93" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/TCPClient.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="12" column="0" lean-forward="false" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/public.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1110">
+          <caret line="37" column="15" lean-forward="false" selection-start-line="37" selection-start-column="15" selection-end-line="37" selection-end-column="15" />
+          <folding>
+            <marker date="1508163727000" expanded="true" signature="7126:7131" ph="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/constructMessage.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="10" column="46" lean-forward="false" selection-start-line="10" selection-start-column="30" selection-end-line="10" selection-end-column="46" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/test.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/processReturn.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8940">
+          <caret line="298" column="17" lean-forward="false" selection-start-line="298" selection-start-column="17" selection-end-line="298" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/IRCodecs.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="570">
+          <caret line="19" column="33" lean-forward="false" selection-start-line="19" selection-start-column="33" selection-end-line="19" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/SSP-B.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5400">
+          <caret line="180" column="32" lean-forward="false" selection-start-line="180" selection-start-column="32" selection-end-line="180" selection-end-column="32" />
+          <folding>
+            <marker date="1509330514000" expanded="true" signature="20465:20505" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/CoreData.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="29820">
+          <caret line="994" column="38" lean-forward="false" selection-start-line="994" selection-start-column="38" selection-end-line="994" selection-end-column="38" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/HTTPServer.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3150">
+          <caret line="105" column="74" lean-forward="false" selection-start-line="105" selection-start-column="74" selection-end-line="105" selection-end-column="74" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/SSP-A.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="10440">
+          <caret line="349" column="0" lean-forward="false" selection-start-line="349" selection-start-column="0" selection-end-line="349" selection-end-column="0" />
+          <folding>
+            <marker date="1509332426000" expanded="false" signature="0:7" ph="/** Use Pure Node.js ...*/" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eSHOS/Lib/pushToServer.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="855">
+          <caret line="30" column="60" lean-forward="false" selection-start-line="30" selection-start-column="60" selection-end-line="30" selection-end-column="60" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ArtifactsStructureConfigurable.UI">
+        <settings>
+          <artifact-editor />
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="FacetStructureConfigurable.UI">
+        <settings>
+          <last-edited>No facets are configured</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="GlobalLibrariesConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="JdkListConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ModuleStructureConfigurable.UI">
+        <settings>
+          <last-edited>eSH</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+                <option value="0.6" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectLibrariesConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ScopeChooserConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>

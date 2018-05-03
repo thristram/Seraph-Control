@@ -1,8 +1,9 @@
 /**
  * Created by fangchenli on 7/11/17.
  */
+'use_strict'
 
-var public = require("./public.js");
+var publicMethod = require("./public.js");
 var constructMessage = require ("./constructMessage.js")
 var TCPClient = require ("./TCPClient.js");
 var SSPBObjects = require("./SSP-B_Object.js");
@@ -32,7 +33,7 @@ module.exports = {
             MessageType : "POST",
             topicType   : "/actions/perform",
             topicExt    : {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -64,7 +65,7 @@ module.exports = {
             MessageType : "GET",
             topicType   : "/actions/refresh",
             topicExt    : {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -72,7 +73,7 @@ module.exports = {
             data.TopicExt["CH"] = channel;
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID);
         TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
@@ -91,7 +92,7 @@ module.exports = {
             MessageType : "GET",
             topicType   : "/actions/backlight",
             topicExt    : {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -137,7 +138,56 @@ module.exports = {
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
         data.payload = JSON.stringify(payload);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID);
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
+        return data;
+    },
+
+
+    sspbActionIR: function(SSDeviceID, brand, codecs){
+        var data = {
+            isRequest 	: true,
+            QoS 		: 2,
+            QosNeeded	: 1,
+            dup 		: 0,
+            MessageType : "POST",
+            topicType   : "/actions/ir",
+            topicExt    : {},
+            MessageID   : publicMethod.generateMessageID(),
+            MessageIDextended   : 0,
+            payload 	: ""
+        };
+        let payload = {};
+        payload["type"] = brand;
+        if(brand === 0){
+            payload["raw"] = codecs;
+        }   else    {
+            payload["code"] = codecs;
+        }
+        data.payload = JSON.stringify(payload);
+        data.Topic = createTopic(data.topicType, data.topicExt);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID);
+        TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
+        return data;
+    },
+
+
+    sspbActionLearnIR: function(SSDeviceID){
+        var data = {
+            isRequest 	: true,
+            QoS 		: 2,
+            QosNeeded	: 1,
+            dup 		: 0,
+            MessageType : "GET",
+            topicType   : "/actions/learn/ir",
+            topicExt    : {},
+            MessageID   : publicMethod.generateMessageID(),
+            MessageIDextended   : 0,
+            payload 	: ""
+        };
+
+        data.Topic = createTopic(data.topicType, data.topicExt);
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID);
         TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
@@ -156,7 +206,7 @@ module.exports = {
             MessageType : "GET",
             topicType   : "/data/sync",
             topicExt    : {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -167,7 +217,7 @@ module.exports = {
             data.topicExt["CH"] = channel;
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID);
         TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
@@ -188,10 +238,10 @@ module.exports = {
             MessageType : "GET",
             topicType   : "/data/recent",
             topicExt    : {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
-        }
+        };
 
         if(sepid){
             data.topicExt["SEPID"] = sepid;
@@ -200,7 +250,7 @@ module.exports = {
             data.topicExt["CH"] = channel;
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID);
         TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
@@ -224,12 +274,12 @@ module.exports = {
             MessageType : "GET",
             topicType 	: "/data/ir",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: JSON.stringify(SEPID)
-        }
+        };
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID);
         TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
@@ -250,7 +300,7 @@ module.exports = {
             MessageType : "GET",
             topicType 	: "/config/ss",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -270,7 +320,7 @@ module.exports = {
             MessageType : "POST",
             topicType 	: "/config/ss",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         };
@@ -297,7 +347,7 @@ module.exports = {
             MessageType : "GET",
             topicType 	: "/config/strategy/htsp",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         };
@@ -321,7 +371,7 @@ module.exports = {
             MessageType : "POST",
             topicType 	: "/config/strategy/htsp",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -347,7 +397,7 @@ module.exports = {
             MessageType : "POST",
             topicType 	: "/config/st",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -380,7 +430,7 @@ module.exports = {
             MessageType : "GET",
             topicType 	: "/device/status",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -412,7 +462,7 @@ module.exports = {
             MessageType : "GET",
             topicType 	: "/device/list",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -431,7 +481,7 @@ module.exports = {
             MessageType : "POST",
             topicType 	: "/device/list",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -459,12 +509,12 @@ module.exports = {
             MessageType : "GET",
             topicType 	: "/device/info/ss",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
         data.Topic = createTopic(data.topicType, data.topicExt);
-        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID)
+        var msg = constructMessage.constructMessage(data.isRequest,data.QoS,data.dup,data.MessageType,data.Topic,data.MessageID,data.MessageIDextended,data.payload,SSDeviceID);
         TCPClient.TCPSocketWrite(SSDeviceID, msg, data.topicType, data);
         return data;
     },
@@ -478,7 +528,7 @@ module.exports = {
             MessageType : "GET",
             topicType 	: "/device/info/sub",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }
@@ -504,7 +554,7 @@ module.exports = {
             MessageType : "GET",
             topicType 	: "/qe",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         };
@@ -573,7 +623,7 @@ module.exports = {
             MessageType : "GET",
             topicType 	: "/alarm",
             topicExt 	: {},
-            MessageID   : public.generateMessageID(),
+            MessageID   : publicMethod.generateMessageID(),
             MessageIDextended   : 0,
             payload 	: ""
         }

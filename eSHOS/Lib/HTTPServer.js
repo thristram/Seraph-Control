@@ -89,7 +89,7 @@ function attachURI(req,res){
     if (checkFunction("/data/sync",req)) {SSPA_APIs.sspaGetDataSync(req, res);}
     if (checkFunction("/data/recent",req)) {SSPA_APIs.sspaGetDataRecent(req, res);}
     if (checkFunction("/data/history",req)) {SSPA_APIs.sspaDataHistory(req, res);}
-    if (checkFunction("data/ir",req)) {SSPA_APIs.sspaGetDataIr(req, res);}
+    if (checkFunction("/data/ir",req)) {SSPA_APIs.sspaGetDataIr(req, res);}
     if (checkFunction("/config/ss",req)) {SSPA_APIs.sspaGetConfigSS(req, res);}
     if (checkFunction("/config/ss",req,"POST")) {SSPA_APIs.sspaPostConfigSS(req, res);}
     if (checkFunction("/config/strategy",req)) {SSPA_APIs.sspaGetConfigStrategy(req, res);}
@@ -100,6 +100,13 @@ function attachURI(req,res){
     if (checkFunction("/device/dataStatus",req)) {SSPA_APIs.sspaGetDeviceDataStatus(req, res);}
     if (checkFunction("/qe",req)) {SSPA_APIs.sspaGetQE(req, res);}
     if (checkFunction("/alarm",req)) {SSPA_APIs.sspaGetAlarm(req, res);}
+    if (checkFunction("/config/home",req)) {SSPA_APIs.sspaGetConfigHome(req, res);}
+    if (checkFunction("/home/data",req)) {SSPA_APIs.sspaGetHomeData(req, res);}
+    if (checkFunction("/actions/learn/ir",req)) {SSPA_APIs.sspaActionLearnIR(req, res);}
+    if (checkFunction("/actions/ir",req)) {SSPA_APIs.sspaActionIR(req, res);}
+
+    if (checkFunction("/ac/control",req)) {SSPA_APIs.sspaGetAC(req, res);}
+
 
 
     if (checkFunction("/sidp/action",req, "POST")) {SIDP_APIs.sidpPostAction(req, res);}
@@ -119,12 +126,11 @@ public.eventLog('Seraph eSHOS Testing Console Listening on Port ' + config.HTTPo
 
 function checkFunction(name,req,method){
 
-    if(!method) {method = "GET"};
-    if(req.method == method) {
+    if(!method) {method = "GET"}
+    if(req.method === method) {
 
-        var path = url.parse(req.url, true).pathname;
-
-        if (path.indexOf(name) == 0) {
+        let path = url.parse(req.url, true).pathname;
+        if (path.indexOf(name) === 0) {
             return name;
         } else {
             return false;

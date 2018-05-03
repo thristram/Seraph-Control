@@ -8,15 +8,17 @@ var debug = require('debug')('TCPClient');
          //REQUIRE MODULE//
 //////////////////////////////////////
 
+
 var config = require("../../config.js");
 var public = require("./public.js");
+var SSPB_APIs = require("./SSP-B.js");
 var CoreData = require("./CoreData.js");
 var parseMessage = require ("./parseMessage.js");
 
 var ParseHardwareMessage = require("./Parse/parseHardwareMessage.js");
 var processIncomming = require("./processReturn.js");
-var SSPB_APIs = require("./SSP-B.js");
-var HTTPServer = require("./HTTPServer.js")
+
+var HTTPServer = require("./HTTPServer.js");
 
 
 
@@ -196,7 +198,7 @@ var handleTCPReply = function(data, remoteAddress){
                 }   else    {
                     incommingMessageData = parseMessage.parseMessage(singleData,false);
                     incommingMessageData.remoteAddress = remoteAddress;
-                    processIncomming.processSSPBIncomming(incommingMessageData);
+                    processIncomming.processSSPBIncomming(incommingMessageData, remoteAddress);
                 }
             }
 
@@ -276,7 +278,8 @@ function authTCPClients(con){
             delete(CoreData.tempTCPConnection[con.remoteAddress]);
             public.eventLog('Connection From: '+ con.remoteAddress + " is Registered","TCP Server");
         }
-        SSPB_APIs.sspbDeviceInfoSSGet(con);
+        console.log(SSPB_APIs)
+        SSPB_APIs.sspbDeviceInfoSSGet(con)
     }
 
 

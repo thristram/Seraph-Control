@@ -59,7 +59,7 @@ constructMessage: function (isRequest,Qos,dup,MessageType,Topic,MessageID,Messag
 	//parseMessage.parseMessage(messageBuffer,true);
     public.eventTitle("MESSAGE ENDS",2,"Construct Message");
 
-    debug(MessageID  + "：" + Topic);
+    debug("【" + MessageID + "】 "+ Topic);
     if(payload){
         debug(payload)
     }

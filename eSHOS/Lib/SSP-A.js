@@ -201,6 +201,16 @@ module.exports = {
 
     },
 
+    sspaGetConfigHome: function(req, res){
+        req.rootRoute = "/config/home";
+
+        var APIQuery = parseExpressURI(req);
+        var SSPAProtocolData = new SSPAData(req, res);
+        var fetchedResult = SSPAProtocolData.homeConfigs();
+
+        res.end(JSON.stringify(fetchedResult))
+    },
+
 
     /**
      * Device List
@@ -232,21 +242,72 @@ module.exports = {
     sspaGetDeviceDataStatus: function(req, res) {
         req.rootRoute = "/device/dataStatus";
 
-        var APIQuery = parseExpressURI(req);
-        var SSPAProtocolData = new SSPAData(req, res);
-        var fetchedResult = SSPAProtocolData.deviceDataStatus();
+        let APIQuery = parseExpressURI(req);
+        let SSPAProtocolData = new SSPAData(req, res);
+        let fetchedResult = SSPAProtocolData.deviceDataStatus();
 
         res.end(JSON.stringify(fetchedResult))
 
     },
 
     sspaDataHistory: function (req, res){
-
-        let SSPAProtocolData = new SSPAData()
+        req.rootRoute = "/data/history";
+        let SSPAProtocolData = new SSPAData(req, res);
         SSPAProtocolData.sensorDataHistory(function(data){
             res.end(JSON.stringify(data))
         })
 
+    },
+
+    sspaGetHomeData: function(req, res) {
+        req.rootRoute = "/home/data";
+
+        let SSPAProtocolData = new SSPAData(req, res);
+        let fetchedResult = SSPAProtocolData.homeData();
+
+        res.end(JSON.stringify(fetchedResult))
+
+    },
+
+    sspaGetAC: function (req, res){
+        req.rootRoute = "/ac/control";
+        let APIQuery = parseExpressURI(req);
+        this.sspaAC(APIQuery.query);
+        res.end('');
+
+    },
+
+    sspaAC(query){
+        let SSDeviceID = query.SSDeviceID;
+        if(SSDeviceID){
+            let ACDevice = CoreData.Seraph.getACBySSDeviceID(SSDeviceID);
+
+            if(query.TP){
+                let temperature = parseInt(query["TP"]);
+                ACDevice.setTemperature(temperature)
+            }
+            if(query.mode){
+                let mode = parseInt(query["mode"]);
+                ACDevice.setMode(mode)
+            }
+            if(query.power){
+                let ACPower = true;
+                if (query.power === "1"){
+                    ACPower = true
+                }   else    {
+                    ACPower = false
+                }
+
+                ACDevice.setPower(ACPower);
+            }
+            if(query.fanSpeed){
+                let fanSpeed = parseInt(query.fanSpeed);
+                ACDevice.setFanSpeed(fanSpeed)
+            }
+            ACDevice.executeACCommand();
+
+        }
+        // res.end('')
     },
     /**
      * Quick Event
@@ -255,10 +316,10 @@ module.exports = {
     sspaGetQE: function (req, res) {
 
         req.rootRoute = "/qe";
-        var APIQuery = parseExpressURI(req);
+        let APIQuery = parseExpressURI(req);
 
-        var SSPAActions = new SSPAAction()
-        var actionData = SSPAActions.qeAction(APIQuery.query)
+        let SSPAActions = new SSPAAction();
+        let actionData = SSPAActions.qeAction(APIQuery.query);
 
         SSPB_APIs.sspbQE(actionData.SSDeviceID, actionData.action, actionData.SCDeviceID, actionData);
 
@@ -274,16 +335,54 @@ module.exports = {
     sspaGetAlarm: function (req, res) {
 
         req.rootRoute = "/alarm";
-        var APIQuery = parseExpressURI(req);
+        let APIQuery = parseExpressURI(req);
 
         APIQuery.device.forEach(function (SSDeviceID) {
             SSPB_APIs.sspbAlarm(SSDeviceID);
-        })
+        });
 
 
         res.end('')
 
-    }
+    },
+
+    sspaActionLearnIR: function (req, res){
+
+        req.rootRoute = "/actions/learn/ir";
+        let APIQuery = parseExpressURI(req);
+        this.sspaEActionLearnIR(APIQuery.query);
+        res.end('')
+    },
+
+    sspaActionIR: function (req, res){
+
+        req.rootRoute = "/actions/ir";
+        let APIQuery = parseExpressURI(req);
+
+        this.sspaEActionIR(APIQuery.query);
+
+        res.end('')
+    },
+
+
+    sspaEActionLearnIR: function(command){
+        let SSDeviceID = command.SSDeviceID;
+        if(SSDeviceID){
+            SSPB_APIs.sspbActionLearnIR(SSDeviceID);
+        }
+    },
+
+    sspaEActionIR: function (command){
+
+        let SSDeviceID = command.SSDeviceID;
+        let brand = parseInt(command.brand);
+        let code = command.code;
+        if(SSDeviceID){
+            SSPB_APIs.sspbActionIR(SSDeviceID, brand, code)
+        }
+
+        res.end('')
+    },
 
 }
 
@@ -298,18 +397,18 @@ module.exports = {
 /************************************/
 
 
-var parseExpressURI = function(request){
-    var query;
-    if(request.method == "GET") {
+let parseExpressURI = function(request){
+    let query;
+    if(request.method === "GET") {
         query = url.parse(request.url, true).query;
-    }	else if(request.method == "POST") {
+    }	else if(request.method === "POST") {
 
         query = request.body;
     }
 
     if(!query.protocolType) query.protocolType = "SSP-A";
     if(!query.ssuid) query.ssuid = "";
-    var APIQuery = {
+    let APIQuery = {
         action 			: request.rootRoute,
         query 			: query,
         paramURL 		: request.url,
@@ -321,7 +420,7 @@ var parseExpressURI = function(request){
 
 
 
-    publicMethods.dataLog(APIQuery,"SSP-A Request")
+    publicMethods.dataLog(APIQuery,"SSP-A Request");
 
     if(APIQuery.device[0] == ''){
         APIQuery.device = [];
@@ -333,13 +432,13 @@ var parseExpressURI = function(request){
 }
 class SSPAAction{
     constructor(req, res){
-        this.req = req
-        this.res = res
+        this.req = req;
+        this.res = res;
     }
 
     qeAction(query){
-        var data = {}
-        data["action"] = query.action
+        var data = {};
+        data["action"] = query.action;
         let device = {};
         let SCDevice = {};
         if(query.SEPID){
@@ -411,39 +510,53 @@ class SSPAAction{
 }
 class SSPAData{
     constructor(req, res){
-        this.req = req
-        this.res = res
+        this.apiBase = "";
+        this.query = {};
+        this.req = req;
+        this.res = res;
+        if (req){
+            if (req.rootRoute){
+                this.apiBase = req.rootRoute;
+            }
+            this.query = parseExpressURI(req).query;
+        }
+
     }
     deviceDataStatus(){
-        var fetchResult = {}
-        for (let key in CoreData.Seraph.getDeviceList(["SL","SP"])){
-            let deviceID = CoreData.Seraph.getDeviceList(["SL","SP"])[key];
+        var fetchResult = {};
+        let list = [];
+        list = CoreData.Seraph.getDeviceList(["SL","SP"]);
+        for (let key in list){
+            let deviceID = list[key];
             let device = CoreData.Seraph.getDevice(deviceID);
             fetchResult[deviceID] = {};
             fetchResult[deviceID]["statusData"] = {};
+            fetchResult[deviceID]["deviceStatus"] = device.deviceStatus;
             for (let cID in device.channels){
                 let channel = device.channels[cID];
                 let channelID = parseInt(cID) + 1;
-                fetchResult[deviceID]["statusData"]["C" + channelID] = {}
+                fetchResult[deviceID]["statusData"]["C" + channelID] = {};
                 fetchResult[deviceID]["statusData"]["C" + channelID]["value"] = channel.getValue();
             }
-        }
+            if (device.type === "SP"){
+                fetchResult[deviceID]["sensorData"] = {};
+                fetchResult[deviceID]["sensorData"]["EG"] = device.getSensor("EG").getValue();
+            }
 
-        for (let key in CoreData.Seraph.getDeviceList(["SS"])){
-            let deviceID = CoreData.Seraph.getDeviceList(["SS"])[key];
-            if(deviceID != "SS000000"){
+        }
+        list = CoreData.Seraph.getDeviceList(["SS"]);
+        for (let key in list){
+            let deviceID = list[key];
+            if(deviceID !== "SS000000"){
                 let device = CoreData.Seraph.getDevice(deviceID);
-                fetchResult[deviceID] = {}
-                fetchResult[deviceID]["sensorData"] = {}
+                fetchResult[deviceID] = {};
+                fetchResult[deviceID]["sensorData"] = {};
+                fetchResult[deviceID]["deviceStatus"] = device.deviceStatus;
                 for (let sensorID in device.sensors){
                     let sensor = device.sensors[sensorID];
                     try{
-                        fetchResult[deviceID]["sensorData"][sensorID] = {}
+                        fetchResult[deviceID]["sensorData"][sensorID] = {};
                         fetchResult[deviceID]["sensorData"][sensorID]["value"] = parseInt(sensor.getValue())
-
-                        if(sensorID == "CO"){
-                            fetchResult[deviceID]["sensorData"][sensorID]["value"] = 0
-                        }
                     }   catch(err){
 
                     }
@@ -451,24 +564,154 @@ class SSPAData{
             }
 
         }
+        list = CoreData.Seraph.getDeviceList(["SAAC"]);
+        for (let key in list){
+            let deviceID = list[key];
+            let device = CoreData.Seraph.getDevice(deviceID);
+            let SSDevice = CoreData.Seraph.getDevice(device.SSDeviceID);
+            fetchResult[deviceID] = {};
+            fetchResult[deviceID]["ACDeviceData"] = {
+                "targetTemperature" : device.IRCodecs.targetTemperature,
+                "fanSpeed"          : device.IRCodecs.fanSpeed,
+                "mode"              : device.IRCodecs.mode,
+                "power"             : device.IRCodecs.power,
 
+            };
+            fetchResult[deviceID]["deviceStatus"] = SSDevice.deviceStatus;
+
+
+        }
+        return fetchResult
+    }
+    homeNotifications(){
+        let fetchedMessages = CoreData.Seraph.notification.getMessagesByLatestNID(this.query.latestNID ? this.query.latestNID : 0);
+        return fetchedMessages;
+    }
+    homeData(){
+        let fetchedResult = {};
+        let deviceDataStatus = this.deviceDataStatus();
+
+        fetchedResult = {
+            "homeID"             :   CoreData.Seraph.homeID,
+            "deviceDataStatus"   :   deviceDataStatus,
+            "notifications"      :   this.homeNotifications()
+        };
+        return fetchedResult;
+    }
+
+    homeFloors(){
+        let fetchResult = {};
+        let floors = CoreData.Seraph.floors;
+        for(let key in floors){
+            let floor = floors[key];
+            fetchResult[floor.floorID] = {
+                floorID     : floor.floorID,
+                name        : floor.getName(),
+                position    : floor.position,
+                rooms       : floor.getRoomIDs()
+            }
+        }
         return fetchResult
     }
 
+    homeRooms(){
+        let fetchResult = {};
+        let rooms = CoreData.Seraph.rooms;
+        for(let key in rooms){
+            let room = rooms[key];
+            fetchResult[room.roomID] = {
+                roomID      : room.roomID,
+                name        : room.name,
+                devices     : room.getDeviceList()
+            }
+        }
+        return fetchResult
+    }
+
+    homeDevices(){
+        let fetchResult = {};
+        let devices = CoreData.Seraph.devices;
+        for(let key in devices){
+            let device = devices[key];
+            fetchResult[device.deviceID]= {
+                deviceID    : device.deviceID,
+                model       : device.model
+            };
+
+            switch(device.constructor.name){
+                case "SSDevice":
+                    fetchResult[device.deviceID]["webCam"] = {
+                        "webcamUID"         : device.webcamUID,
+                        "webcamUsername"    : device.webcamUsername,
+                        "webcamPassword"    : device.webcamPassword,
+                    };
+
+                    break;
+                case "SCEPDevice":
+                    fetchResult[device.deviceID]["SCDeviceID"] = device.SCDeviceID;
+                    fetchResult[device.deviceID]["MDID"] = device.MDID;
+                    if(!fetchResult[device.deviceID].hasOwnProperty("channels")){
+                        fetchResult[device.deviceID]["channels"] = {}
+                    }
+                    for(let key in device.channels){
+                        let channel = device.channels[key];
+                        let CChannel = "C" + channel.channelID;
+                        if(!fetchResult[device.deviceID]["channels"].hasOwnProperty(CChannel)){
+                            fetchResult[device.deviceID]["channels"][CChannel] = {}
+                        }
+                        fetchResult[device.deviceID]["channels"]["C" + channel.channelID]["name"] = channel.name;
+                    }
+                    break;
+                case "ACDevice":
+                    fetchResult[device.deviceID]["brand"] = device.brand;
+                    fetchResult[device.deviceID]["SSDeviceID"] = device.SSDeviceID;
+                    fetchResult[device.deviceID]["isHAVC"] = device.isHAVC;
+                    fetchResult[device.deviceID]["brandName"] = device.brandName;
+                    fetchResult[device.deviceID]["modelName"] = device.modelName;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return fetchResult
+
+    }
+
+    homeConfigs(){
+        let fetchedResult = {};
+        let devices = this.homeDevices();
+        let rooms = this.homeRooms();
+        let floors = this.homeFloors();
+
+        fetchedResult = {
+            "homeID"            :   CoreData.Seraph.homeID,
+            "sensorThrehold"    :   CoreData.Seraph.threshold,
+            "modes"             :   CoreData.Seraph.modes,
+            "quickAccesses"     :   CoreData.Seraph.quickAccesses,
+            "devices"           :   devices,
+            "rooms"             :   rooms,
+            "floors"            :   floors,
+
+        };
+        return fetchedResult;
+
+    }
+
     sensorDataHistory(callback){
-        var fetchResult = {};
-        var timeScale = 24 * 3600
+        let fetchResult = {};
+        let timeScale = 24 * 3600;
         SQLAction.SQLSelect("seraph_sensor_log", "*", "timestamp > " + (publicMethods.timestamp() - 24 * 3600 * 10), "timestamp", function(rawData){
-            if(rawData != []){
+            if(rawData !== []){
 
-                for(var key in rawData){
+                for(let key in rawData){
 
-                    var item = rawData[key];
+                    let item = rawData[key];
                     //console.log(item)
-                    var deviceID = item.deviceID;
-                    var sensorID = item.channel;
-                    var sensorValue = parseInt(item.value)
-                    var currentDate = Math.floor(parseInt(item.timestamp) / timeScale) * timeScale
+                    let deviceID = item.deviceID;
+                    let sensorID = item.channel;
+                    let sensorValue = parseInt(item.value);
+                    let currentDate = Math.floor((parseInt(item.timestamp)) / timeScale) * timeScale;
 
 
                     if(!fetchResult.hasOwnProperty(deviceID)){
@@ -494,5 +737,5 @@ class SSPAData{
 }
 
 module.exports.parseExpressURI = parseExpressURI;
-module.exports.SSPAData = { SSPAData }
-module.exports.SSPAAction = { SSPAAction }
+module.exports.SSPAData = { SSPAData };
+module.exports.SSPAAction = { SSPAAction };

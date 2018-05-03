@@ -1,0 +1,12 @@
+{
+  "name" : "Seraph",
+  "script" : "/opt/seraph_esh/apps/Lib/CoreData.js",
+//  "script" : "/Users/fangchenli/Documents/GIT/eSH/eSHOS/Lib/test.js",
+  "env" : {
+    "DEBUG_COLORS" : true,
+    "DEBUG": "ConstructMessage,ReceivedMessage,SeraphUpdate,TCPClient,SIAP,RemoteCommand"
+  },
+  "env_production" : {
+    "NODE_ENV": "production"
+  }
+}

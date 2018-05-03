@@ -31,11 +31,11 @@ var processSSPBReturn = function(data, remoteAddress){
                    debug("[*******ERROR*******] Payload JSON Error....");
                }
            }
-           data.Topic = commandData.messageID + ": " + commandData.action;
-           debugReceive(data.Topic);
+           debugReceive("【" + commandData.messageID + "】 " + commandData.action);
            if(data["parsedPayload"]){
                debugReceive(data["parsedPayload"])
            }
+           data.topic = commandData.action;
            switch (commandData.action){
                case "/qe":
                    processQEReceipt(data);break;
@@ -64,10 +64,10 @@ var processSSPBRequest = function(data, remoteAddress){
         try {
             data["parsedPayload"] = JSON.parse(data.payload);
         }   catch(err){
-            debug("[*******ERROR*******] Payload JSON Error....");
+            debug(err);
         }
     }
-    debugReceive(data.topic);
+    debugReceive("【" + data.messageID + "】 " + data.topic);
     if(data["parsedPayload"]){
         debugReceive(data["parsedPayload"])
     }
@@ -81,11 +81,24 @@ var processSSPBRequest = function(data, remoteAddress){
             processRealTimeData(data, remoteAddress);break;
         case "/device/status":
             processDeviceStatusReceipt(data, remoteAddress);break;
+        case "/config/st":
+            processConfigSTRequest(data, remoteAddress);break;
         default:
             break;
     }
 };
 
+
+var processConfigSTRequest = function(data, remoteAddress){
+    debug("[%s] Processing Config ST Request....", public.getDateTime());
+    try {
+        let SSDevice = CoreData.Seraph.getDeviceByIP(remoteAddress);
+        SSPB_APIs.sspbConfigST(SSDevice.deviceID);
+    }   catch(err) {
+        debug(err);
+
+    }
+};
 var processQEReceipt = function (data){
     debug("[%s] Processing QE Receipt....", public.getDateTime());
     var payload = data.parsedPayload;
@@ -119,7 +132,7 @@ var approvedSensor = ["HM", "TP", "PT", "SM", "CO" , "CD", "VO"]
 var processSensorReceipt = function (data){
     debug("[%s] Processing Sensor Receipt....", public.getDateTime());
     var payload = data.parsedPayload;
-    //try{
+    try{
         for (var deviceID in payload){
             for (var channel in payload[deviceID]){
 
@@ -136,10 +149,10 @@ var processSensorReceipt = function (data){
             }
         }
 
-    //}   catch(err) {
+    }   catch(err) {
 
-        //debug("[*******ERROR*******] [%s]", err);
-    //}
+        debug(err);
+    }
 };
 
 var processDeviceStatusReceipt = function(data){
@@ -149,30 +162,26 @@ var processDeviceStatusReceipt = function(data){
         for (var SCDeviceID in payload){
             for (var module in payload[SCDeviceID]){
 
-                var SEPdevice = {
+                let SEPdevice = {
                     deviceType      : SCDeviceID.substring(0,2),
-                    SCdeviceID      : SCDeviceID.substring(2),
-                    SCdeviceIDFull  : SCDeviceID,
+                    SCdeviceID      : SCDeviceID,
                     deviceMDID      : parseInt(payload[SCDeviceID][module].MDID),
                     deviceSubType   : (parseInt(payload[SCDeviceID][module].type)-1)?"SP":"SL",
                 };
 
-                SEPdevice["deviceID"] = CoreData.Seraph.getDeviceByMDID(SEPdevice.SCdeviceIDFull, SEPdevice.deviceMDID).deviceID;
-                SEPdevice["deviceIDFull"] = SEPdevice.deviceID;
+                SEPdevice["deviceID"] = CoreData.Seraph.getDeviceByMDID(SEPdevice.SCdeviceID, SEPdevice.deviceMDID).deviceID;
 
+                for(let channel in payload[SCDeviceID][module]){
+                    if(channel.charAt(0) === "C" && (channel.length === 2)){
 
-
-                for(var channel in payload[SCDeviceID][module]){
-                    if(channel.charAt(0) == "C" && (channel.length == 2)){
-
-                        var temp = {
+                        let temp = {
                             "value"     : parseInt(payload[SCDeviceID][module][channel]),
                             "channel"   : public.translateCChannel(channel),
                             "deviceID"  : SEPdevice.deviceID,
                             "deviceType": SEPdevice.deviceSubType,
                         };
                         CoreData.Seraph.getDevice(temp.deviceID).getChannel(temp.channel).setValue(temp.value);
-                        HAPLinker.HAPEvent.emit("statusUpdate", SEPdevice.deviceIDFull, temp.channel, temp.value, false);
+                        HAPLinker.HAPEvent.emit("statusUpdate", SEPdevice.deviceID, temp.channel, temp.value, false);
 
                     }
                 }
@@ -188,16 +197,16 @@ var processDeviceStatusReceipt = function(data){
 
 var processDeviceInfo = function(data, remoteAddress){
     debug("[%s] Processing Device Info....", public.getDateTime());
-    var payload = data.parsedPayload;
+    let payload = data.parsedPayload;
     try {
         payload["type"] = payload.deviceID.substring(0,2);
-        var updatedData = {
+        let updatedData = {
             "model": payload.model,
             "firmware": payload.firmware,
             "HWtest": payload.HWtest,
             "meshID": payload.meshID.toString(16).toUpperCase(),
-        }
-        if(data.topic == "/device/info/sub"){
+        };
+        if(data.topic === "/device/info/sub"){
             switch(payload.type){
                 case "SC":
                     //updatedData.SLC= payload.SLC;
@@ -208,18 +217,21 @@ var processDeviceInfo = function(data, remoteAddress){
                 default:
                     break;
             }
-        }   else if(data.topic == "/device/info/ss"){
+        }   else if(data.topic === "/device/info/ss"){
 
             let SSDeviceID = payload.deviceID;
             let device = CoreData.Seraph.getDevice(SSDeviceID);
-
             if(device){
-                //device.initTCPSocket(CoreData.tempTCPConnection[remoteAddress]);
                 device.setTCPConnectionStatus(true);
-                delete(CoreData.tempTCPConnection[remoteAddress]);
-
-                //SQLAction.SQLSetField("seraph_device",{"IPAddress": remoteAddress},{"deviceID":payload.deviceID});
-                public.eventLog('Connection From: '+ con.remoteAddress + " is Registered","TCP Server");
+                if (device.IPAddress !== remoteAddress){
+                    device.initTCPSocket(CoreData.tempTCPConnection[remoteAddress]);
+                    device.IPAddress = remoteAddress;
+                    SQLAction.SQLSetField("seraph_device",{"IPAddress": remoteAddress},{"deviceID":payload.deviceID});
+                }
+                if (CoreData.tempTCPConnection.hasOwnProperty(remoteAddress)){
+                    delete(CoreData.tempTCPConnection[remoteAddress]);
+                }
+                public.eventLog('Connection From: '+ remoteAddress + " is Registered","TCP Server");
                 setTimeout(function(){
                     debug("[%s] Sending Device List Configuration to SS...", public.getDateTime());
                     SSPB_APIs.sspbDeviceListPost(SSDeviceID);
@@ -234,7 +246,7 @@ var processDeviceInfo = function(data, remoteAddress){
         SQLAction.SQLSetField("seraph_device",updatedData,{"deviceID":payload.deviceID});
 
     }   catch(err){
-        debug("[*******ERROR*******] Payload Format Error....");
+        debug(err);
     }
 
 };
@@ -247,10 +259,12 @@ var processRealTimeData = function(data, remoteAddress){
         var sensorValue = parseInt(payload.report.value);
         switch(payload.report.type){
             case "MI":
-                CoreData.Seraph.getDevice(deviceID).getSensor("MI").setValue(sensorValue);
+
                 if(sensorValue > 0){
+                    CoreData.Seraph.getDevice(deviceID).getSensor("MI").setValue(1);
                     HAPLinker.HAPEvent.emit("sensorUpdate", deviceID, "MI", 1, false);
                 }   else    {
+                    CoreData.Seraph.getDevice(deviceID).getSensor("MI").setValue(0);
                     HAPLinker.HAPEvent.emit("sensorUpdate", deviceID, "MI", 0, false);
                 }
                 break;
@@ -262,6 +276,35 @@ var processRealTimeData = function(data, remoteAddress){
             case "GT":
                 break;
             case "PX":
+                break;
+            case "IR":
+                try{
+                    switch(payload.report.value){
+                        case 1:
+                            switch(payload.IR.type){
+                                case 0:
+                                    debug("IR Learning Result Received");
+                                    debug(payload.IR.raw);
+
+                                    setTimeout(function(){
+                                        SSPB_APIs.sspbActionIR(payload.report.SEPID, 0, payload.IR.raw)
+                                    },3000);
+
+
+                                    break;
+                                default:
+                                    break
+                            }
+                            break;
+                        case 2:
+                            debug("IR Learning Timeout");
+                            break;
+                        default:
+                            break;
+                    }
+                }   catch(err){
+                    debug(err)
+                }
                 break;
             default:
                 break;

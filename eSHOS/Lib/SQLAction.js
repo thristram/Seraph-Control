@@ -87,6 +87,10 @@ var SQLSelect = function(db,field,where,order,callback){
 
     var sql = "SELECT " + parseField(field) + " FROM " +  db  + parseWhere(where);
 
+    if (order !== "" && order !== null){
+        sql += " ORDER BY " + order
+    }
+
     SQLdb.all(sql, function(err, data) {
         if(err){
             debug("[*******ERROR*******] [%s] ", err);

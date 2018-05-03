@@ -16,7 +16,7 @@ class remotePush{
                     'http://seraph.applicationclick.com/eshApi' + url,
                     { json: { data } },
                     function (error, response, body) {
-                        if (!error && response.statusCode == 200) {
+                        if (!error && response.statusCode === 200) {
                             callback(body)
 
                         }
@@ -28,7 +28,7 @@ class remotePush{
                     'http://seraph.applicationclick.com/eshApi' + url,
                     { json: { data } },
                     function (error, response, body) {
-                        if (!error && response.statusCode == 200) {
+                        if (!error && response.statusCode === 200) {
                             callback(body)
 
                         }

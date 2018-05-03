@@ -5,7 +5,7 @@
 		    //Public//
 
 /************************************/
-
+var currentMessageID = 0;
 module.exports = {
   
 
@@ -13,10 +13,20 @@ module.exports = {
 		 //CONTENT START//
 //////////////////////////////////////
 
-
+    generateTimeBasedUID(){
+        let time = parseInt(Date.now());
+        return time.toString(16).toUpperCase();
+    },
 
 	generateMessageID: function (){
-		return Math.floor((Math.random() * 16383) + 1);
+		//return Math.floor((Math.random() * 16383) + 1);
+        currentMessageID += 1;
+		let messageID = currentMessageID;
+		if(messageID > 65530){
+			messageID = 0;
+            currentMessageID = 0;
+		}
+		return messageID;
 	},
 	generateSIDPMessageID: function(){
         return this.int2Buffer(Math.floor((Math.random() * 255) + 1),1);
@@ -93,9 +103,14 @@ module.exports = {
 
 	},
 
-	getDateTime: function() {
+	getDateTime: function(timestamp) {
 
-		var date = new Date();
+		if(timestamp){
+            var date = new Date(timestamp * 1000);
+		}	else	{
+            var date = new Date()
+		}
+
 
 		var hour = date.getHours();
 		hour = (hour < 10 ? "0" : "") + hour;
@@ -224,9 +239,15 @@ module.exports = {
 		return resultStr;
 	},
 
-	bufferString: function (buf){
+	bufferString: function (buf, ifSeperate){
 		var bufStr = buf.toString('hex');
 		var str = "";
+		var seperator = " ";
+		if(ifSeperate){
+			seperator = " ";
+		}	else	{
+			seperator = "";
+		}
 		for (var i = 0, len = bufStr.length; i < len; i=i+2) {
 			str += bufStr[i] + bufStr[i+1] + " ";
 		}

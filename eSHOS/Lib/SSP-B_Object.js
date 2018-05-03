@@ -63,7 +63,7 @@ module.exports = {
     deviceListObject: function (ssid,callback){
 
         var queryWhere = ['SC','ST'];
-        var queryField = ['type||deviceID as deviceID', 'model', 'coord'];
+        var queryField = ['deviceID', 'model', 'coord'];
 
         SQLAction.SQLSelect("seraph_device", queryField, "managedSS = '" + ssid + "' AND (type = '" + queryWhere.join("' OR type = '") + "')", "", function(res){
 
@@ -90,8 +90,8 @@ module.exports = {
             if(stData != []){
                 var stIDs = [];
                 for(var stKey in stData){
-                    stIDs.push(stData[stKey].type + stData[stKey].deviceID);
-                    stConfig[stData[stKey].type + stData[stKey].deviceID] = []
+                    stIDs.push(stData[stKey].deviceID);
+                    stConfig[stData[stKey].deviceID] = []
                 }
                 SQLAction.SQLSelect("seraph_st_config","*","deviceID = '" + stIDs.join("' OR deviceID = '") + "'","",function(stConfigData){
                     if(stConfigData != []) {

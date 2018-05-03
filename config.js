@@ -13,4 +13,9 @@ module.exports = {
 
     versionNumber : 1,
 
+    homeID: "HM0000002",
+
+    homeKitUsername: "CC:22:3D:E3:CE:F9",
+
+
 }
